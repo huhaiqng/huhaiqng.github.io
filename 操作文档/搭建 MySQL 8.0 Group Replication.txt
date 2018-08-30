@@ -1,0 +1,56 @@
+1、修改配置文件，添加以下内容
+server_id=1
+gtid_mode=ON
+enforce_gtid_consistency=ON
+binlog_checksum=NONE
+transaction_write_set_extraction=XXHASH64
+loose-group_replication_group_name="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+loose-group_replication_start_on_boot=off
+loose-group_replication_local_address= "192.168.1.249:24901"
+loose-group_replication_group_seeds= "192.168.1.249:24901,192.168.1.252:24901,192.168.1.253:24901"
+loose-group_replication_bootstrap_group=off
+loose-group_replication_ip_whitelist="192.168.1.0/24"
+# 每个节点server_id、loose-group_replication_local_address值不一样，根据IP做相应的更改 
+# 多主模式添加一下两行
+loose-group_replication_single_primary_mode=FALSE
+loose-group_replication_enforce_update_everywhere_checks= TRUE
+
+2、添加系统名称映射
+192.168.1.249 kuber01
+192.168.1.252 kuber02
+192.168.1.253 kuber03
+
+3、创建账户 rpl_user，每个节点需要创建
+SET SQL_LOG_BIN=0;
+alter user root@'localhost' identified by 'MySQL8.0';
+CREATE USER rpl_user@'%' IDENTIFIED BY 'MySQL8.0';
+GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';
+FLUSH PRIVILEGES;
+SET SQL_LOG_BIN=1;
+
+4、节点添加到集群
+CHANGE MASTER TO MASTER_USER='rpl_user', MASTER_PASSWORD='MySQL8.0' FOR CHANNEL 'group_replication_recovery';
+
+5、安装插件
+INSTALL PLUGIN group_replication SONAME 'group_replication.so';
+
+6、启动节点
+# 启动第一个节点
+SET GLOBAL group_replication_bootstrap_group=ON;
+START GROUP_REPLICATION;
+SET GLOBAL group_replication_bootstrap_group=OFF;
+# 启动其他节点
+START GROUP_REPLICATION;
+
+7、查询集群成员
+SELECT * FROM performance_schema.replication_group_members;
+
+注意：集群启动失败执行以下操作
+# 在失败节点执行
+SELECT @@global.gtid_executed;
+# 在主节点执行
+SET GTID_NEXT='4e2cb39d-6af1-11e8-a65c-000c29cdfd39:1';
+BEGIN;
+COMMIT;
+SET GTID_NEXT='AUTOMATIC';
+参考文档：https://ronniethedba.wordpress.com/2017/04/22/this-member-has-more-executed-transactions-than-those-present-in-the-group/

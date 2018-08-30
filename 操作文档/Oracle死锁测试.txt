@@ -1,0 +1,32 @@
+1.开一个会话session1
+SQL>select sid from v$mystat where rownum=1;
+SID
+158
+SQL>create table t(x int primary key);
+table created
+SQL>insert into t values(1);
+commit;
+SQL>update t1 set    t=10 where  x=1;
+
+2.再开一个会话
+SQL>select sid from v$mystat where rowunm=1;
+SID
+157
+SQL>update t1 se x=10 where x=1;
+这个时候session2被session1锁住
+
+3、执行以下语句查看是哪个进程和序列锁住了表
+select sess.sid, 
+    sess.serial#, 
+    lo.oracle_username, 
+    lo.os_user_name, 
+    ao.object_name, 
+    lo.locked_mode 
+    from v$locked_object lo, 
+    dba_objects ao, 
+    v$session sess 
+where ao.object_id = lo.object_id and lo.session_id = sess.sid
+ 
+4、执行下面的语句，将改锁表的进程和序列杀掉了
+alter system kill session '1020,38953' --(1020，就是执行第一步语句得到的sid字段值，38953就是serial#字段值)
+ 
