@@ -1,6 +1,6 @@
 1、在三个节点上安装 MySQL 8.0
 rpm -i https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
-yum install mysql-community-{server,client,common,libs}-*
+yum install mysql-community-{server,client,common,libs}-* mysql-router mysql-shell
 systemctl start mysqld
 
 2、修改 my.cnf 配置文件
