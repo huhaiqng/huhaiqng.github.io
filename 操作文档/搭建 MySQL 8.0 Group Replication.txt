@@ -10,6 +10,9 @@ loose-group_replication_local_address= "192.168.1.249:24901"
 loose-group_replication_group_seeds= "192.168.1.249:24901,192.168.1.252:24901,192.168.1.253:24901"
 loose-group_replication_bootstrap_group=off
 loose-group_replication_ip_whitelist="192.168.1.0/24"
+slave_parallel_workers=10
+slave_preserve_commit_order=1 
+slave_parallel_type=LOGICAL_CLOCK
 # 每个节点server_id、loose-group_replication_local_address值不一样，根据IP做相应的更改 
 # 多主模式添加一下两行
 loose-group_replication_single_primary_mode=FALSE

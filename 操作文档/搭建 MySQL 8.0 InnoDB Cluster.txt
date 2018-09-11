@@ -16,6 +16,10 @@ loose-group_replication_local_address= "192.168.1.249:24901"
 loose-group_replication_group_seeds= "192.168.1.249:24901,192.168.1.252:24901,192.168.1.253:24901"
 loose-group_replication_bootstrap_group=off
 loose-group_replication_ip_whitelist="192.168.1.0/24"
+slave_parallel_workers=10
+slave_preserve_commit_order=1 
+slave_parallel_type=LOGICAL_CLOCK
+
 #节点2
 server_id=2
 gtid_mode=ON
@@ -29,6 +33,9 @@ loose-group_replication_group_seeds= "192.168.1.249:24901,192.168.1.252:24901,19
 loose-group_replication_bootstrap_group=off
 loose-group_replication_ip_whitelist="192.168.1.0/24"
 loose-group_replication_allow_local_disjoint_gtids_join=ON
+slave_parallel_workers=10
+slave_preserve_commit_order=1 
+slave_parallel_type=LOGICAL_CLOCK
 #节点3
 server_id=3
 gtid_mode=ON
@@ -42,6 +49,9 @@ loose-group_replication_group_seeds= "192.168.1.249:24901,192.168.1.252:24901,19
 loose-group_replication_bootstrap_group=off
 loose-group_replication_ip_whitelist="192.168.1.0/24"
 loose-group_replication_allow_local_disjoint_gtids_join=ON
+slave_parallel_workers=10
+slave_preserve_commit_order=1 
+slave_parallel_type=LOGICAL_CLOCK
 
 3、在三个节点创建复制账户
 SET SQL_LOG_BIN=0;
