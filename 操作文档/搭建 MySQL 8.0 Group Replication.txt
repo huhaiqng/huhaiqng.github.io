@@ -22,8 +22,8 @@ loose-group_replication_enforce_update_everywhere_checks= TRUE
 
 3、创建账户 rpl_user，每个节点需要创建
 SET SQL_LOG_BIN=0;
-alter user root@'localhost' identified by 'MySQL8.0';
-CREATE USER rpl_user@'%' IDENTIFIED BY 'MySQL8.0';
+alter user root@'localhost' identified WITH mysql_native_password by 'MySQL8.0';
+CREATE USER rpl_user@'%' IDENTIFIED WITH mysql_native_password BY 'MySQL8.0';
 GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';
 FLUSH PRIVILEGES;
 SET SQL_LOG_BIN=1;
