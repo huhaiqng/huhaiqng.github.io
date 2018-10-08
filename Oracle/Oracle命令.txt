@@ -136,9 +136,12 @@ select * from bbgo."t_pay_info"
     as of timestamp to_timestamp('2018-04-25 11:37:00','yyyy-MM-dd hh24:mi:ss') 
     where "created_at" > to_date('2018-05-01 00:00:00','yyyy-MM-dd hh24:mi:ss')
     order by "created_at" desc;
-select * from bbgo."t_coupon_user" 
-    as of timestamp to_timestamp('2018-09-21 09:35:00','yyyy-MM-dd hh24:mi:ss') 
-	WHERE "t_coupon_id"='a4f62cac-2b43-48a3-8222-18b40c699d57';
+INSERT INTO employees (
+  SELECT * FROM employees
+  AS OF TIMESTAMP
+  TO_TIMESTAMP('2004-04-04 09:30:00', 'YYYY-MM-DD HH:MI:SS')
+  WHERE last_name = 'Chung'
+);
 
 40、查询表格索引
 select * from dba_indexes where table_name='e_cargps';
