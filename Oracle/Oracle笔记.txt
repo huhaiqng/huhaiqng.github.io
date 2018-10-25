@@ -48,3 +48,9 @@ select * from v$sql where SQL_ID='fzkatnxmx15yc';
 alter system kill session '14, 16987';
 select distinct sq.sql_text from v$process pr,v$session se,v$sql sq where pr.spid=31879 and se.paddr=pr.addr and sq.sql_id=se.sql_id;
 注意：如果是RAC环境，需要在相应的节点执行
+
+5、dataguard 重启
+alter database recover managed standby database cancel; 
+shutdown immediate;
+alter database open; 
+alter database recover managed standby database using current logfile disconnect from session;
