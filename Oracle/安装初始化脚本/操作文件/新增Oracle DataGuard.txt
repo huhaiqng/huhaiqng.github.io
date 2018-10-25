@@ -1,0 +1,74 @@
+一、主库准备工作
+1、配置主库为归档日志模式
+select open_mode,log_mod from v$database;
+shutdown immediate
+startup mount
+alter database archivelog
+alter database open
+2、设置主库为Force Logging模式
+select name,log_mode,force_logging from gv$database;
+alter database force logging;
+3、主库执行RMAN全备
+backup as compressed backupset database format '/tmp/backup/Full_%U.bak';
+backup as compressed backupset archivelog all format '/tmp/backup/ARC_%U.bak';
+4、主库执行创建物理备库控制文件
+backup device type disk format '/tmp/backup/standby_%U.ctl' current controlfile for standby;
+5、主库创建物理备库初始化参数文件
+create pfile='/tmp/backup/initphydb.ora' from spfile;
+6、修改主库口令文件，使双节点sys口令一致
+
+二、备库准备工作
+1、将主库RMAN备份和参数文件传到备库的目录/backup
+2、修改备库口令文件和主库一致
+3、物理备库初始化参数文件修改
+4、配置RAC主库，物理备库的tnsnames.ora文件
+
+三、创建备库
+1、备库启动到nomount状态
+shutdown immediate
+startup nomount
+2、RMAN恢复备库控制文件
+restore standby controlfile from '/tmp/backup/standby_%U.ctl';
+3、mount物理备库
+alter database mount
+4、RMAN restore物理备库
+restore database;
+5、备库上创建standby logfile
+alter database add standby logfile thread 1 group 5 size 50m,group 6 size 50m,group 7 size 50m;
+alter database add standby logfile thread 2 group 8 size 50m,group 9 size 50m,group 10 size 50m;
+6、主库参数调整
+alter system set log_archive_dest_2='service=bbdg lgwr async valid_for=(online_logfiles,all_roles) db_unique_name=bbdg' sid='*';
+alter system set log_archive_config='dg_config=(bbsvr,bbdg)' sid='*';
+7、查看备库接收主库日志
+select sequence#,name, applied from v$archived_log;
+8、备库开始应用日志
+alter database recover managed standby database using current logfile disconnect from session;
+9、以只读模式打开
+alter database recover managed standby database cancel;
+alter database open;
+alter database recover managed standby database using current logfile disconnect from session;
+
+四、常用命令
+select * from bsbnet.timetb order by id desc;
+查看归档日志: select sequence#,name, applied from v$archived_log;
+select dbid,name,switchover_status,db_unique_name,database_role,open_mode,current_scn from v$database;
+查看datagurd状态: select * from v$dataguard_stats;
+
+五、Oracle 11g Dataguard 暂停物理备库的日志传输
+1、在主库上面查看备份的归档路径
+SQL> show parameter log_archive_dest_2
+SQL> show parameter log_archive_dest_state_2
+2、通过设置 defer 参数来暂停主库对备库的日志传输
+SQL> alter system set log_archive_dest_state_2 = 'defer';
+SQL> alter system switch logfile;
+3、恢复主库到备份的日志传输，暂停日志传输后的归档日志会全部传输到备库，不会导致备库的归档日志 gap
+SQL> alter system set log_archive_dest_state_2 = 'enable';
+
+六、故障切换，primary出现无法恢复故障，将standby切换为primary
+#在standby上执行以下命令
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE FINISH;
+ALTER DATABASE COMMIT TO SWITCHOVER TO PRIMARY WITH SESSION SHUTDOWN;
+ALTER DATABASE OPEN;
+alter system set log_archive_dest_2='' sid='*';
+alter system set log_archive_config='' sid='*';

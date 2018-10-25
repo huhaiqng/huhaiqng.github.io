@@ -1,0 +1,23 @@
+1、创建目录
+mkdir /home/oracle/oracleDump
+
+2、导出数据
+sqlplus / as sysdba
+create or replace directory dump_dir as '/home/oracle/oracleDump';
+grant read,write on directory dump_dir to BBGO,BBGPS;
+exit
+
+expdp  "'/ as sysdba'" schemas=BBGO dumpfile=BBGO.dmp DIRECTORY=dump_dir logfile=expdp.log
+expdp  "'/ as sysdba'" schemas=BBGPS dumpfile=BBGPS.dmp DIRECTORY=dump_dir logfile=expdp.log
+
+3、导入数据
+sqlplus / as sysdba
+create user BBGOA identified by BBGOA ;
+grant connect,resource to BBGOA ;
+create directory dump_dir as '/home/oracle/oracleDump';
+grant read,write on directory dump_dir to BBGOA;
+exit
+
+impdp "'/ as sysdba'" directory=dump_dir dumpfile=expdp.dmp schemas=BBGO remap_schema=BBGO:BBGOA
+
+注意：如果使用select * from t_trippay_info查询不到数据，请使用select * from "t_trippay_info"查询;
