@@ -356,6 +356,7 @@ startup nomount;
 restore standby controlfile from '/tmp/backup/standby_%U.ctl';
 alter database mount;
 restore database;
+restore archivelog from logseq 82 until logseq 222; 
 alter database open;
 5、备库上创建standby logfile
 SQL> alter database add standby logfile thread 1 group 5 size 50m,group 6 size 50m,group 7 size 50m;

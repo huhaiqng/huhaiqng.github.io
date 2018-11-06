@@ -163,7 +163,7 @@ cp /etc/sysctl.conf /etc/sysctl.conf.bak
 echo "fs.aio-max-nr = 1048576" >> /etc/sysctl.conf
 echo "fs.file-max = 6815744" >> /etc/sysctl.conf
 echo "kernel.shmall = 2097152" >> /etc/sysctl.conf
-echo "kernel.shmmax = 1054472192" >> /etc/sysctl.conf
+echo "kernel.shmmax = 1937606656" >> /etc/sysctl.conf
 echo "kernel.shmmni = 4096" >> /etc/sysctl.conf
 echo "kernel.sem = 250 32000 100 128" >> /etc/sysctl.conf
 echo "net.ipv4.ip_local_port_range = 9000 65500" >> /etc/sysctl.conf

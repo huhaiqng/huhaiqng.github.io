@@ -22,6 +22,14 @@ create pfile='/tmp/backup/initphydb.ora' from spfile;
 2、修改备库口令文件和主库一致
 3、物理备库初始化参数文件修改
 4、配置RAC主库，物理备库的tnsnames.ora文件
+	bbdg =
+	  (DESCRIPTION =
+		(ADDRESS = (PROTOCOL = TCP)(HOST = 188.188.1.141)(PORT = 1521))
+		(CONNECT_DATA =
+		  (SERVER = DEDICATED)
+		  (SERVICE_NAME = bbdg)
+		)
+	  )
 
 三、创建备库
 1、备库启动到nomount状态
@@ -33,11 +41,16 @@ restore standby controlfile from '/tmp/backup/standby_%U.ctl';
 alter database mount
 4、RMAN restore物理备库
 restore database;
+restore archivelog from logseq 82 until logseq 222; 
 5、备库上创建standby logfile
 alter database add standby logfile thread 1 group 5 size 50m,group 6 size 50m,group 7 size 50m;
 alter database add standby logfile thread 2 group 8 size 50m,group 9 size 50m,group 10 size 50m;
-6、主库参数调整
+6、参数调整
+#主库
 alter system set log_archive_dest_2='service=bbdg lgwr async valid_for=(online_logfiles,all_roles) db_unique_name=bbdg' sid='*';
+alter system set log_archive_config='dg_config=(bbsvr,bbdg)' sid='*';
+#备库
+alter system set log_archive_dest_2='service=bbsvr lgwr async valid_for=(online_logfiles,all_roles) db_unique_name=bbsvr' sid='*';
 alter system set log_archive_config='dg_config=(bbsvr,bbdg)' sid='*';
 7、查看备库接收主库日志
 select sequence#,name, applied from v$archived_log;
