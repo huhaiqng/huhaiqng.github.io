@@ -41,6 +41,7 @@ log-error=/var/log/mysqld02.log
 pid-file=/var/lib/mysql02/mysqld.pid
 
 初始化实例
+useradd mysql -s /sbin/nologin
 mysqld --defaults-file=/usr/local/mysql/conf/my00.cnf --initialize --user=mysql
 mysqld --defaults-file=/usr/local/mysql/conf/my01.cnf --initialize --user=mysql
 mysqld --defaults-file=/usr/local/mysql/conf/my02.cnf --initialize --user=mysql

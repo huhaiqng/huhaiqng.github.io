@@ -2,7 +2,7 @@
 2、安装gitlab
 #安装
 yum install curl policycoreutils openssh-server openssh-clients postfix
-curl -sS http://packages.gitlab.cc/install/gitlab-ce/script.rpm.sh | sudo bash
+curl -sS http://packages.gitlab.cc/install/gitlab-ce/script.rpm.sh | sudo bash (报错继续执行后面的步骤)
 EXTERNAL_URL="http://gitlab.domain.com" yum install gitlab-ce
 #更改数据目录
 vim /etc/gitlab/gitlab.rb 
@@ -24,14 +24,14 @@ user["git_user_email"] = "509358851@139.com"
 ----------------------------------------------------------
 3、汉化
 #下载汉化包
-https://gitlab.com/xhang/gitlab/tree/10-5-stable-zh
+git clone https://gitlab.com/xhang/gitlab.git
 cd gitlab 
 git tag
 # 对比不同，这里比较的是tag，v9.2.6为英文原版，v9.2.6-zh为汉化版本。diff结果是汉化补丁。
-git diff v10.5.2..v10.5.2-zh > /tmp/10.5.2.diff
+git diff v11.4.5..v11.4.5-zh > /tmp/v11.4.5.diff
 # 应用汉化补丁
 cd /opt/gitlab/embedded/service/gitlab-rails
-git apply /tmp/9.2.6.diff
+git apply /tmp/v11.4.5.diff
 4、初始化
 gitlab-ctl reconfigure
 5、启动
