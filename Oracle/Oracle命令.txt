@@ -152,3 +152,9 @@ select * from (select segment_name,sum(bytes)/1024/1024 total_mb,tablespace_name
 
 42、删除 Oracle 用户所有对象
 drop user XXXX cascade;
+
+43、查询当前正在执行的 SQL
+SELECT SID,SERIAL#,USERNAME,STATUS,OSUSER,MACHINE,PROGRAM,SQL_ID,SQL_EXEC_START,PREV_SQL_ID,PREV_EXEC_START,LOGON_TIME
+  FROM v$session 
+  WHERE type='USER' 
+  ORDER BY STATUS,SQL_ID;

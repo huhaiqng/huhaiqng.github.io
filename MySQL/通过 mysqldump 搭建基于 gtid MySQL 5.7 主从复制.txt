@@ -1,5 +1,6 @@
 安装主从 MySQL 5.7
 # 主 MySQL5.7
+useradd mysql /sbin/nologin
 cd /usr/local
 tar -xvf mysql-5.7.23-linux-glibc2.12-x86_64.tar.gz
 mv mysql-5.7.23-linux-glibc2.12-x86_64/ mysql
@@ -25,6 +26,7 @@ export PATH=$PATH:/usr/local/mysql/bin
 mysqld --defaults-file=/usr/local/mysql/conf/my.cnf --initialize --user=mysql
 mysqld_safe --defaults-file=/usr/local/mysql/conf/my.cnf --user=mysql &
 # 从 MySQL5.7
+useradd mysql /sbin/nologin
 cd /usr/local
 tar -xvf mysql-5.7.23-linux-glibc2.12-x86_64.tar.gz
 mv mysql-5.7.23-linux-glibc2.12-x86_64/ mysql
@@ -67,14 +69,14 @@ sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --mysql-password=MySQL5.7 \
 --oltp-test-mode=complex \
 --oltp-tables-count=10 \
---oltp-table-size=10000000 \
---threads=5 \
+--oltp-table-size=1000000 \
+--threads=10 \
 --time=120 \
 --report-interval=10 \
 --db-driver=mysql prepare
 
 将主节点的数据传到从节点
-mysqldump -S /usr/local/mysql/data/mysql.sock -u root -pMySQL5.7 \
+mysqldump -S /tmp/mysql.sock -u root -pMySQL5.7 \
 --all-databases --triggers --routines --events \
 --single-transaction --quick | mysql -h 192.168.1.226 -P 3388 -u root -pMySQL5.7
 
