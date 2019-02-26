@@ -36,7 +36,7 @@ masterauth "redisPASSWORD"
 
 slave1 配置文件 redis.conf 修改以下参数
 #绑定IP
-bind 192.168.1.224
+bind 192.168.1.225
 #后台运行
 daemonize yes
 #设置密码
@@ -54,7 +54,7 @@ replicaof 192.168.1.224 6379
 
 slave2 配置文件 redis.conf 修改以下参数
 #绑定IP
-bind 192.168.1.224
+bind 192.168.1.226
 #后台运行
 daemonize yes
 #设置密码
