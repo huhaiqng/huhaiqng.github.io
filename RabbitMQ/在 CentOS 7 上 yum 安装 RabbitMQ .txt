@@ -1,0 +1,18 @@
+wget https://packages.erlang-solutions.com/erlang-solutions-1.0-1.noarch.rpm
+yum localinstall -y erlang-solutions-1.0-1.noarch.rpm
+yum install erlang
+
+rpm --import https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+
+[bintray-rabbitmq-server]
+name=bintray-rabbitmq-rpm
+baseurl=https://dl.bintray.com/rabbitmq/rpm/rabbitmq-server/v3.7.x/el/7/
+gpgcheck=0
+repo_gpgcheck=0
+enabled=1
+
+yum install rabbitmq-server.noarch
+
+参考博文：
+http://www.rabbitmq.com/download.html
+https://www.erlang-solutions.com/resources/download.html
