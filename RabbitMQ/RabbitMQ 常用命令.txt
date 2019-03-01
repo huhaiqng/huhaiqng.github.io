@@ -1,0 +1,10 @@
+启用 UI 管理，http 端口号 15672
+rabbitmq-plugins enable rabbitmq_management
+
+创建 UI 账号并授权
+rabbitmqctl add_user rabbitmq rabbitmq
+rabbitmqctl set_user_tags rabbitmq administrator
+
+创建配置文件
+cd /usr/share/doc/rabbitmq-server-3.7.12
+cp rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
