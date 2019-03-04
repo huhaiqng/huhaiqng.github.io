@@ -8,3 +8,9 @@ rabbitmqctl set_user_tags rabbitmq administrator
 创建配置文件
 cd /usr/share/doc/rabbitmq-server-3.7.12
 cp rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
+
+创建 vhost
+rabbitmqctl add_vhost vhost01
+
+分配 vhost 给用户
+rabbitmqctl set_permissions -p vhost01 mquser01 ".*" ".*" ".*"
