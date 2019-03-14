@@ -1,0 +1,20 @@
+# 设置 ip 主机名映射
+1.1.1.1		hostname
+
+# 关闭防火墙
+systemctl stop firewalld
+systemctl disable firewalld
+
+# 关闭 selinux
+setenforce 0
+vim /etc/sysconfig/selinux
+------------------------------------
+SELINUX=disabled
+------------------------------------
+
+调整最大文件打开数，重启生效
+vim /etc/security/limits.conf 
+------------------------------------
+* soft nofile 65535
+* hard nofile 65535
+------------------------------------
