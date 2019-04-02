@@ -2,6 +2,8 @@
 cd /data/backup/baipao/driverapp/
 # 重命名旧包
 mv baipao-driver-app-rest-2.0.0.jar baipao-driver-app-rest-2.0.0.jar.`date +%Y%m%d.%H%M%S`
+# 将包拷贝到 188.188.1.133
+ssh -p 2222 devuser@218.17.56.50 "sh ~/scripts/get_driverapp_from_uat.sh"
 # 获取测试环境的包
 scp -P 2222 devuser@218.17.56.50:~/baipao-driver-app-rest-2.0.0.jar .
 chmod 755 baipao-driver-app-rest-2.0.0.jar

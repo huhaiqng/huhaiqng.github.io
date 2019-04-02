@@ -2,6 +2,8 @@
 cd /data/backup/baipao/html/
 # 打包旧静态文件，用于回滚
 tar zcf html.tar.gz.`date +%Y%m%d.%H%M%S` index.html static --remove-files
+# 将包拷贝到 188.188.1.133
+ssh -p 2222 devuser@218.17.56.50 "sh ~/scripts/get_html_from_uat.sh"
 # 获取静态文件
 scp -P 2222 devuser@218.17.56.50:~/index.html .
 scp -r -P 2222 devuser@218.17.56.50:~/static .
