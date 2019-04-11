@@ -8,4 +8,25 @@ show dbs
 db.serverStatus().connections
 
 查询副本集状态
-rs.status()
+db.adminCommand( { replSetGetStatus: 1 } )
+
+查看副本集成员状态
+db.isMaster()
+
+获取副本集的配置
+rs.conf()
+
+开启 Slave 读功能
+db.getMongo().setSlaveOk()
+
+添加副本集节点
+rs.add( { host: "192.168.1.226:27018" } )
+
+删除副本集节点
+rs.remove("192.168.1.226:27018")
+
+查询 Slave 同步状态
+rs.printSlaveReplicationInfo()
+
+查看分片状态
+sh.status()

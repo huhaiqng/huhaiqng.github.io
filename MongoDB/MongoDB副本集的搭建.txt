@@ -40,7 +40,7 @@ PATH=$PATH:$HOME/bin:/usr/local/mongodb/bin
 export PATH
 #启动
 yum install -y net-snmp* gcc-c++ 
-nohup mongod -f /usr/local/mongodb/etc/mongod.conf >/dev/null 2>&1 &
+mongod -f /usr/local/mongodb/etc/mongod.conf
 4、初始化副本集
 登录任意一台机器的mongodb后台管理shell：
 cd /usr/local/mongodb
@@ -49,12 +49,12 @@ use admin
 config = {
 "_id":"bsbgpsrs",
 "members":[
-  {"_id":0,"host":"192.168.198.224:27017"},
-  {"_id":1,"host":"192.168.198.225:27017"},
-  {"_id":2,"host":"192.168.198.226:27017",arbiterOnly:true}
+  {"_id":0,"host":"192.168.1.224:27017"},
+  {"_id":1,"host":"192.168.1.225:27017"},
+  {"_id":2,"host":"192.168.1.226:27017",arbiterOnly:true}
 ]
 }
-rs.initiate(config);   #初始化配置
+rs.initiate(config)  #初始化配置
 5、查看副本集状态
 rs.status();
 6 、添加验证
@@ -64,13 +64,13 @@ db.auth("admin","Mongo/2018")
 
 三、测试副本集
 1、测试副本集的数据复制功能
-此时在我的机器上192.168.198.224是主节点，我们用mongo来登录shell。
+此时在我的机器上192.168.1.224是主节点，我们用mongo来登录shell。
 
 cd /usr/local/mongodb
 ./bin/mongo
-use test  #创建test数据库
-db.testdb.insert({"name":"yaya"});       #插入数据
-我们用副本节点登录shell，我这里是192.168.198.225：
+use testdb  #创建test数据库
+for(var i = 1; i <= 100000; i++){ db.testtb.save({id:i,"Time":new Date().getFullYear()+"-"+(new Date().getMonth()+1)+"-"+new Date().getDate()+ " "+new Date().toLocaleTimeString()}) }      #插入数据
+我们用副本节点登录shell，我这里是192.168.1.225：
 
 cd /usr/local/mongodb
 ./bin/mongo
@@ -94,11 +94,11 @@ repset:SECONDARY> db.testdb.find();
 所以，数据复制的功能是可用的。
 
 2、测试副本集的故障转移功能
-将主节点192.168.198.224的mongod进程杀死：
+将主节点192.168.1.224的mongod进程杀死：
 
 myrs:PRIMARY> use admin
 myrs:PRIMARY> db.shutdownServer()
-此时可以看到，192.168.198.225原本是副节点，此时自动转换为主节点。可以通过rs.status()来查看。
+此时可以看到，192.168.1.225原本是副节点，此时自动转换为主节点。可以通过rs.status()来查看。
 
 四、其他设置
 1、取消透明大页在/etc/rc.d/rc.local增加下列内容：
