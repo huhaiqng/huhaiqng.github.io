@@ -6,3 +6,6 @@ show dbs
 
 查询连接数
 db.serverStatus().connections
+
+查询副本集状态
+rs.status()
