@@ -1,3 +1,5 @@
 统计文件中行数相同的数量
 sort app.log | uniq -c | sort -r -n 
 
+查看当前系统 80 端口 tcp 连接数
+netstat -nt | awk '{print $4}' | sort | uniq -c | awk '{if($2=="172.16.1.52:80") print $1}'

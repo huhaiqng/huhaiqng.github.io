@@ -12,6 +12,7 @@ mongodump --host 188.188.1.135 --port 20000 --db ywtestdb --gzip --archive=ywtes
 ------------------------------------ 还原 ------------------------------------
 # 副本集连主节点 mongod 的端口，分片副本集连 mongos 的端口，如果数据库已存在集合中相同 "_id" 的文档不会更新
 1、还原所有数据库
+mongorestore --host 192.168.1.224 --port 27017 --gzip --archive=all-databases.arch.gz
 
 2、还原单个数据库
 mongorestore --host 192.168.1.224 --port 27017 --gzip --archive=ywtestdb.arch.gz
