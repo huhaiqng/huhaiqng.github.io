@@ -1,4 +1,5 @@
 1、配置 epel 源安装 sysbench
+
 yum install -y sysbench
 2、初始化数据
 sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \

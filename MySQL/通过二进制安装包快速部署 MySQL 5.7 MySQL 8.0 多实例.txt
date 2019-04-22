@@ -14,6 +14,7 @@ socket=/tmp/mysql00.sock
 symbolic-links=0
 port=3306
 mysqlx_port=33060
+mysqlx_socket=/tmp/mysqlx00.sock
 [mysqld_safe]
 log-error=/var/log/mysqld00.log
 pid-file=/var/lib/mysql00/mysqld.pid
@@ -25,6 +26,7 @@ socket=/tmp/mysql01.sock
 symbolic-links=0
 port=3307
 mysqlx_port=33070
+mysqlx_socket=/tmp/mysqlx01.sock
 [mysqld_safe]
 log-error=/var/log/mysqld01.log
 pid-file=/var/lib/mysql01/mysqld.pid
@@ -36,6 +38,7 @@ socket=/tmp/mysql02.sock
 symbolic-links=0
 port=3308
 mysqlx_port=33080
+mysqlx_socket=/tmp/mysqlx02.sock
 [mysqld_safe]
 log-error=/var/log/mysqld02.log
 pid-file=/var/lib/mysql02/mysqld.pid
