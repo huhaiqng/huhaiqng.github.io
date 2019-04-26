@@ -1,0 +1,5 @@
+1、清理 slave 的 master 的配置
+reset slave all;
+
+2、清理二进制日志文件和清空 gtid
+reset master;
