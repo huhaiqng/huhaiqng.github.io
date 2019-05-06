@@ -1,0 +1,23 @@
+1、安装 mysql-shell、mysql-route
+yum install -y mysql-router mysql-shell
+
+2、创建 Innodb Cluster
+# mysqlsh 连接 mysql
+mysqlsh root@test01:3306
+# 创建
+var cluster = dba.createCluster('prodCluster', {adoptFromGR: true});
+# 查看状态
+cluster.status();
+
+3、创建 mysql-router 连接 mysql group replication 的账号
+CREATE USER myrouter@'%' IDENTIFIED BY 'MySQL5.7';
+GRANT ALL PRIVILEGES ON mysql_innodb_cluster_metadata.* TO myrouter@'%' WITH GRANT OPTION;
+GRANT RELOAD, SHUTDOWN, PROCESS, FILE, SUPER, REPLICATION SLAVE, REPLICATION CLIENT, CREATE USER ON *.* TO myrouter@'%' WITH GRANT OPTION;
+GRANT SELECT ON *.* TO myrouter@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+4、初始化 mysql-router
+mysqlrouter --bootstrap myrouter@test01:3306 --user=mysqlrouter --force
+
+5、启动 mysql-router
+systemctl start mysqlrouter
