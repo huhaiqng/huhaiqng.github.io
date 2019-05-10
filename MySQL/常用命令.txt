@@ -3,3 +3,10 @@ reset slave all;
 
 2、清理二进制日志文件和清空 gtid
 reset master;
+
+3、查看 MySQL 的线程
+top -H -p <mysql进程ID>
+
+4、查看 MySQL 系统线程和 MySQL 线程的对应关系
+select * from performance_schema.threads where THREAD_OS_ID=<mysql线程id>\G
+select * from information_schema.processlist where ID=<PROCESSLIST_ID>\G
