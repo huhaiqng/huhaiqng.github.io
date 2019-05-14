@@ -1,0 +1,16 @@
+1、将表改为分区表
+alter table sbtest.sbtest1 partition by range (id) (
+    partition p1000000 values less than (1000000),
+    partition p2000000 values less than (2000000),
+    partition pmax values less than maxvalue
+);
+
+2、一个分区分为两个分区
+ALTER TABLE sbtest.sbtest1 REORGANIZE PARTITION pmax INTO (
+        partition p3000000 values less than (3000000),
+        partition pmax values less than maxvalue
+);
+
+3、从指定分区查询数据
+select * from sbtest.sbtest1 partition (p1000000);
+

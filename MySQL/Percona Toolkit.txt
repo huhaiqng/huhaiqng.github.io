@@ -1,0 +1,14 @@
+1、安装 Percona Toolkit
+# 配置 percona yum 源
+yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+# 安装
+yum install -y percona-toolkit
+
+2、对表归档
+pt-archiver \
+--source h=188.188.1.151,P=6446,D=sbtest,t=sbtest3 \
+--dest h=188.188.1.151,P=6446,D=sbtest,t=sbtest3_6000000 \
+-u root -pMySQL5.7 \
+--where="id<6000000" \
+--limit 100000 \
+--commit-each
