@@ -57,6 +57,8 @@ set sql_log_bin=0;
 alter user root@'localhost' identified by 'MySQL5.7';
 create user root@'%' identified by 'MySQL5.7';
 grant all on *.* to root@'%';
+CREATE USER 'repl'@'%' IDENTIFIED BY 'MySQL5.7';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
 flush privileges; 
 set sql_log_bin=1;
 
@@ -81,6 +83,6 @@ mysqldump -S /tmp/mysql.sock -u root -pMySQL5.7 \
 --single-transaction --quick | mysql -h 192.168.1.226 -P 3388 -u root -pMySQL5.7
 
 将从服务器指定到主服务器
-change master to master_host='192.168.1.225',master_port=3388,master_user='root',master_password='MySQL5.7',master_auto_position=1;
+change master to master_host='192.168.1.225',master_port=3388,master_user='repl',master_password='MySQL5.7',master_auto_position=1;
 start slave;
 show slave status\G
