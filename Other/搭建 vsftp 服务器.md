@@ -55,7 +55,7 @@ yum -y install pam pam-devel db4 db4-tcl
 yum -y install vsftpd
 ```
 
-修改配置文件
+修改配置文件 
 
 ```
 anonymous_enable=NO
