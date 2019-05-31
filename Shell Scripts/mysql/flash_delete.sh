@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+echo "说明：此脚本需要5个参数(提取二进制日志开始时间、结束时间，数据库，表和二进制日志文件！"
+echo "      脚本运行完后会生成包含恢复记录的SQL语句的 insert.sql 文件！"
 if [ $# -ne 5 ];then
     echo "参数错误!!!"
     echo "正确的格式：sh flash_delete.sh start_time end_time database table binlog_file"
@@ -22,7 +24,7 @@ vls=''
 while read line
 do
     if [ $st = 0 ] ; then
-        if echo $line | grep "DELETE FROM \`$db\`.\`$tb\`" ;then
+       if echo $line | grep "DELETE FROM \`$db\`.\`$tb\`";then
             st=1
             vls="INSERT INTO \`$db\`.\`$tb\` VALUES ("
             continue
@@ -30,23 +32,23 @@ do
     fi
 
     if [ $st = 1 ] ; then
-        if echo $line | grep "WHERE" ;then
+        if echo $line | grep "WHERE";then
             continue
         fi
-        if echo $line | grep "=" ;then
+        if echo $line | grep "=";then
             if [ "$vl" != '' ] ;then
                 vls="$vls$vl,"
             fi
             vl=`echo $line | sed 's/.......//'`
             continue
         fi
-        if echo $line | grep "DELETE FROM \`$db\`.\`$tb\`" ;then
+        if echo $line | grep "DELETE FROM \`$db\`.\`$tb\`";then
             echo "$vls$vl);" >> $rbinlog
             vl=''
-            st=0
+            vls="INSERT INTO \`$db\`.\`$tb\` VALUES ("
             continue
         fi
-        echo "$vls,$vl);" >> $rbinlog
+        echo "$vls$vl);" >> $rbinlog
         vl=''
         st=0
     fi
