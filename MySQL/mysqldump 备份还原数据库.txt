@@ -69,13 +69,23 @@ mysqldump --all-databases \
 --single-transaction \
 --quick | mysql -h 192.168.1.224 -u root -p
 	
-将指定数据迁移到另一台服务器
+将指定数据库迁移到另一台服务器
 mysqldump --databases zabbix \
 --triggers \
 --routines \
 --events \
+--set-gtid-purged=OFF \
 --single-transaction \
 --quick | mysql -h 192.168.1.224 -u root -p
+
+将指定数据库迁移到另一台服务器不同名的数据库中
+mysqldump zabbix \
+--triggers \
+--routines \
+--events \
+--set-gtid-purged=OFF \
+--single-transaction \
+--quick | mysql zabbix_0101 -h 192.168.1.224 -u root -p
 
 将数据库表结构导入到另一台服务器
 mysqldump --databases zabbix \

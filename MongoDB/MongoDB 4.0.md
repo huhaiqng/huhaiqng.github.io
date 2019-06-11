@@ -124,6 +124,9 @@ systemLog:
 storage:
    journal:
       enabled: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
 ```
 
 修改系统 limit 限制
@@ -225,5 +228,119 @@ db.createUser(
 
 ```
 bin/mongo -u mongo -p --authenticationDatabase test
+```
+
+### 副本集
+
+##### 部署副本集
+
+配置文件
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+storage:
+   dbPath: /usr/local/mongodb/data/
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/log/mongod.log"
+   logAppend: true
+storage:
+   journal:
+      enabled: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+replication:
+   replSetName: "rs"
+```
+
+初始化副本集
+
+```
+rs.initiate( {
+   _id : "rs",
+   members: [
+      { _id: 0, host: "188.188.1.151:27017" },
+      { _id: 1, host: "188.188.1.152:27017" },
+      { _id: 2, host: "188.188.1.153:27017" }
+   ]
+})
+```
+
+查看副本集配置
+
+```
+rs.conf()
+```
+
+查看集群状态
+
+``` 
+rs.status()
+```
+
+查看 PRIMARY 节点
+
+```
+rs.isMaster()
+```
+
+##### 强制切换 PRIMARY 节点
+
+当前副本集状态
+
+```
+mdb0.example.net - the current primary.
+mdb1.example.net - a secondary.
+mdb2.example.net - a secondary .
+```
+
+冻结节点 mdb2.example.net 120秒
+
+```
+rs.freeze(120)
+```
+
+降级节点 mdb0.example.net 120秒
+
+```
+rs.stepDown(120)
+```
+
+### 常用命令
+
+##### 数据库
+
+显示数据库
+
+```
+show dbs
+```
+
+##### 集合
+
+显示集合
+
+```
+use test
+show collections
+```
+
+##### 副本集
+
+配置 SECONDARY 可读
+
+```
+rs.slaveOk()
+```
+
+查看 SECONDARY 同步状况
+
+```
+rs.printSlaveReplicationInfo()
 ```
 
