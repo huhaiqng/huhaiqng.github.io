@@ -117,13 +117,16 @@ net:
    port: 27017
 storage:
    dbPath: /usr/local/mongodb/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
 systemLog:
    destination: file
    path: "/usr/local/mongodb/log/mongod.log"
    logAppend: true
-storage:
-   journal:
-      enabled: true
+
 operationProfiling:
    mode: slowOp
    slowOpThresholdMs: 1000
@@ -244,13 +247,15 @@ net:
    port: 27017
 storage:
    dbPath: /usr/local/mongodb/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
 systemLog:
    destination: file
    path: "/usr/local/mongodb/log/mongod.log"
    logAppend: true
-storage:
-   journal:
-      enabled: true
 operationProfiling:
    mode: slowOp
    slowOpThresholdMs: 1000
@@ -269,24 +274,6 @@ rs.initiate( {
       { _id: 2, host: "188.188.1.153:27017" }
    ]
 })
-```
-
-查看副本集配置
-
-```
-rs.conf()
-```
-
-查看集群状态
-
-``` 
-rs.status()
-```
-
-查看 PRIMARY 节点
-
-```
-rs.isMaster()
 ```
 
 ##### 强制切换 PRIMARY 节点
@@ -309,6 +296,214 @@ rs.freeze(120)
 
 ```
 rs.stepDown(120)
+```
+
+##### 新增节点
+
+清空新节点的数据目录
+
+```
+rm -rf data/*
+```
+
+启动新节点
+
+```
+bin/mongod -f rs.conf
+```
+
+在 PRIMARY 节点添加新节点，新节点自动同步数据
+
+```
+rs.add( { host: "188.188.1.153:27017", priority: 0, votes: 0 } )
+```
+
+新节点转换为 SECONDARY状态后，更新新添加节点的 priority和 votes
+
+```
+var cfg = rs.conf();
+cfg.members[2].priority = 1
+cfg.members[2].votes = 1
+rs.reconfig(cfg)
+```
+
+### 分片
+
+##### 部署配置副本集
+
+配置文件 configrs.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27000
+storage:
+   dbPath: /usr/local/mongodb/config/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/config/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: configsvr
+replication:
+   replSetName: configrs
+```
+
+初始化配置副本集
+
+```
+rs.initiate(
+  {
+    _id: "configrs",
+    configsvr: true,
+    members: [
+      { _id : 0, host : "cfg1.example.net:27000" },
+      { _id : 1, host : "cfg2.example.net:27000" },
+      { _id : 2, host : "cfg3.example.net:27000" }
+    ]
+  }
+)
+```
+
+##### 部署分片副本集
+
+分片副本集 shardrs01 配置文件 shardrs01.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27001
+storage:
+   dbPath: /usr/local/mongodb/shardrs01/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/shardrs01/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: shardsvr
+replication:
+   replSetName: shardrs01
+```
+
+初始化分片副本集 shardrs01
+
+```
+rs.initiate(
+  {
+    _id : "shardrs01",
+    members: [
+      { _id : 0, host : "s1-mongo1.example.net:27001" },
+      { _id : 1, host : "s1-mongo2.example.net:27001" },
+      { _id : 2, host : "s1-mongo3.example.net:27001" }
+    ]
+  }
+)
+```
+
+分片副本集 shardrs02配置文件 shardrs02.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27002
+storage:
+   dbPath: /usr/local/mongodb/shardrs02/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/shardrs02/log/mongod.log"
+   logAppend: true 
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: shardsvr
+replication:
+   replSetName: shardrs02
+```
+
+初始化分片副本集 shardrs02
+
+```
+rs.initiate(
+  {
+    _id : "shardrs02",
+    members: [
+      { _id : 0, host : "s1-mongo1.example.net:27002" },
+      { _id : 1, host : "s1-mongo2.example.net:27002" },
+      { _id : 2, host : "s1-mongo3.example.net:27002" }
+    ]
+  }
+)
+```
+
+##### 部署路由
+
+配置文件 mongos.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/mongos/log/mongod.log"
+   logAppend: true
+sharding:
+   configDB: configrs/188.188.1.151:27000,188.188.1.152:27000,188.188.1.153:27000
+```
+
+启动 mongos
+
+```
+bin/mongos -f mongos.conf
+```
+
+添加分片副本集
+
+```
+sh.addShard("shardrs01/188.188.1.151:27001")
+sh.addShard("shardrs02/188.188.1.151:27002")
+```
+
+数据库启用分片
+
+```
+sh.enableSharding("<database>")
+```
+
+指定集合分片键
+
+```
+sh.shardCollection("<database>.<collection>", { <shard key> : "hashed" } )
 ```
 
 ### 常用命令
@@ -342,5 +537,37 @@ rs.slaveOk()
 
 ```
 rs.printSlaveReplicationInfo()
+```
+
+查看副本集配置
+
+```
+rs.conf()
+```
+
+查看集群状态
+
+```
+rs.status()
+```
+
+查看 PRIMARY 节点
+
+```
+rs.isMaster()
+```
+
+删除节点
+
+```
+rs.remove("mongod3.example.net:27017")
+```
+
+##### 分片
+
+查看分片状态
+
+```
+sh.status()
 ```
 
