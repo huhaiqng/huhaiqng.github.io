@@ -643,3 +643,50 @@ sh.status()
 db.adminCommand( { listShards: 1 } )
 ```
 
+### JS 脚本
+
+##### 生成测试数据
+
+脚本文件 save.js 内容
+
+```
+function dateFtt(fmt,date)   
+{ //author: meizz   
+  var o = {   
+    "M+" : date.getMonth()+1,                 //月份   
+    "d+" : date.getDate(),                    //日   
+    "h+" : date.getHours(),                   //小时   
+    "m+" : date.getMinutes(),                 //分   
+    "s+" : date.getSeconds(),                 //秒   
+    "q+" : Math.floor((date.getMonth()+3)/3), //季度   
+    "S"  : date.getMilliseconds()             //毫秒   
+  };   
+  if(/(y+)/.test(fmt))   
+    fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));   
+  for(var k in o)   
+    if(new RegExp("("+ k +")").test(fmt))   
+  fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));   
+  return fmt;   
+} 
+
+db = db.getSiblingDB("tdb")
+
+for (i=1;i<1000;i++) {
+  var types = ["red","green","white","black"]
+  var names = ["aaa","bbb","ccc","ddd","eee","fff"]
+  var dt = dateFtt("yyyy-MM-dd hh:mm:ss",new Date())
+  var count = Math.ceil(Math.random()*100)+1
+  var type = types[Math.ceil(Math.random()*4)-1]
+  var name = names[Math.ceil(Math.random()*5)-1]
+  var desc = "VGhlIGxvYWQoKSBtZXRob2QgYWNjZXB0cyByZWxhdGl2ZSBhbmQgYWJzb2x1dGUgcGF0aHMuIElmIHRoZSBjdXJyZW50IHdvcmtpbmcgZGlyZWN0b3J5IG9mIHRoZSBtb25nbyBzaGVsbCBpcyAvZGF0YS9kYiwgYW5kIHRoZSBteWpzdGVzdC5qcyByZXNpZGVzIGluIHRoZSAvZGF0YS9kYi9zY3JpcHRzIGRpcmVjdG9yeSwgdGhlbiB0aGUgZm9sbG93aW5nIGNhbGxzIHdpdGhpbiB0aGUgbW9uZ28gc2hlbGwgd291bGQgYmUgZXF1aXZhbGVudDo="
+  
+  db.tcoll.save({_id:i,name:name,type:type,count:count,createdAt:dt,description:desc})
+}
+```
+
+执行脚本
+
+```
+bin/mongo save.js 
+```
+
