@@ -375,7 +375,7 @@ rs.initiate(
 )
 ```
 
-##### 部署分片副本集
+##### 部署数据副本集
 
 分片副本集 shardrs01 配置文件 shardrs01.conf
 
@@ -504,9 +504,75 @@ sh.enableSharding("<database>")
 
 ```
 sh.shardCollection("<database>.<collection>", { <shard key> : "hashed" } )
+# 如果集合没有数据，可以使用任何字段作为分片键
+# 如果集合已经存在数据，需要先创建索引，或使用 _id 字段作为分片键
 ```
 
+##### 向分片集群中添加分片
+
+搭建数据副本集
+
+将数据副本集添加到分片集群中
+
+```
+sh.addShard("shardrs03/188.188.1.151:27003")
+```
+
+一段时间后，数据自动进行迁移，使得数据均匀的发布到每个分片中
+
+##### 删除分片
+
+查看要删除的分片是否是某数据库的主分片
+
+```
+sh.status()
+```
+
+如果要删除的分片是某集合的主分片，则需要进行迁移
+
+```
+db.adminCommand( { movePrimary: "ycsb", to: "shardrs02" })
+```
+
+如果要删除的分片部署任何集合的主分片，则直接删除
+
+```
+db.adminCommand( { removeShard: "shardrs01" } )
+# 可以多次执行，查看迁移状态
+# 如果数据量很大，迁移会花费很长的时间
+```
+
+
+
 ### 常用命令
+
+##### mongo shell
+
+登陆 mongodb
+
+```
+mongo --host mongodb0.example.com --port 27017
+```
+
+登陆使用了认证的 mongodb
+
+```
+mongo --username alice --password --authenticationDatabase admin --host mongodb0.examples.com --port 28015
+```
+
+登陆副本集
+
+```
+mongo --host replA/188.188.1.151:27017,188.188.1.152:27017,188.188.1.153:27017
+```
+
+格式化打印
+
+```
+db.myCollection.find().pretty()
+```
+
+
 
 ##### 数据库
 
@@ -569,5 +635,11 @@ rs.remove("mongod3.example.net:27017")
 
 ```
 sh.status()
+```
+
+查看分片集群中的数据副本集
+
+```
+db.adminCommand( { listShards: 1 } )
 ```
 
