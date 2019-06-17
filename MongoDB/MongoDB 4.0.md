@@ -276,6 +276,113 @@ rs.initiate( {
 })
 ```
 
+##### 部署具有访问控制功能的副本集
+
+生成密钥文件，并复制到每一个节点
+
+```
+openssl rand -base64 756 > rs.key
+chmod 400 rs.key
+```
+
+配置文件
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+storage:
+   dbPath: /usr/local/mongodb/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+replication:
+   replSetName: "rs"
+security:
+   keyFile: /usr/local/mongodb/rs.key
+```
+
+初始化副本集
+
+```
+rs.initiate( {
+   _id : "rs",
+   members: [
+      { _id: 0, host: "188.188.1.151:27017" },
+      { _id: 1, host: "188.188.1.152:27017" },
+      { _id: 2, host: "188.188.1.153:27017" }
+   ]
+})
+```
+
+创建管理员用户
+
+```
+admin = db.getSiblingDB("admin")
+admin.createUser(
+  {
+    user: "admin",
+    pwd: "mongo",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+```
+
+使用管理员账号登陆
+
+```
+bin/mongo -u "admin" -p "mongo" --authenticationDatabase "admin"
+```
+
+创建管理副本集群的账号，用于配置副本集
+
+```
+db.getSiblingDB("admin").createUser(
+  {
+    "user" : "rsadmin",
+    "pwd" : "mongo",
+    roles: [ { "role" : "clusterAdmin", "db" : "admin" } ]
+  }
+)
+```
+
+创建数据库管理账号
+
+```
+use tdb
+db.createUser(
+  {
+    user: "tuser",
+    pwd: "mongo",
+    roles: [ { role: "readWrite", db: "tdb" } ]
+  }
+)
+```
+
+使用数据库管理员账号登陆
+
+```
+bin/mongo -u "admin" -p "mongo" --authenticationDatabase "tdb"
+```
+
+删除数据库管理账号
+
+```
+use tdb
+db.dropUser("tuser")
+```
+
 ##### 强制切换 PRIMARY 节点
 
 当前副本集状态
