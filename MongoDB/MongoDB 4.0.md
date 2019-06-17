@@ -329,9 +329,9 @@ rs.reconfig(cfg)
 
 ### 分片
 
-##### 部署配置副本集
+##### 部署分片集群
 
-配置文件 configrs.conf
+配置副本集配置文件 configrs.conf
 
 ```
 processManagement:
@@ -374,8 +374,6 @@ rs.initiate(
   }
 )
 ```
-
-##### 部署数据副本集
 
 分片副本集 shardrs01 配置文件 shardrs01.conf
 
@@ -463,9 +461,7 @@ rs.initiate(
 )
 ```
 
-##### 部署路由
-
-配置文件 mongos.conf
+路由配置文件 mongos.conf
 
 ```
 processManagement:
@@ -510,9 +506,9 @@ sh.shardCollection("<database>.<collection>", { <shard key> : "hashed" } )
 
 ##### 向分片集群中添加分片
 
-搭建数据副本集
+搭建分片副本集
 
-将数据副本集添加到分片集群中
+将分片副本集添加到分片集群中
 
 ```
 sh.addShard("shardrs03/188.188.1.151:27003")
@@ -542,7 +538,123 @@ db.adminCommand( { removeShard: "shardrs01" } )
 # 如果数据量很大，迁移会花费很长的时间
 ```
 
+##### 将副本集转换为分片集群
 
+3节点副本集配置文件 shardrs01.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27001
+storage:
+   dbPath: /usr/local/mongodb/shardrs01/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/shardrs01/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+replication:
+   replSetName: shardrs01
+```
+
+副本集配置文件添加以下内容
+
+```
+sharding:
+   clusterRole: shardsvr
+```
+
+依次重启 SECONDARY 节点
+
+```
+bin/mongod -f shardrs01.conf --shutdown
+bin/mongod -f shardrs01.conf
+```
+
+将 PRIMARY 节点转为 SECONDARY 节点并重启
+
+```
+rs.stepDown()
+bin/mongod -f shardrs01.conf --shutdown
+bin/mongod -f shardrs01.conf
+```
+
+配置副本集配置文件 configrs.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27000
+storage:
+   dbPath: /usr/local/mongodb/config/data/
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/config/log/mongod.log"
+   logAppend: true
+storage:
+   journal:
+      enabled: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: configsvr
+replication:
+   replSetName: configrs
+```
+
+路由配置文件
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/mongos/log/mongod.log"
+   logAppend: true
+sharding:
+   configDB: configrs/188.188.1.151:27000,188.188.1.152:27000,188.188.1.153:27000
+```
+
+登陆 mongs 添加分片
+
+```
+sh.addShard("shardrs01/188.188.1.151:27001")
+```
+
+添加第二个分片
+
+```
+sh.addShard("shardrs02/188.188.1.152:27002")
+```
+
+设置数据库启用分片
+
+```
+sh.enableSharding( "tdb" )
+```
+
+设置集合的分片键
+
+```
+sh.shardCollection( "tdb.tcoll", { "_id" : 1 } )
+# 如果集群中不存在数据，可以指定任一字段作为分片键
+# 如果集合已经存在数据，可以使用 "_id" 作为分片键，或创建新的索引
+```
 
 ### 常用命令
 
@@ -572,8 +684,6 @@ mongo --host replA/188.188.1.151:27017,188.188.1.152:27017,188.188.1.153:27017
 db.myCollection.find().pretty()
 ```
 
-
-
 ##### 数据库
 
 显示数据库
@@ -589,6 +699,64 @@ show dbs
 ```
 use test
 show collections
+```
+
+##### 索引
+
+创建升序索引
+
+```
+db.records.createIndex( { score: 1 } )
+```
+
+创建降序索引
+
+```
+db.collection.createIndex( { name: -1 } )
+```
+
+创建复合索引
+
+```
+db.products.createIndex( { "item": 1, "stock": 1 } )
+```
+
+创建文本索引
+
+```
+db.reviews.createIndex( { comments: "text" } )
+```
+
+创建哈希索引
+
+```
+db.collection.createIndex( { _id: "hashed" } )
+```
+
+查看集合的索引
+
+```
+db.people.getIndexes()
+```
+
+通过集合字段生成索引
+
+```
+db.accounts.dropIndex( { "tax-id": 1 } )
+```
+
+删除集合的所有索引
+
+```
+db.accounts.dropIndexes()
+```
+
+查看查询是否使用了索引
+
+```
+db.products.find(
+   { quantity: { $gt: 50 }, category: "apparel" }
+).explain("executionStats")
 ```
 
 ##### 副本集
@@ -671,7 +839,7 @@ function dateFtt(fmt,date)
 
 db = db.getSiblingDB("tdb")
 
-for (i=1;i<1000;i++) {
+for (i=0;i<1000;i++) {
   var types = ["red","green","white","black"]
   var names = ["aaa","bbb","ccc","ddd","eee","fff"]
   var dt = dateFtt("yyyy-MM-dd hh:mm:ss",new Date())
