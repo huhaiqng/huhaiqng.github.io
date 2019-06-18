@@ -1122,6 +1122,14 @@ use test
 show collections
 ```
 
+返回集合的大小
+
+```
+db.collection.dataSize()
+```
+
+
+
 ##### 索引
 
 创建升序索引
