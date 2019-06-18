@@ -383,6 +383,104 @@ use tdb
 db.dropUser("tuser")
 ```
 
+##### 在线对副本集添加访问控制功能
+
+登陆 PRIMARY 节点，创建管理员账号
+
+```
+admin = db.getSiblingDB("admin")
+admin.createUser(
+  {
+    user: "admin",
+    pwd: "mongo",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+```
+
+创建集群管理员账号
+
+```
+db.getSiblingDB("admin").createUser(
+  {
+    "user" : "cadmin",
+    "pwd" : "mongo",
+    roles: [ { "role" : "clusterAdmin", "db" : "admin" } ]
+  }
+)
+```
+
+创建数据库管理账号
+
+```
+db.getSiblingDB("tdb").createUser(
+  {
+    "user" : "tuser",
+    "pwd" : "mongo",
+    roles: [ { "role" : "readWrite", "db" : "tdb" } ]
+  }
+)
+```
+
+更新客户端，新增认证信息，此时客户端有认证信息和没有认证信息都可以访问
+
+```
+bin/mongo  -u tuser -password mongo -authenticationDatabase tdb --host "rs/188.188.1.151:27017, 188.188.1.152:27017, 188.188.1.153:27017"
+```
+
+生成密钥文件，并复制到每一个节点
+
+```
+openssl rand -base64 756 > rs.key
+chmod 400 rs.key
+```
+
+在副本集所有节点配置文件添加启用认证配置
+
+```
+security:
+   keyFile: /usr/local/mongodb/rs.key
+   transitionToAuth: true
+# transitionToAuth 设置认证和非认证都可以连接
+```
+
+依次重启 SECONDARY 节点
+
+```
+bin/mongod -f rs.conf --shutdown
+bin/mongod -f rs.conf
+```
+
+将 PRIMARY 转换为 SECONDARY 节点，并重启
+
+```
+rs.stepDown()
+bin/mongod -f rs.conf --shutdown
+bin/mongod -f rs.conf
+```
+
+在副本集所有节点配置文件去除 transitionToAuth
+
+```
+security:
+   keyFile: /usr/local/mongodb/rs.key
+```
+
+依次重启 SECONDARY 节点
+
+```
+bin/mongod -f rs.conf --shutdown
+bin/mongod -f rs.conf
+```
+
+将 PRIMARY 转换为 SECONDARY 节点，并重启
+
+```
+rs.stepDown()
+bin/mongod -f rs.conf --shutdown
+bin/mongod -f rs.conf
+```
+
 ##### 强制切换 PRIMARY 节点
 
 当前副本集状态
@@ -609,6 +707,222 @@ sh.enableSharding("<database>")
 sh.shardCollection("<database>.<collection>", { <shard key> : "hashed" } )
 # 如果集合没有数据，可以使用任何字段作为分片键
 # 如果集合已经存在数据，需要先创建索引，或使用 _id 字段作为分片键
+```
+
+##### 部署具有访问控制功能的分片集群
+
+生成密钥文件，并复制到每一个 mongod、mongos 节点
+
+```
+openssl rand -base64 756 > rs.key
+chmod 400 rs.key
+```
+
+配置副本集配置文件 configrs.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27000
+storage:
+   dbPath: /usr/local/mongodb/config/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/config/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: configsvr
+replication:
+   replSetName: configrs
+security:
+   keyFile: /usr/local/mongodb/rs.key
+```
+
+登陆配置副本集主节点，初始化副本集
+
+```
+rs.initiate(
+  {
+    _id: "configrs",
+    configsvr: true,
+    members: [
+      { _id : 0, host : "188.188.1.151:27000" },
+      { _id : 1, host : "188.188.1.152:27000" },
+      { _id : 2, host : "188.188.1.153:27000" }
+    ]
+  }
+)
+```
+
+分片副本集配置文件 shardrs01.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27001
+storage:
+   dbPath: /usr/local/mongodb/shardrs01/data/
+   journal:
+      enabled: true
+   wiredTiger:
+      engineConfig:
+         cacheSizeGB: 0.5
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/shardrs01/log/mongod.log"
+   logAppend: true
+operationProfiling:
+   mode: slowOp
+   slowOpThresholdMs: 1000
+sharding:
+   clusterRole: shardsvr
+replication:
+   replSetName: shardrs01
+security:
+   keyFile: /usr/local/mongodb/rs.key
+```
+
+初始化分片副本集
+
+```
+rs.initiate(
+  {
+    _id : "shardrs01",
+    members: [
+      { _id : 0, host : "188.188.1.151:27001" },
+      { _id : 1, host : "188.188.1.152:27001" },
+      { _id : 2, host : "188.188.1.153:27001" }
+    ]
+  }
+)
+```
+
+创建分片副本集本地管理员账号
+
+```
+admin = db.getSiblingDB("admin")
+admin.createUser(
+  {
+    user: "admin",
+    pwd: "mongo",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+```
+
+进行本地管理员认证
+
+```
+db.getSiblingDB("admin").auth("admin", "mongo")
+```
+
+创建分片副本集本地集群管理账号
+
+```
+db.getSiblingDB("admin").createUser(
+  {
+    "user" : "radmin",
+    "pwd" : "mongo",
+    roles: [ { "role" : "clusterAdmin", "db" : "admin" } ]
+  }
+)
+```
+
+mongos  配置文件 mongos.conf
+
+```
+processManagement:
+   fork: true
+net:
+   bindIp: 0.0.0.0
+   port: 27017
+systemLog:
+   destination: file
+   path: "/usr/local/mongodb/mongos/log/mongod.log"
+   logAppend: true
+sharding:
+   configDB: configrs/188.188.1.151:27000,188.188.1.152:27000,188.188.1.153:27000
+security:
+   keyFile: /usr/local/mongodb/rs.key
+```
+
+登陆 mongos 创建管理账号
+
+```
+admin = db.getSiblingDB("admin")
+admin.createUser(
+  {
+    user: "sadmin",
+    pwd: "mongo",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+```
+
+进行 mongos 管理员认证
+
+```
+db.getSiblingDB("admin").auth("sadmin", "mongo")
+```
+
+创建分片集群管理账号
+
+```
+db.getSiblingDB("admin").createUser(
+  {
+    "user" : "cadmin",
+    "pwd" : "mongo",
+    roles: [ { "role" : "clusterAdmin", "db" : "admin" } ]
+  }
+)
+```
+
+创建数据库管理账号
+
+```
+db.getSiblingDB("tdb").createUser(
+  {
+    "user" : "tuser",
+    "pwd" : "mongo",
+    roles: [ { "role" : "readWrite", "db" : "tdb" } ]
+  }
+)
+```
+
+使用分片集群管理账号进行认证
+
+```
+db.getSiblingDB("admin").auth("cadmin","mongo")
+```
+
+添加分片
+
+```
+sh.addShard("shardrs01/188.188.1.151:27001")
+```
+
+启用数据库分片
+
+```
+sh.enableSharding("tdb")
+```
+
+创建集合分片键
+
+```
+sh.shardCollection("tdb.tcoll", { _id : 1 })
 ```
 
 ##### 向分片集群中添加分片
