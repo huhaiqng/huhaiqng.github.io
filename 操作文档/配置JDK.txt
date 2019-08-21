@@ -7,7 +7,7 @@ chown -R root.root jdk
 JAVA_HOME=/usr/local/jdk
 CLASSPATH=$JAVA_HOME/lib
 PATH=$JAVA_HOME/bin:$PATH
-export PATH JAVA_HOME CLASSPATH 
+export PATH JAVA_HOME CLASSPATH
 3、重新加载/root/.bash_profile
 . /root/.bash_profile
 4、查看版本

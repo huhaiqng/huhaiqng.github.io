@@ -1,18 +1,25 @@
-# 设置 ip 主机名映射
-1.1.1.1		hostname
+#### 优化
 
-# 关闭防火墙
+设置 ip 主机名映射
+``` 
+1.1.1.1		hostname 
+```
+关闭防火墙
+```
 systemctl stop firewalld
-systemctl disable firewalld
+systemctl disable firewalld 
+```
 
-# 关闭 selinux
+关闭 selinux
+```
 setenforce 0
 vim /etc/sysconfig/selinux
 ------------------------------------
 SELINUX=disabled
 ------------------------------------
-
+```
 调整最大文件打开数，重启生效
+```
 vim /etc/security/limits.conf 
 ------------------------------------
 *    soft    nofile   65535
@@ -24,4 +31,16 @@ vim /etc/security/limits.d/20-nproc.conf
 ------------------------------------
 *          soft    nproc     65535
 root       soft    nproc     unlimited
+
 ------------------------------------
+```
+
+
+
+#### 永久关闭 swap
+
+```
+vim /etc/fstab 
+# /dev/mapper/centos-swap swap                    swap    defaults        0 0
+```
+

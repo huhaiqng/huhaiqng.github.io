@@ -1,0 +1,237 @@
+##### 安装 Elasticsearch
+
+下载安装包安装
+
+```
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.3.0-x86_64.rpm
+rpm -vi elasticsearch-7.3.0-x86_64.rpm
+```
+
+修改配置文件 /etc/elasticsearch/elasticsearch.yml
+
+```
+network.host: 188.188.1.151
+cluster.initial_master_nodes: ["centos76-001"]
+```
+
+修改 jvm 文件 /etc/elasticsearch/jvm.options 
+
+```
+-Xms2g
+-Xmx2g
+```
+
+启动 Elasticsearch
+
+```
+systemctl start elasticsearch
+```
+
+
+
+##### 安装 Kibana
+
+下载安装包安装
+
+```
+wget https://artifacts.elastic.co/downloads/kibana/kibana-7.3.0-linux-x86_64.tar.gz
+tar xzvf kibana-7.3.0-linux-x86_64.tar.gz -C /usr/local/
+cd /usr/local/
+mv kibana-7.3.0-linux-x86_64.tar.gz kibana
+useradd kibana
+chown -R kibana.kibana kibana/
+```
+
+修改配置文件
+
+```
+server.host: 188.188.1.151
+elasticsearch.hosts: ["http://188.188.1.151:9200"]
+```
+
+启动 Kibana
+
+```
+su - kibana -c "nohup /usr/local/kibana/bin/kibana >/dev/null 2>&1 &"
+```
+
+
+
+##### 安装 Filebeat
+
+下载安装包安装
+
+```
+wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.3.0-x86_64.rpm
+rpm -vi filebeat-7.3.0-x86_64.rpm
+```
+
+修改配置文件 /etc/filebeat/filebeat.yml 
+
+```
+output.elasticsearch:
+  hosts: ["188.188.1.151:9200"]
+```
+
+启动 Filebeat
+
+```
+systemctl start filebeat
+```
+
+
+
+##### 使用 Filebeat 采集 Nginx Access 日志
+
+查看 Filebeat 已启用的 模块
+
+```
+filebeat modules list
+```
+
+启用 Niginx 模块
+
+```
+filebeat modules enable nginx
+```
+
+修改 Nginx 模块配置文件 /etc/filebeat/modules.d/nginx.yml 指定 Ningx Access 日志文件
+
+```
+- module: nginx
+  access:
+    enabled: true
+    var.paths: ["/var/log/nginx/access.log"]
+```
+
+修改 Filebeat 配置文件，重新定义 index 名称
+
+```
+output.elasticsearch.index: "%{[event.dataset]}-%{+yyyy.MM.dd}"
+setup.template.name: "log"
+setup.template.pattern: "log-*"
+setup.ilm.enabled: false
+```
+
+变量 event.dataset 对应的值是 nginx.access，Kibana 中显示的很多变量可以使用
+
+  ![1566372317096](assets/1566372317096.png)
+
+重启 Filebeat
+
+```
+systemctl restart filebeat
+```
+
+配置 Nginx Access 日志格式
+
+```
+log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" "$http_user_agent"';
+```
+
+重新加载 Nginx 配置文件
+
+```
+nginx -s reload
+```
+
+在 Kibana 中查看 Elasticsearch 的索引
+
+![1566372574779](assets/1566372574779.png)
+
+将 Elasticsearch 的索引添加到 Kibana
+
+![1566372732734](assets/1566372732734.png)
+
+在 Kibana 中查看日志记录
+
+![1566372792507](assets/1566372792507.png)
+
+
+
+##### 新增 Nginx Access 日志字段
+
+> 参考文档：[Filebeat Nginx Module 自定义](https://www.iamle.com/archives/2610.html)
+
+在 Nginx Access 日志中添加以下字段
+
+```
+"$host" "$uri" "$upstream_addr" $upstream_response_time $request_time
+```
+
+新增后的日志格式
+
+```
+log_format  main  '$remote_addr - $remote_user [$time_local] "$request" $status '
+                  '$body_bytes_sent "$http_referer" "$http_user_agent" "$host" '
+                  '"$uri" "$upstream_addr" $upstream_response_time $request_time';
+```
+
+找到文件 /usr/share/filebeat/module/nginx/access/ingest/default.json 中的以下行
+
+![1566374701063](assets/1566374701063.png)
+
+在行尾添加以下内容
+
+```
+\"%{DATA:http.server.name}\" \"%{DATA:http.uri}\" \"%{DATA:upstream.addr}\" %{NUMBER:upstream.response.time:float} %{NUMBER:http.request.time:float}
+```
+
+修改文件 /etc/filebeat/fields.yml ，在 Nginx 模块添加以下行
+
+```
+            - name: server_name
+              type: alias
+              path: http.server.name
+              migration: true
+            - name: uri
+              type: alias
+              path: http.uri
+              migration: true
+            - name: upstream_addr
+              type: alias
+              path: upstream.addr
+              migration: true
+            - name: upstream_response_time
+              type: alias
+              path: upstream.response.time
+              migration: true
+            - name: request_time
+              type: alias
+              path: http.request.time
+              migration: true
+```
+
+重启 Filebeat
+
+```
+systemctl restart filebeat
+```
+
+使用 Kibana Dev Tools 删除 pipeline
+
+```
+DELETE _ingest/pipeline/*
+```
+
+![1566375305147](assets/1566375305147.png)
+
+重启 Elasticsearch
+
+```
+systemctl restart elasticsearch
+```
+
+在 Kibana 中查看新增的字段
+
+![1566375524756](assets/1566375524756.png)
+
+刷新 index 字段去除三角形提示
+
+![1566375624119](assets/1566375624119.png)
+
+三角形已经消失
+
+![1566375672954](assets/1566375672954.png)
+

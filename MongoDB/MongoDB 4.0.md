@@ -142,6 +142,7 @@ operationProfiling:
 *    hard    nproc   65535 
 # 修改 /etc/security/limits.d/20-nproc.conf 的以下行
 *    soft    nproc     65535
+*    hard    nproc     65535 
 ```
 
 创建系统用户，用于管理 mongodb
@@ -523,6 +524,12 @@ bin/mongod -f rs.conf
 rs.add( { host: "188.188.1.153:27017", priority: 0, votes: 0 } )
 ```
 
+确认新增节点的 ID
+
+```
+rs.conf()
+```
+
 新节点转换为 SECONDARY状态后，更新新添加节点的 priority和 votes
 
 ```
@@ -882,7 +889,7 @@ db.getSiblingDB("admin").auth("sadmin", "mongo")
 ```
 db.getSiblingDB("admin").createUser(
   {
-    "user" : "cadmin",
+    "user" : "radmin",
     "pwd" : "mongo",
     roles: [ { "role" : "clusterAdmin", "db" : "admin" } ]
   }
@@ -1113,6 +1120,12 @@ db.myCollection.find().pretty()
 show dbs
 ```
 
+设置显示记录的数量
+
+```
+DBQuery.shellBatchSize = 1000
+```
+
 ##### 集合
 
 显示集合
@@ -1127,8 +1140,6 @@ show collections
 ```
 db.collection.dataSize()
 ```
-
-
 
 ##### 索引
 
@@ -1172,6 +1183,12 @@ db.people.getIndexes()
 
 ```
 db.accounts.dropIndex( { "tax-id": 1 } )
+```
+
+删除索引
+
+```
+db.pets.dropIndex( "catIdx" )
 ```
 
 删除集合的所有索引
@@ -1240,6 +1257,27 @@ sh.status()
 db.adminCommand( { listShards: 1 } )
 ```
 
+##### 慢日志
+
+查看慢日志状况
+
+```
+db.getProfilingStatus()
+```
+
+启用慢日志
+
+```
+db.setProfilingLevel(1, { slowms: 2000 })
+# slowms 单位为毫秒
+```
+
+禁用慢日志
+
+```
+db.setProfilingLevel(0)
+```
+
 ### JS 脚本
 
 ##### 生成测试数据
@@ -1267,6 +1305,8 @@ function dateFtt(fmt,date)
 } 
 
 db = db.getSiblingDB("tdb")
+db.dropDatabase()
+db.tcoll.createIndex( { dt: 1 } )
 
 for (i=0;i<1000;i++) {
   var types = ["red","green","white","black"]
@@ -1287,3 +1327,54 @@ for (i=0;i<1000;i++) {
 bin/mongo save.js 
 ```
 
+##### 使用 explain 函数测试性能
+
+脚本 p_ex_m.sh 内容
+
+```
+#!/bin/bash
+g='$gte'
+l='$lte'
+d=$1
+b=`date -d "2019-08-$d 00:00:00" +%s`
+e=`date -d "2019-08-$d 23:59:59" +%s`
+
+cat id_m.txt | while read line
+do
+    a=`mongo --host 192.168.1.38 --port 27001 <<EOF
+    rs.slaveOk()
+    use basiba-history-2019-08
+    db.history$d.find({ "devId" : "$line", "sysTime" : { "$g" : $b,  "$l": $e } }).hint({"devId": 1, "sysTime": 1}).explain("executionStats").executionStats;
+EOF`
+    echo "id: $line "`echo $a | awk -NF '{' '{print $2}' | awk -NF ',' '{print $2,$3}'` | grep -v ": 0"
+done
+```
+
+文件 id_m.txt 内容
+
+```
+868035042425956
+868035042425980
+868035042426004
+868035042426061
+868035042426129
+868035042426178
+868035042426400
+868035042426483
+868035042426806
+868035042428265
+```
+
+输出内容
+
+![1566178168051](assets/1566178168051.png)
+
+
+
+### 常见问题
+
+##### rs.conf() 输出的 members[n] 的 _id  无关
+
+如下图所示
+
+![1564628867755](assets/1564628867755.png)
