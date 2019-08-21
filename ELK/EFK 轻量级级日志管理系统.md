@@ -235,3 +235,59 @@ systemctl restart elasticsearch
 
 ![1566375672954](assets/1566375672954.png)
 
+
+
+##### 使用 Filebeat 采集 Nginx Error 日志
+
+启用 Nginx 模块
+
+```
+filebeat modules enable nginx
+```
+
+修改 Nginx 模块配置文件 /etc/filebeat/modules.d/nginx.yml ，指定错误文件
+
+```
+error:
+    enabled: true
+    var.paths: ["/var/log/nginx/error.log"]
+```
+
+修改 Nginx 模块 pipeline 文件 /usr/share/filebeat/module/nginx/error/ingest/pipeline.json，设置时区
+
+```
+{
+    "date": {
+      "field": "nginx.error.time",
+      "target_field": "@timestamp",
+      "formats": ["yyyy/MM/dd H:m:s"],
+      "ignore_failure": true,
+      "timezone": "Asia/Shanghai"
+    }
+}
+```
+
+重启 Filebeat
+
+```
+systemctl restart filebeat
+```
+
+使用 Kibana Dev Tools 删除 pipeline
+
+```
+DELETE _ingest/pipeline/*
+```
+
+![1566375305147](assets/1566375305147.png)
+
+重启 Elasticsearch
+
+```
+systemctl restart elasticsearch
+```
+
+通过 Kibana 查看 Nginx Error 日志的 Index
+
+![1566381927240](assets/1566381927240.png)
+
