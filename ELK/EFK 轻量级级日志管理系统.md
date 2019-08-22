@@ -237,6 +237,59 @@ systemctl restart elasticsearch
 
 
 
+##### 实现 Kibana 以日志中的时间作为时间轴 
+
+删除文件 /usr/share/filebeat/module/nginx/access/ingest/default.json  中的以下内容
+
+```
+        {
+            "remove": {
+                "field": "nginx.access.time"
+            }
+        },
+```
+
+在文件 /usr/share/filebeat/module/nginx/access/ingest/default.json 中添加以下内容
+
+```
+        {
+            "date": {
+                "field": "nginx.access.time",
+                "target_field": "log.time",
+                "formats": [
+                    "dd/MMM/yyyy:H:m:s Z"
+                ],
+                "ignore_failure": true
+            }
+        },
+```
+
+重启 Filebeat
+
+```
+systemctl restart filebeat
+```
+
+使用 Kibana Dev Tools 删除 pipeline
+
+```
+DELETE _ingest/pipeline/*
+```
+
+![1566375305147](assets/1566375305147.png)
+
+重启 Elasticsearch
+
+```
+systemctl restart elasticsearch
+```
+
+在 Kibana 添加 Index 时选择 log.time
+
+![1566452571572](assets/1566452571572.png)
+
+
+
 ##### 使用 Filebeat 采集 Nginx Error 日志
 
 启用 Nginx 模块
