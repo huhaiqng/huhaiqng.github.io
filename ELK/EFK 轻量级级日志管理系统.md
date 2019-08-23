@@ -174,8 +174,10 @@ log_format  main  '$remote_addr - $remote_user [$time_local] "$request" $status 
 
 在行尾添加以下内容
 
+> upstream.response.time 必须设置为 DATA 类型即字符串类型，否则当 upstream.response.time 的值获取不到时，则该条记录无法解析。 状态码为 503 的日志会被丢弃。
+
 ```
-\"%{DATA:http.server.name}\" \"%{DATA:http.uri}\" \"%{DATA:upstream.addr}\" %{NUMBER:upstream.response.time:float} %{NUMBER:http.request.time:float}
+\"%{DATA:http.server.name}\" \"%{DATA:http.uri}\" \"%{DATA:upstream.addr}\" %{DATA:upstream.response.time} %{NUMBER:http.request.time:float}
 ```
 
 修改文件 /etc/filebeat/fields.yml ，在 Nginx 模块添加以下行
