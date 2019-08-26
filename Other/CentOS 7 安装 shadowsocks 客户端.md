@@ -33,12 +33,13 @@ pip install shadowsocks
 启动 Shadowsocks
 
 ```
-nohup sslocal -c /etc/shadowsocks.json /dev/null 2>&1 &
+nohup sslocal -c /etc/shadowsocks.json >/dev/null 2>&1 &
 ```
 
 运行 curl --socks5 127.0.0.1:1985 http://httpbin.org/ip，如果返回你的 ss 服务器 ip 则测试成功
 
 ```
+# curl --socks5 127.0.0.1:1985 http://httpbin.org/ip
 {
   "origin": "x.x.x.x"       #你的 ss 服务器 ip
 }
@@ -60,6 +61,7 @@ make && make install
 修改配置文件 /usr/local/etc/privoxy/config
 
 ```
+listen-address  188.188.1.133:8118
 forward-socks5t / 127.0.0.1:1985 .
 ```
 
@@ -72,8 +74,8 @@ privoxy --user privoxy /usr/local/etc/privoxy/config
 启用代理
 
 ```
-export http_proxy=http://127.0.0.1:8118      
-export https_proxy=http://127.0.0.1:8118
+export http_proxy=http://188.188.1.133:8118
+export https_proxy=http://188.188.1.133:8118
 ```
 
 测试
