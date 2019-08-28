@@ -1,6 +1,22 @@
-#### 在 CentOS 7 上安装 Kubernetes
+#### 在 CentOS 7 上部署 Kubernetes 集群 
 
-安装 docker
+##### 1、服务器说明和配置
+
+> master: 188.188.1.151
+>
+> worker1: 188.188.1.152
+>
+> worker2: 188.188.1.153
+
+在 hosts 文件中添加主机名解析
+
+```
+188.188.1.151	centos76-001
+188.188.1.152	centos76-002
+188.188.1.153	centos76-003
+```
+
+##### 2、在 master 和 worker 上安装 docker
 
 ```
 # Install Docker CE
@@ -42,45 +58,10 @@ systemctl enable docker
 systemctl restart docker
 ```
 
-安装 CRI-O
+##### 3、在 master 和 worker 上安装 kubernetes
 
 ```
-modprobe overlay
-modprobe br_netfilter
-
-# Setup required sysctl params, these persist across reboots.
-cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-
-sysctl --system
-
-# Install CRI-O
-yum install https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/Packages/cri-o-1.11.11-1.rhaos3.11.git474f73d.el7.x86_64.rpm
-
-systemctl start crio
-```
-
-安装 Containerd
-
-```
-# Install containerd
-yum update && yum install containerd.io
-
-# Configure containerd
-mkdir -p /etc/containerd
-containerd config default > /etc/containerd/config.toml
-
-# Restart containerd
-systemctl restart containerd
-```
-
-安装 kubernetes
-
-```
-cat >> /etc/yum.repos.d/kubernetes.repo <<EOF 
+# cat /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
@@ -89,17 +70,13 @@ gpgcheck=0
 repo_gpgcheck=0
 gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
        http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
 
-yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-systemctl enable --now kubelet
+# yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+# systemctl enable kubelet
+# systemctl start kubelet
 ```
 
-
-
-#### 初始化
-
-使用以下脚本 pull.sh 下载镜像
+##### 4、在 master 和 worker 上使用以下脚本 pull.sh 下载镜像
 
 ```
 #!/bin/bash
@@ -111,10 +88,36 @@ for i in `kubeadm config images list`; do
 done
 ```
 
-执行初始化
+##### 5、在 master 上执行初始化
+
+> --pod-network-cidr=10.244.0.0/16 参数指定是 **flannel** 网络的网段，用于 pods 直接的通信
 
 ```
-kubeadm init
+kubeadm init --pod-network-cidr=10.244.0.0/16
+```
+
+##### 6、在 master 上安装 flannel 网络
+
+```
+wget https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml
+kubectl apply -f kube-flannel.yml
+kubectl get pods --all-namespaces # 如果 CoreDNS pod 是 up 和 running的，则安装成功
+```
+
+如果出现以下错误，则说明镜像下载失败，手动下载镜像看看是否能成功
+
+![1566963643508](assets/1566963643508.png)
+
+##### 7、将 woker 添加到集群中
+
+```
+kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+```
+
+##### 8、在 master 上查看节点
+
+```
+kubectl get nodes
 ```
 
 
