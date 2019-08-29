@@ -54,3 +54,33 @@ alter database recover managed standby database cancel;
 shutdown immediate;
 alter database open; 
 alter database recover managed standby database using current logfile disconnect from session;
+
+6、清理 sysaux 表空间的数据
+# 查看表的大小
+SELECT
+  * 
+FROM
+  (
+  SELECT
+    segment_name,
+    sum( bytes )/ 1024 / 1024 total_mb,
+    SEGMENT_TYPE，
+    tablespace_name 
+  FROM
+    dba_segments 
+  WHERE
+    tablespace_name = 'SYSAUX'
+  GROUP BY
+    segment_name,
+    SEGMENT_TYPE,
+    tablespace_name 
+  ORDER BY
+    2 DESC 
+  ) 
+WHERE
+  rownum <= 20;
+# 查看快照
+select count(*) from  WRH$_ACTIVE_SESSION_HISTORY;
+select min(snap_id),max(snap_id) from  wrh$_active_session_history;
+# 清理快照数据
+exec DBMS_WORKLOAD_REPOSITORY.DROP_SNAPSHOT_RANGE (low_snap_id =>1,high_snap_id => 15500
