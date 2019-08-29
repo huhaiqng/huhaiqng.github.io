@@ -255,3 +255,20 @@ Accept-Ranges: bytes
 **Docker**
 
 - [Docker Handbook](<https://jimmysong.io/docker-handbook/>)
+
+
+
+#### 常用命令
+
+通过 pod 登陆容器
+
+```
+# kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+mysql-7d7fdd478f-vvtfw              1/1     Running   0          5h18m
+nginx-deployment-6f655f5d99-2twx8   1/1     Running   0          5h32m
+nginx-deployment-6f655f5d99-rgmvs   1/1     Running   0          5h32m
+# kubectl exec -it mysql-7d7fdd478f-vvtfw -- /bin/bash
+root@mysql-7d7fdd478f-vvtfw:/# 
+```
+
