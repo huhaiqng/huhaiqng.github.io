@@ -244,6 +244,101 @@ ETag: "5d5279b8-264"
 Accept-Ranges: bytes
 ```
 
+##### 部署指定节点和 NodePort 的应用
+
+> nodeName 指定节点，nodePort 指定节点端口，type 指定服务类型，默认为 ClusterIP
+
+创建部署 yaml 文件 redis-master-deployment.yaml 
+
+```
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+        tier: backend
+    spec:
+      nodeName: centos76-003
+      containers:
+      - name: master
+        image: redis  # or just image: redis
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 6379
+```
+
+创建服务 yaml 文件 redis-master-service.yaml 
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+    tier: backend
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+    nodePort: 30001
+  selector:
+    app: redis
+    role: master
+    tier: backend
+  type: NodePort
+```
+
+应用 yaml 文件
+
+```
+kubectl apply -f redis-master-deployment.yaml
+kubectl apply -f redis-master-service.yaml 
+```
+
+查看 pod 信息
+
+```
+kubectl get pods --output=wide
+```
+
+![1567138061315](assets/1567138061315.png)
+
+查看服务信息
+
+```
+# kubectl get service redis-master
+NAME           TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+redis-master   NodePort   10.102.248.122   <none>        6379:30001/TCP   18m
+```
+
+测试登陆 redis
+
+```
+# redis-cli -h centos76-003 -p 30001
+centos76-003:30001> set k 123456
+OK
+centos76-003:30001> get k
+"123456"
+```
+
 
 
 #### 资料
@@ -270,5 +365,11 @@ nginx-deployment-6f655f5d99-2twx8   1/1     Running   0          5h32m
 nginx-deployment-6f655f5d99-rgmvs   1/1     Running   0          5h32m
 # kubectl exec -it mysql-7d7fdd478f-vvtfw -- /bin/bash
 root@mysql-7d7fdd478f-vvtfw:/# 
+```
+
+查看 pod 日志
+
+```
+kubectl logs podname
 ```
 
