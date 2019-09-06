@@ -1,3 +1,5 @@
+#### 安装
+
 ##### 安装 Elasticsearch
 
 下载安装包安装
@@ -37,12 +39,12 @@ systemctl start elasticsearch
 wget https://artifacts.elastic.co/downloads/kibana/kibana-7.3.0-linux-x86_64.tar.gz
 tar xzvf kibana-7.3.0-linux-x86_64.tar.gz -C /usr/local/
 cd /usr/local/
-mv kibana-7.3.0-linux-x86_64.tar.gz kibana
+mv kibana-7.3.0-linux-x86_64 kibana
 useradd kibana
 chown -R kibana.kibana kibana/
 ```
 
-修改配置文件
+修改配置文件 kibana/config/kibana.yml
 
 ```
 server.host: 188.188.1.151
@@ -80,6 +82,8 @@ systemctl start filebeat
 ```
 
 
+
+#### 收集 Niginx 日志
 
 ##### 使用 Filebeat 采集 Nginx Access 日志
 
@@ -239,7 +243,7 @@ systemctl restart elasticsearch
 
 
 
-##### 实现 Kibana 以日志中的时间作为时间轴 
+##### 实现 Kibana 以 Nginx 日志中的时间作为时间轴 
 
 删除文件 /usr/share/filebeat/module/nginx/access/ingest/default.json  中的以下内容
 
@@ -346,3 +350,66 @@ systemctl restart elasticsearch
 
 ![1566381927240](assets/1566381927240.png)
 
+
+
+#### 收集 Java 日志
+
+> 目的：实现程序员不登录服务器查看历史日志和实时日志。
+
+修个 Filebeat 配置文件 /etc/filebeat/filebeat.yml
+
+> 设置 fileds.modelname 的目的是实现不同项目的日志生成不同的索引。
+>
+> 在 output.elasticsearch.index 中指定该字段，定义索引名。
+
+```
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /usr/local/baipao/contract/applog/*/*.log
+  fields:
+    modelname: contract
+
+- type: log
+  enabled: true
+  paths:
+    - /usr/local/baipao/manager/applog/*/*.log
+  fields:
+    modelname: manager
+
+- type: log
+  enabled: true
+  paths:
+    - /usr/local/baipao/driverapp/applog/*/*.log
+  fields:
+    modelname: driverapp
+
+output.elasticsearch:
+  hosts: ["188.188.1.135:9200"]
+
+output.elasticsearch.index: "%{[fields.modelname]}-%{+yyyy.MM.dd}"
+setup.template.name: "log"
+setup.template.pattern: "log-*"
+setup.ilm.enabled: false
+```
+
+重启 Filebeat
+
+```
+systemctl restart filebeat
+```
+
+在 Kibana 中查看生成的索引
+
+![1567754261899](assets/1567754261899.png)
+
+配置要查看的索引
+
+![1567754412884](assets/1567754412884.png)
+
+![1567754523108](assets/1567754523108.png)
+
+启用实时滚动查看
+
+![1567754590748](assets/1567754590748.png)
