@@ -11,7 +11,13 @@ docker run -id <REPOSITORY:TAG>
 创建有端口映射的 docker
 
 ```
-docker run -id -p 9090:9090 REPOSITORY:TAG   
+docker run -id -p 9090:9090 REPOSITORY:TAG
+```
+
+创建有目录映射的 docker
+
+```
+docker run -id -v /host_dir:/docker_dir REPOSITORY:TAG
 ```
 
 登陆 docker
@@ -48,6 +54,12 @@ docker start <CONTAINER ID>
 
 ```
 docker stop <CONTAINER ID>
+```
+
+查看 docker 创建详情
+
+```
+docker history 28bad97b3d94
 ```
 
 ##### 镜像
@@ -115,7 +127,26 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.151-b12, mixed mode)
 Wed Sep  4 18:25:53 CST 2019
 ```
 
-
-
 ##### 生成运行 jar 包的镜像
+
+创建 Dockerfile
+
+```
+FROM oraclejdk:1.8
+RUN mkdir /usr/local/eureka
+ADD baipao-eureka.jar /usr/local/eureka
+ENTRYPOINT ["java", "-jar", "/usr/local/eureka/baipao-eureka.jar"] 
+```
+
+创建 docker
+
+```
+docker run -id -p 9090:9090 eureka.jar:1.0 
+```
+
+
+
+#### 私有镜像仓库 Harbor
+
+##### 安装
 
