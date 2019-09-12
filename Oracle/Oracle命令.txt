@@ -89,7 +89,7 @@ select username,account_status,default_tablespace,created from dba_users where d
 select group_number,name,total_mb,free_mb from v$asm_diskgroup;
 
 28、向表空间添加数据文件
-alter tablespace qiu add datafile '+DATA_VG' size 1G AUTOEXTEND ON;
+alter tablespace BBGODB add datafile '+DATA_VG' size 1G AUTOEXTEND ON;
 
 29、清理回oracle收站
 purge recyclebin;
