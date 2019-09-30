@@ -62,6 +62,7 @@ python3.7 manage.py collectstatic
 ```
 cd /usr/local/djproject
 pip install gunicorn
+useradd -s /sbin/nologin gunicorn
 gunicorn djproject.wsgi:application \
 -b 0.0.0.0:8080 \
 -k gthread --threads 10 -w 4 \
@@ -69,6 +70,7 @@ gunicorn djproject.wsgi:application \
 -p /tmp/gunicorn.pid \
 --access-logfile /var/log/gunicorn-access.log \
 --error-logfile /var/log/gunicorn-error.log \
+-u gunicorn \
 --daemon
 ```
 
