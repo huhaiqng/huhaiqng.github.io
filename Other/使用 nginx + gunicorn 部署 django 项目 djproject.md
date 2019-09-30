@@ -3,7 +3,7 @@
 安装依赖包
 
 ```
-yum install gcc openssl-devel bzip2-devel libffi-devel
+yum install gcc openssl-devel bzip2-devel libffi-devel mysql-devel python-devel
 ```
 
 安装 python
@@ -35,6 +35,12 @@ pip3.7 install --upgrade pip
 pip install django
 ```
 
+##### 安装 python 模块
+
+```
+pip install mysqlclient dwebsocket paramiko 
+```
+
 ##### 准备项目文件
 
 将项目 djproject 上 git clone 到 /usr/local
@@ -49,12 +55,6 @@ git clone https://github.com/huhaiqng/djproject.git
 ```
 cd /usr/local/djproject
 python3.7 manage.py collectstatic
-```
-
-##### 安装 python 模块
-
-```
-pip install mysqlclient dwebsocket paramiko 
 ```
 
 ##### 安装 gunicorn 和启动实例
