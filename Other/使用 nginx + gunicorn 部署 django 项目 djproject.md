@@ -62,7 +62,14 @@ python3.7 manage.py collectstatic
 ```
 cd /usr/local/djproject
 pip install gunicorn
-gunicorn djproject.wsgi:application -b 0.0.0.0:8080 -k gthread --threads 10 -w 4 --max-requests 4096 -p /tmp/gunicorn.pid --daemon
+gunicorn djproject.wsgi:application \
+-b 0.0.0.0:8080 \
+-k gthread --threads 10 -w 4 \
+--max-requests 4096 \
+-p /tmp/gunicorn.pid \
+--access-logfile /var/log/gunicorn-access.log \
+--error-logfile /var/log/gunicorn-error.log \
+--daemon
 ```
 
 ##### 配置 nginx 虚拟主机
