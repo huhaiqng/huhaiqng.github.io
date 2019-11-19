@@ -83,4 +83,4 @@ WHERE
 select count(*) from  WRH$_ACTIVE_SESSION_HISTORY;
 select min(snap_id),max(snap_id) from  wrh$_active_session_history;
 # 清理快照数据
-exec DBMS_WORKLOAD_REPOSITORY.DROP_SNAPSHOT_RANGE (low_snap_id =>1,high_snap_id => 15500
+exec DBMS_WORKLOAD_REPOSITORY.DROP_SNAPSHOT_RANGE (low_snap_id =>1,high_snap_id => 15500)
