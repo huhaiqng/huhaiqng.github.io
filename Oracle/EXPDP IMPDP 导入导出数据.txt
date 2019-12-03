@@ -12,8 +12,9 @@ expdp  "'/ as sysdba'" schemas=BBGPS dumpfile=BBGPS.dmp DIRECTORY=dump_dir logfi
 
 3、导入数据
 sqlplus / as sysdba
+create tablespace BBGODB datafile '+DATA_VG' size 100m AUTOEXTEND ON;
 create user BBGOA identified by BBGOA default tablespace BBGODB;
-grant connect,resource to BBGOA ;
+grant connect,resource to BBGOA;
 create directory dump_dir as '/home/oracle/oracleDump';
 grant read,write on directory dump_dir to BBGOA;
 exit

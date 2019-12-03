@@ -84,3 +84,15 @@ select count(*) from  WRH$_ACTIVE_SESSION_HISTORY;
 select min(snap_id),max(snap_id) from  wrh$_active_session_history;
 # 清理快照数据
 exec DBMS_WORKLOAD_REPOSITORY.DROP_SNAPSHOT_RANGE (low_snap_id =>1,high_snap_id => 15500)
+
+7、打开、关闭闪回
+# 打开闪回功能
+SQL> shutdown immediate;
+SQL> startup mount;
+SQL> alter database flashback on;
+SQL> alter database open;
+# 关闭闪回数据库特性：
+SQL> shutdown immediate;
+SQL> startup mount;
+SQL> alter database flashback off;
+SQL> alter database open;
