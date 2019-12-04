@@ -19,6 +19,7 @@ select * from v$dataguard_status;
 select * from v$log_history order by sequence# desc;
 --查询数据文件的大小
 select name,round(bytes/(1024*1024*1024),4) total_name from v$datafile ORDER BY NAME;
+select FILE_NAME,TABLESPACE_NAME,round(BYTES/1024/1024/1024,2) "SIZE(GB)" from DBA_DATA_FILES order by TABLESPACE_NAME;
 --查看连接的用户
 select SID,SERIAL#,USERNAME,OSUSER,MACHINE,PREV_EXEC_START,ACTION,PROGRAM from v$session where type='USER' order by username;
 select * from v$instance;

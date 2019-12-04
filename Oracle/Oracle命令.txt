@@ -161,3 +161,9 @@ SELECT SID,SERIAL#,USERNAME,STATUS,OSUSER,MACHINE,PROGRAM,SQL_ID,SQL_EXEC_START,
   
 44、生成 AWR 报告
 @?/rdbms/admin/awrrpt.sql
+
+45、重新设置数据库文件大小
+ALTER DATABASE DATAFILE '/u02/oracle/rbdb1/stuff01.dbf' RESIZE 100M;
+
+46、删除数据文件(数据文件必须为空)
+ALTER TABLESPACE USERS DROP DATAFILE '+DATA_VG/bbsvr/datafile/users.271.997619303';
