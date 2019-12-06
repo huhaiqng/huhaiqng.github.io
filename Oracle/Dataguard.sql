@@ -18,7 +18,6 @@ select * from v$logfile;
 select * from v$dataguard_status;
 select * from v$log_history order by sequence# desc;
 --查询数据文件的大小
-select name,round(bytes/(1024*1024*1024),4) total_name from v$datafile ORDER BY NAME;
 select FILE_NAME,TABLESPACE_NAME,round(BYTES/1024/1024/1024,2) "SIZE(GB)" from DBA_DATA_FILES order by TABLESPACE_NAME,FILE_NAME;
 --查看连接的用户
 select SID,SERIAL#,USERNAME,OSUSER,MACHINE,PREV_EXEC_START,ACTION,PROGRAM from v$session where type='USER' order by username;
@@ -28,7 +27,7 @@ select * from v$archive_dest_status;
 select * from bbgps."e_cargps" order by "credate" desc;
 select "credate" from bbgps."e_cargps" where "credate" > to_date('2018-08-14 11:30:00','yyyy-MM-dd hh24:mi:ss');
 --查询表空间和数据文件
-select file_id,file_name,tablespace_name from dba_data_files;
+select file_id,file_name,tablespace_name from dba_data_files order by FILE_NAME;
 --查询表空间数据文件类型
 select tablespace_name,bigfile from dba_tablespaces;
 --查询表的大小

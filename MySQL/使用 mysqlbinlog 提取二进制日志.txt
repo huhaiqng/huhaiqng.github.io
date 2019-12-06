@@ -32,7 +32,6 @@ e、提取指定开始时间的binlog并输出到日志文件
 --result-file=result.sql \
 -v /var/lib/mysql/mysql02-bin.000015
 
-
 f、提取指定位置的多个binlog日志文件
 # mysqlbinlog \
 --start-position="1763109"  \
