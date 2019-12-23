@@ -1,4 +1,0 @@
-baipao-manager-rest-2.0.0.jar tomcat@188.188.1.142 /usr/local/baipao/manager
-baipao-driver-app-rest-2.0.0.jar tomcat@188.188.1.142 /usr/local/baipao/driver-app
-baipao-schedule-rest-2.0.0.jar tomcat@188.188.1.142 /usr/local/baipao/schedule
-baipao-weixin-rest-2.0.0.jar tomcat@188.188.1.142 /usr/local/baipao/weixin
