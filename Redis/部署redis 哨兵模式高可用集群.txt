@@ -1,0 +1,165 @@
+环境
+master: 192.168.1.224
+slave1: 192.168.1.225
+slave2: 192.168.1.226
+
+修改系统参数
+#somaxconn
+echo 1024 > /proc/sys/net/core/somaxconn
+#overcommit_memory
+vim /etc/sysctl.conf
+vm.overcommit_memory = 1
+
+安装redis 5
+yum install -y gcc gcc-c++
+wget http://download.redis.io/releases/redis-5.0.3.tar.gz
+tar xzf redis-5.0.3.tar.gz
+mv redis-5.0.3 redis
+cd redis
+make MALLOC=libc
+
+master 配置文件 redis.conf 修改以下参数
+#绑定IP
+bind 192.168.1.224
+#后台运行
+daemonize yes
+#设置密码
+requirepass "redisPASSWORD"
+#日志文件
+logfile "/tmp/redis.log"
+#最大使用内存字节数
+maxmemory 536870912
+#删除策略
+maxmemory-policy allkeys-lru
+#主从认证密码
+masterauth "redisPASSWORD"
+
+slave1 配置文件 redis.conf 修改以下参数
+#绑定IP
+bind 192.168.1.225
+#后台运行
+daemonize yes
+#设置密码
+requirepass "redisPASSWORD"
+#日志文件
+logfile "/tmp/redis.log"
+#最大使用内存字节数
+maxmemory 536870912
+#删除策略
+maxmemory-policy allkeys-lru
+#主从认证密码
+masterauth "redisPASSWORD"
+#设置主节点
+replicaof 192.168.1.224 6379
+
+slave2 配置文件 redis.conf 修改以下参数
+#绑定IP
+bind 192.168.1.226
+#后台运行
+daemonize yes
+#设置密码
+requirepass "redisPASSWORD"
+#日志文件
+logfile "/tmp/redis.log"
+#最大使用内存字节数
+maxmemory 536870912
+#删除策略
+maxmemory-policy allkeys-lru
+#主从认证密码
+masterauth "redisPASSWORD"
+#设置主节点
+replicaof 192.168.1.224 6379
+
+sentinel 配置文件 sentinel.conf,3个节点一样
+port 26379
+daemonize yes
+logfile "/tmp/sentinel.log"
+sentinel monitor mymaster 192.168.1.224 6379 2
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+sentinel auth-pass mymaster redisPASSWORD
+
+配置 redis 启动、停止脚步 redis.sh
+#!/bin/bash
+case $1 in
+    "start")
+        if(ps -ef | grep redis-server | grep -v grep > /dev/null); then
+            echo "Redis is running!"
+        else
+            src/redis-server redis.conf
+        fi
+    ;;
+    "stop")
+        if(ps -ef | grep redis-server | grep -v grep > /dev/null); then
+            kill -9 `ps -ef | grep redis-server | grep -v grep | awk '{print $2}'`
+        else
+            echo "Redis is not running!"
+        fi
+    ;;
+    "restart")
+        if(ps -ef | grep redis-server | grep -v grep > /dev/null); then
+            kill -9 `ps -ef | grep redis-server | grep -v grep | awk '{print $2}'`
+            src/redis-server redis.conf
+        else
+            echo "Redis is not running!"
+            src/redis-server redis.conf
+        fi
+    ;;
+    *)
+        echo "Input Error! Example: sh redis.sh start | stop | restart"
+    ;;
+esac
+
+配置 sentinel 启动、停止脚步 sentinel.sh
+#!/bin/bash
+case $1 in
+    "start")
+        if(ps -ef | grep redis-sentinel | grep -v grep > /dev/null); then
+            echo "Redis sentinel is running!"
+        else
+            src/redis-sentinel sentinel.conf
+        fi
+    ;;
+    "stop")
+        if(ps -ef | grep redis-sentinel | grep -v grep > /dev/null); then
+            kill -9 `ps -ef | grep redis-sentinel | grep -v grep | awk '{print $2}'`
+        else
+            echo "Redis sentinel is not running!"
+        fi
+    ;;
+    "restart")
+        if(ps -ef | grep redis-sentinel | grep -v grep > /dev/null); then
+            kill -9 `ps -ef | grep redis-sentinel | grep -v grep | awk '{print $2}'`
+            src/redis-sentinel sentinel.conf
+        else
+            echo "Redis sentinel is not running!"
+            src/redis-sentinel sentinel.conf
+        fi
+    ;;
+    *)
+        echo "Input Error! Example: sh redis.sh start | stop | restart"
+    ;;
+esac
+
+启动redis实例
+sh redis.sh start
+
+启动sentinel实例
+sh sentinel.sh start
+
+简单测试
+set key1 value1
+get key1
+
+检查集群状态
+info
+
+测试 spring boot 连接 redis-sentinel，添加以下配置
+redis:
+    database: 0
+    sentinel:
+      master: mymaster
+      nodes: 192.168.1.224:26379,192.168.1.225:26379,192.168.1.226:26379
+    password: redisPASSWORD
+	

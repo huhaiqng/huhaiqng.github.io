@@ -1,0 +1,20 @@
+1、关闭selinux、firewall
+2、修改/etc/security/limits.conf添加以下内容：
+*	soft    nofile  65535
+*	hard    nofile  65535
+*   soft    nproc   65535  
+*   hard    nproc   65535 
+3、修改/etc/security/limits.d/20-nproc.conf 
+*          soft    nproc     65535
+4、重启系统，查看修改结果
+ulimit -a
+5、配置yum源/etc/yum.repos.d/nginx.repo
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/7/$basearch/
+gpgkey=http://nginx.org/keys/nginx_signing.key
+gpgcheck=0
+enabled=1
+6、安装Nginx、修改Nginx配置文件/etc/nginx/nginx.conf
+#安装Nginx
+yum install -y nginx

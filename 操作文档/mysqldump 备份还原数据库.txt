@@ -1,0 +1,15 @@
+1、从 MySQL5.7 导出数据库
+mysqldump --all-databases --triggers --routines --events --single-transaction --quick > backup.dump
+2、在另一台服务器上导入数据库
+systemctl stop mysqld
+rm -rf /var/lib/mysql/*
+systemctl start mysqld
+mysql -u root -p
+mysql> SET SQL_LOG_BIN=0;
+mysql> ALTER USER root@'localhost' IDENTIFIED BY 'MySQL5.7';
+mysql> SET SQL_LOG_BIN=0;
+mysql> exit
+mysql < backup.dump
+systemctl restart mysqld
+
+注意：数据库版本要一致

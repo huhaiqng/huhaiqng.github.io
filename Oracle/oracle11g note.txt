@@ -1,0 +1,197 @@
+第3章 实例管理
+
+查看参数及其当前值：v$parameter视图显示是memory的，v$spparameter视图显示是spfile的
+select name,value from v$parameter order by name;
+
+更改内存参数：不加scope同时修改memory和spfile，scope=memory需改memory的，scope=spfile的
+alter system set db_create_file_dest='/u01/app/oracle/product/11.2.0' scope=memory;
+
+修改session级别的参数：
+alter session set nls_language=German;
+
+Database Control启动：emctl start/stop/status dbconsole
+emctl应用程序所在位置：ORACLE_HOME/bin
+
+启动监听器：lsnrctl start/stop/status 
+lsnrctl应用程序所在位置：ORACLE_HOME/bin
+
+免提示登陆sqlplus：sqlplus /nolog
+
+连接数据库：connect / as sysdba; connect sys/manager@orcl as sysdba
+
+登陆连接数据库：sqlplus / as sysdba; sqlplus sys/manager@orcl as sysdba
+
+查看变量参数：show parameter background_dump_dest;
+
+启动数据库：startup;
+
+分步启动数据库：startup nomount; alter database mount; alter database open;
+
+关闭数据库：shutdown normal/transactional/immediate/abort;
+
+重启数据库：starup force=shutdown abort+startup;
+
+查看链接用户：show user;
+
+查看实例状态：select status from v$instance;
+
+报警日志：/u01/app/oracle/diag/rdbms/orcl/orcl/trace/alert_orcl.log
+查看报警日志位置：select value from v$parameter where name='background_dump_dest';
+
+
+
+
+
+第4章 配置oracle网络环境
+
+监听器文件listener.ora文件路径：/$ORACLE_HOME/network/admin
+
+测试连接字符串：tnsping orcl
+
+
+
+
+
+第5章 oracle 存储结构
+
+查看数据库中段的类型：select segment_type,count(1) from dba_segments group by segment_type order by segment_type; 
+
+查看控制文件名称和大小：select name,block_size*file_size_blks bytes from v$controlfile;
+
+查看日志文件名称和大小：select member,bytes from v$log join v$logfile using (group#);
+
+查看数据文件名称和大小：select name,bytes from v$datafile union all select name,bytes from v$tempfile;
+
+
+
+
+
+
+第14章 数据库备份和恢复配置
+
+添加多路复用重做日志：ALTER DATABASE ADD LOGFILE MEMBER '/oracledisk/redolog/REDO01b.log' TO GROUP 1;
+查看重做日志状态：select group#,sequence#,members,status from v$log;
+                  select group#,status,member from v$logfile;
+				  
+应用日志文件：alter system switch logfile;
+
+设置归档日志目录：alter system set log_archive_dest_1='location=/oracledisk/archive1/' scope=spfile;
+
+设置归档日志名称：alter system set log_archive_format='archi_%d_%t_%r_%s.log' scope=spfile;
+
+将数据库改为归档模式：alter database archivelog;
+
+查看数据库是否为归档模式：select log_mode from v$database; select archiver from v$instance;
+
+
+查看集群状态
+node1->crs_stat -t
+启停数据库(grid)
+node1->srvctl start database -d devdb
+node1->srvctl stop database -d devdb (-o force)
+启停集群服务组件
+#/u01/app/11.2.0/grid/bin/crsctl start cluster -all
+#/u01/app/11.2.0/grid/bin/crsctl stop cluster -all
+
+查看数据库版本：select * from v$version;
+查看asm的datafile文件：select name from v$datafile;
+
+查看本地节点的CRS状态：crsctl check crs 
+查看集群节点的CRS状态：crsctl check cluster
+查看集群节点：olsnodes -n -i -s
+查看集群软件版本：crsctl query crs activeversion
+查看集群发行版本：crsctl query crs releaseversion
+查看集群安装版本：crsctl query crs softwareversion
+查看表决磁盘：crsctl query css votedisk
+查看集群scan vip：srvctl config scan
+查看集群scan listener：srvctl config scan_listener
+查看集群ORC文件：#/u01/app/11.2.0/grid/bin/ocrcheck -local
+查看ocr备份信息：ocrconfig -showbackup
+查看用户登陆信息：select inst_id,username,sid,serial# from gV$session where USERNAME='SYS';
+启动磁盘组：srvctl start diskgroup -g FLUSH
+
+ASM管理
+使用srvctl管理ASM：
+srvctl start asm -n node1
+srvctl stop asm -n node1
+使用asmcmd管理ASM：
+node2->asmcmd
+shutdown --abort
+ASMCMD> startup --nomount
+asm相关的视图
+select * from v$asm_diskgroup
+select * from v$asm_file
+select * from v$asm_disk_iostat
+select * from v$asm_acfsvolumes
+select * from v$asm_alias
+
+在rac环境中修改实例参数：alter system set db_2k_cache_size=10m scope=spfile sid='node1';
+
+在rac环境中开启日志归档模式
+查看数据库实例日志模式：select name,log_mode from v$database;
+alter system set cluster_database=false scope=spfile sid='node2';
+srvctl stop database -d devdb
+shutdown;
+startup mount;
+alter database archivelog;
+alter system set cluster_database=true scope=spfile sid='node2';
+shutdown;
+
+在rac环境中开启日志闪回
+查看数据库实例日志模式：select name,log_mode from v$database;
+查看是否已开启闪回：select dbid,name,flashback_on from v$database;
+alter system set cluster_database=false scope=spfile sid='node2';
+srvctl stop database -d devdb
+alter database flashback on;
+alter system set cluster_database=true scope=spfile sid='node2';
+srvctl start database -d devdb
+
+rman备份
+查看需要备份的文件：select name from v$datafile;
+		    select file_id,file_name,tablespace_name from dba_data_files order by file_id;
+查看要备份的控制文件：select name from v$controlfile;
+
+手工非一致性备份
+alter database begin backup;
+alter database end backup;
+alter tablespace users begin backup;
+alter tablespace users end backup;
+
+rman target /
+show all;
+
+rman 命令格式
+run {
+shutdown immediate;
+startup mount;
+allocate channel c1 type disk;
+allocate channel c2 type disk;
+backup database format '/u01/backup/%d_%s.bak';
+alter database open;
+}
+
+备份控制文件：backup current controlfile;
+备份全库：backup database format='/u01/backup/devdb_%s.bak' filesperset 3;
+备份全库及控制文件、参数文件与所有归档日志文件，并删除旧的归档日志：
+backup database plus archivelog delete input;
+删除所有备份集：delete backup;
+删除指定备份集：DELETE BACKUPSET 19; 
+备份表空间：backup tablespace users format '/u01/backup/user_tbs_3_2';
+备份数据文件：backup datafile 3,5 format '/u01/backup/datafile_3_2.bak';
+
+创建schema
+create tablespace xttbs datafile '+data/prodb/datafile/xt.dbf' size 100m;
+create user xintang identified by xintang default tablespace xttbs;
+grant connect,resource to xintang;
+
+
+create pfile='/tmp/pfiledevdb.ora' from spfile='/tmp/spfiledevdb.ora';
+startup nomount pfile=/tmp/pfiledevdb.ora;
+create spfile='+DATA/GRIDDG/spfiledevdb.ora' from pfile='/tmp/spfiledevdb.ora';
+
+startup nomount; 
+rman auxiliary /
+duplicate database to devdb backup location '/tmp/oracle';
+
+create pfile='/tmp/pfileprodb.ora' from spfile='/tmp/oracle/spfileprodb.ora';
+startup pfile=/tmp/pfileprodb.ora;

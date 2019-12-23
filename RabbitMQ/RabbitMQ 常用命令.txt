@@ -1,0 +1,25 @@
+启用 UI 管理，http 端口号 15672
+rabbitmq-plugins enable rabbitmq_management
+
+创建 UI 账号并授权
+rabbitmqctl add_user rabbitmq rabbitmq
+rabbitmqctl set_user_tags rabbitmq administrator
+
+创建配置文件
+cd /usr/share/doc/rabbitmq-server-3.7.12
+cp rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
+
+创建 vhost
+rabbitmqctl add_vhost vhost01
+
+分配 vhost 给用户
+rabbitmqctl set_permissions -p vhost01 mquser01 ".*" ".*" ".*"
+
+列出所有队列
+rabbitmqctl list_queues
+
+创建/更新已 hello 开头的队列为镜像队列
+rabbitmqctl set_policy policy_name "^hello" '{"ha-mode":"nodes","ha-params":["rabbit@mysql01", "rabbit@mysql02", "rabbit@mysql03"]}'
+
+手动同步队列
+rabbitmqctl sync_queue hello

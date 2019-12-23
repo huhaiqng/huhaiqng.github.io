@@ -1,0 +1,117 @@
+一、安装准备
+1、修改系统配置
+#关闭selinux、firewall
+#修改/etc/security/limits.conf添加以下内容：
+*	soft    nofile  65536
+*	hard    nofile  65536
+*   soft    nproc   65536  
+*   hard    nproc   65536  
+#修改/etc/security/limits.d/20-nproc.conf 
+*          soft    nproc     65536
+3、创建账户、目录
+groupadd -g 600 mongo
+useradd -u 600 -g mongo mongo
+
+二、安装步骤
+1、解压文件
+tar xvf mongodb-linux-x86_64-enterprise-rhel70-3.6.2.tgz -C /usr/local/
+cd /usr/local
+mv mongodb-linux-x86_64-enterprise-rhel70-3.6.2/ mongodb
+cd mongodb
+mkdir -p data/db
+mkdir log
+touch log/mongod.log
+mkdir etc
+touch etc/mongod.conf
+chown -R mongo.mongo /usr/local/mongodb
+2、分别在每台机器上配置config文件
+vim etc/mongod.conf
+dbpath = /usr/local/mongodb/data/db        # 指定数据库路径
+logpath = /usr/local/mongodb/log/mongod.log          # 指定mongodb日志文件
+logappend = true        # 使用追加的方式写日志
+port = 27017               #设置端口号为27017
+bind_ip = 192.168.1.221
+fork = true                   #设置以守护进程的方式启动mongod
+replSet = bsbgpsrs            #设置副本集的名字为myrs，同一副本集群的replSet名称
+3、分别在每台机器上启动副本集
+su - mongo
+#修改环境变量
+PATH=$PATH:$HOME/bin:/usr/local/mongodb/bin
+export PATH
+#启动
+yum install -y net-snmp* gcc-c++ 
+nohup mongod -f /usr/local/mongodb/etc/mongod.conf >/dev/null 2>&1 &
+4、初始化副本集
+登录任意一台机器的mongodb后台管理shell：
+cd /usr/local/mongodb
+./bin/mongo
+use admin
+config = {
+"_id":"bsbgpsrs",
+"members":[
+  {"_id":0,"host":"192.168.198.224:27017"},
+  {"_id":1,"host":"192.168.198.225:27017"},
+  {"_id":2,"host":"192.168.198.226:27017",arbiterOnly:true}
+]
+}
+rs.initiate(config);   #初始化配置
+5、查看副本集状态
+rs.status();
+6 、添加验证
+use admin
+db.createUser({user:"admin",pwd:"Mongo/2018",roles:["root"]})
+db.auth("admin","Mongo/2018")
+
+三、测试副本集
+1、测试副本集的数据复制功能
+此时在我的机器上192.168.198.224是主节点，我们用mongo来登录shell。
+
+cd /usr/local/mongodb
+./bin/mongo
+use test  #创建test数据库
+db.testdb.insert({"name":"yaya"});       #插入数据
+我们用副本节点登录shell，我这里是192.168.198.225：
+
+cd /usr/local/mongodb
+./bin/mongo
+use test
+show tables
+此时会报错：
+
+[thread1] Error: listCollections failed: {
+"ok" : 0,
+"errmsg" : "not master and slaveOk=false",
+"code" : 13435,
+"codeName" : "NotMasterNoSlaveOk"
+} 
+因为mongodb默认是从主节点读写数据的，副本节点上不允许读，需要设置副本节点可以读。
+
+myrs:SECONDARY> db.getMongo().setSlaveOk();
+此时就可以读取数据了：
+
+repset:SECONDARY> db.testdb.find();
+控制台输出：{ "_id" : ObjectId("59676d711881041abab44477"), "name" : "yaya" }
+所以，数据复制的功能是可用的。
+
+2、测试副本集的故障转移功能
+将主节点192.168.198.224的mongod进程杀死：
+
+myrs:PRIMARY> use admin
+myrs:PRIMARY> db.shutdownServer()
+此时可以看到，192.168.198.225原本是副节点，此时自动转换为主节点。可以通过rs.status()来查看。
+
+四、其他设置
+1、取消透明大页在/etc/rc.d/rc.local增加下列内容：
+if test -f /sys/kernel/mm/transparent_hugepage/enabled; then
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+fi
+if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+    echo never > /sys/kernel/mm/transparent_hugepage/defrag
+fi
+chmod +x /etc/rc.d/rc.local
+2、Mongodb C drive安装
+tar xvf mongo-c-driver-1.6.1.tar.gz
+cd mongo-c-driver-1.6.1/
+./configure -disable-automatic-init-and-cleanup
+make
+make install

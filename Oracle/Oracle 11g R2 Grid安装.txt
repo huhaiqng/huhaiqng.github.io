@@ -1,0 +1,31 @@
+1 、初始化系统
+
+2、磁盘/dev/sdb、/dev/sdc、/dev/sdd、/dev/sde、/dev/sdf分区
+#fdisk /dev/sdf
+n-p-1-w
+# partprobe 
+
+3、安装asm
+下载地址：https://pan.baidu.com/s/1gfcX21P
+# yum install -y kmod-oracleasm-2.0.6.rh1-3.el6.x86_64.rpm oracleasmlib-2.0.4-1.el6.x86_64.rpm oracleasm-support-2.1.8-1.el6.x86_64.rpm
+# oracleasm status
+# oracleasm configure -i
+Configuring the Oracle ASM library driver.
+
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmadmin
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+
+# oracleasm init
+# oracleasm configure
+# oracleasm listdisks
+# oracleasm createdisk VOL1 /dev/sdb1 
+# oracleasm querydisk /dev/sd*

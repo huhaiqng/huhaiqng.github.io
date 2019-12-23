@@ -1,0 +1,25 @@
+1、配置java-gateway
+vim settings.sh
+LISTEN_IP="0.0.0.0"
+LISTEN_PORT=10052
+PID_FILE="/tmp/zabbix_java.pid"
+START_POLLERS=5
+其中 LISTEN_PORT 和 LISTEN_IP 可以不配置，zabbix_java 会采用默认值。但是 PID_FILE 和 START_POLLERS 必须配置，尤其主意 START_POLLERS，若不配置 zabbix_java 依旧可以启动但是是不工作的。
+2、修改zabbix_server文件
+既然java gateway运行了，你要告诉zabbix server去×××java gateway，在配置文件中开启如下几项参数。
+JavaGateway=127.0.0.1
+JavaGatewayPort=10052 
+JavaGatewayPort和上面的LISTEN_PORT一样
+StartJavaPollers=3 #这个数值要小于上面的START_POLLERS
+这三项都需要配置，其中StartJavaPollers会被视为开关性质的参数。0或者未配置将被系统认为不具有Java信息抓取能力。这点在Zabbix JMX Monitoring Wiki中未提及，但是实际效果就是这样。同时Zabbix Proxy的配置文件解析中也有介绍此参数的含义。
+3、启动java-gateway和zabbix server
+/usr/local/zabbix/sbin/zabbix_java/startup.sh
+/usr/local/zabbix/sbin/zabbix_server
+4、配置kafka配置文件
+vim /usr/local/kafka/bin/kafka-run-class.sh 
+# JMX settings
+if [ -z "$KAFKA_JMX_OPTS" ]; then
+  KAFKA_JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=12345 -Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false "
+fi
+5、启动kafka
+kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties

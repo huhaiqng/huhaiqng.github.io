@@ -1,0 +1,63 @@
+系统要求：互相能够进行主机名IP解析
+188.188.1.151   test01
+188.188.1.152   test02
+188.188.1.153   test03
+
+1、创建 MySQL 实例，配置文件如下
+----------------------------------------------------------------
+[mysqld]
+# 基本配置
+basedir=/usr/local/mysql/
+datadir=/usr/local/mysql/data/
+port=3306
+socket=/tmp/mysql.sock
+# 复制配置
+server_id=1
+gtid_mode=ON
+enforce_gtid_consistency=ON
+master_info_repository=TABLE
+relay_log_info_repository=TABLE
+binlog_checksum=NONE
+log_slave_updates=ON
+log_bin=binlog
+binlog_format=ROW
+# 组复制配置
+transaction_write_set_extraction=XXHASH64
+loose-group_replication_group_name="bbb7a0a4-698d-11e9-8672-000c29be2a23"
+loose-group_replication_start_on_boot=off
+loose-group_replication_local_address= "188.188.1.151:33066"
+loose-group_replication_group_seeds= "188.188.1.151:33066,188.188.1.153:33066,188.188.1.153:33066"
+loose-group_replication_bootstrap_group=off
+loose-group_replication_ip_whitelist="188.188.1.0/24"
+# 多线程复制
+slave-parallel-workers=10
+slave-preserve-commit-order=1
+slave-parallel-type=LOGICAL_CLOCK
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/usr/local/mysql/data/mysqld.pid
+----------------------------------------------------------------
+注意：在每个实例上设置 server_id、group_replication_local_address 相应的值。
+
+2、在每个实例上创建复制账号
+SET SQL_LOG_BIN=0;
+ALTER USER root@'localhost' IDENTIFIED BY 'MySQL5.7';
+CREATE USER rpl_user@'%' IDENTIFIED BY 'MySQL5.7';
+GRANT REPLICATION SLAVE ON *.* TO rpl_user@'%';
+FLUSH PRIVILEGES;
+SET SQL_LOG_BIN=1;
+CHANGE MASTER TO MASTER_USER='rpl_user', MASTER_PASSWORD='MySQL5.7' FOR CHANNEL 'group_replication_recovery';
+
+3、第一个实例启动组复制
+INSTALL PLUGIN group_replication SONAME 'group_replication.so';
+SET GLOBAL group_replication_bootstrap_group=ON;
+START GROUP_REPLICATION;
+SET GLOBAL group_replication_bootstrap_group=OFF;
+
+4、第二个和第三个实例加入到复制组
+INSTALL PLUGIN group_replication SONAME 'group_replication.so';
+START GROUP_REPLICATION;
+
+5、查看组成员
+SELECT * FROM performance_schema.replication_group_members;

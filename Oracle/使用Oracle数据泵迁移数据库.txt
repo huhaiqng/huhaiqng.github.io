@@ -1,0 +1,29 @@
+一、准备目标数据库
+1、确保目标数据库的字符集 NLS_CHARACTERSET 和源数据库一致
+select * from nls_database_parameters
+2、创建要迁移数据库表空间
+select tablespace_name from dba_tablespaces
+create tablespace BBGODB datafile '+DATA_VG' size 300m autoextend on
+3、创建相应的schema
+create user BBGO identified by BBGO default tablespace BBGODB
+grant connect,resource to BBGO
+4、创建目录并授权
+mkdir /home/oracle/oracleDump
+sqlplus / as sysdba
+create or replace directory dump_dir as '/home/oracle/oracleDump';
+grant read,write on directory dump_dir to BBGO;
+exit
+
+二、导出源数据库的schema
+1、创建目录并授权
+mkdir /home/oracle/oracleDump
+sqlplus / as sysdba
+create or replace directory dump_dir as '/home/oracle/oracleDump';
+grant read,write on directory dump_dir to BBGO;
+exit
+2、导出数据
+expdp  "'/ as sysdba'" schemas=BBGO dumpfile=expdp.dmp DIRECTORY=dump_dir logfile=BBGO.log compression=all
+
+三、将数据导入到目标数据库中
+impdp "'/ as sysdba'" directory=dump_dir dumpfile=expdp.dmp schemas=BBGO
+注：如果schema不同，使用 remap_schema=BBGO:BBGOA 映射到新的 schema

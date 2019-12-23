@@ -1,0 +1,16 @@
+Oracle 数据导入到新库出现中文乱码的原因：旧库和新库的字符集不一致引起的。
+1、查询字符集的值
+select parameter,value from nls_database_parameters where parameter='NLS_CHARACTERSET';
+2、更改字符集
+SQL> SHUTDOWN IMMEDIATE;
+SQL> STARTUP MOUNT;
+SQL> ALTER SESSION SET SQL_TRACE=TRUE;
+SQL> ALTER SYSTEM ENABLE RESTRICTED SESSION;
+SQL> ALTER SYSTEM SET JOB_QUEUE_PROCESSES=0;
+SQL> ALTER SYSTEM SET AQ_TM_PROCESSES=0;
+SQL> ALTER DATABASE OPEN;
+SQL> ALTER DATABASE CHARACTER SET ZHS16GBK;
+SQL> alter database character set internal_use ZHS16GBK;
+SQL> SHUTDOWN IMMEDIATE;
+SQL> STARTUP;
+SQL> execute sys.dbms_metadata_util.load_stylesheets;
