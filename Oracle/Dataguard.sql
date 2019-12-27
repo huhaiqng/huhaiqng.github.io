@@ -32,6 +32,8 @@ select "credate" from bbgps."e_cargps" where "credate" > to_date('2018-08-14 11:
 select file_id,file_name,tablespace_name from dba_data_files order by FILE_NAME;
 --查询表空间数据文件类型
 select tablespace_name,bigfile from dba_tablespaces;
+--查询用户
+select * from dba_users order by username,created;
 --查询表的大小
 select * from (select segment_name,segment_type,bytes / 1024 / 1024 AS MB
                 from dba_segments
