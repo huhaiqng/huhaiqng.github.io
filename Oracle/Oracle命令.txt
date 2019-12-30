@@ -178,6 +178,8 @@ select from user_scheduler_job_run_details;
 select * from USER_ADVISOR_TASKS WHERE ADVISOR_NAME='SQL Tuning Advisor' ORDER BY EXECUTION_START DESC;
 查看 SQL Tuning Advisor 是否已启用
 select client_name,status from dba_autotask_client;
+查看 SQL Tuning Advisor 执行记录
+SELECT * FROM DBA_ADVISOR_EXECUTIONS WHERE ADVISOR_NAME='SQL Tuning Advisor' ORDER BY EXECUTION_START DESC;
 
 49、查看 SQL 自动优化器进程
 SELECT * FROM V$ADVISOR_PROGRESS;
