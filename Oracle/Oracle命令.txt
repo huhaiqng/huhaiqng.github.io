@@ -173,3 +173,31 @@ ALTER TABLESPACE USERS DROP DATAFILE '+DATA_VG/bbsvr/datafile/users.271.99761930
 47、查询执行过的 job
 SELECT * FROM DBA_JOBS;
 select from user_scheduler_job_run_details;
+
+48、查看 SQL 自动优化器
+select * from USER_ADVISOR_TASKS WHERE ADVISOR_NAME='SQL Tuning Advisor' ORDER BY EXECUTION_START DESC;
+查看 SQL Tuning Advisor 是否已启用
+select client_name,status from dba_autotask_client;
+
+49、查看 SQL 自动优化器进程
+SELECT * FROM V$ADVISOR_PROGRESS;
+
+50、禁用 SQL tuning
+BEGIN
+DBMS_AUTO_TASK_ADMIN.DISABLE(
+client_name => 'sql tuning advisor'
+, operation => NULL
+, window_name => NULL
+);
+END;
+/
+
+51、启用 SQL tuning
+BEGIN
+DBMS_AUTO_TASK_ADMIN.ENABLE(
+client_name => 'sql tuning advisor'
+, operation => NULL
+, window_name => NULL
+);
+END;
+/
