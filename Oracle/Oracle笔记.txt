@@ -96,3 +96,15 @@ SQL> shutdown immediate;
 SQL> startup mount;
 SQL> alter database flashback off;
 SQL> alter database open;
+
+8、批量 kill session
+declare cursor mycur is   
+select SID,SERIAL#,USERNAME,TERMINAL,PROGRAM
+    from v$session where USERNAME='BBGO' and TERMINAL like 'APPSERVER%' AND PROGRAM='w3wp.exe';
+
+begin  
+  for cur in mycur  
+    loop    
+     execute immediate ( 'alter system  kill session  '''||cur.sid || ','|| cur.SERIAL# ||''' ');  
+     end loop;  
+end;
