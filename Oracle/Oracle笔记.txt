@@ -105,6 +105,6 @@ select SID,SERIAL#,USERNAME,TERMINAL,PROGRAM
 begin  
   for cur in mycur  
     loop    
-     execute immediate ( 'alter system  kill session  '''||cur.sid || ','|| cur.SERIAL# ||''' ');  
+     execute immediate ( 'alter system  kill session  '''||cur.sid || ','|| cur.SERIAL# ||''' IMMEDIATE');  
      end loop;  
 end;

@@ -203,3 +203,6 @@ client_name => 'sql tuning advisor'
 );
 END;
 /
+
+52¡¢Á¢¼´ kill session
+ALTER SYSTEM KILL SESSION 'sid,serial#' IMMEDIATE;
