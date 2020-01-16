@@ -115,7 +115,7 @@ db_load -T -t hash -f /etc/vsftpd/virtusers /etc/vsftpd/virtusers.db
 # 修改虚拟用户名单文件后，需要执行此命令
 ```
 
-配置认证文件 /etc/pam.d/vsftpd ，将原有的行都注释
+配置认证文件 /etc/pam.d/vsftpd ，**将原有的行都注释**
 
 ```
 auth    sufficient      /lib64/security/pam_userdb.so    db=/etc/vsftpd/virtusers
