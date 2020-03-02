@@ -12,6 +12,8 @@
     <div id="app">
         <button @click="getToken()">获取 Token</button>
         <p>{{ result }}</p>
+        <button @click="getUsers()">读取 snippets 数据</button>
+        <p> {{ users }}</p>
     </div>
     <script src="vue.js"></script>
     <script src="axios.min.js"></script>
@@ -20,6 +22,7 @@
             el: '#app',
             data: {
                 result: '',
+                users: '',
             },
             methods: {
                 getToken: function () {
@@ -42,6 +45,20 @@
                         },
                     }).then(function (response) {
                         vm.result=response.data
+                    })
+                },
+            
+                getUsers: function() {
+                    vm = this
+                    axios({
+                        method: 'get',
+                        url: '/snippets/',
+                        params: {
+                            'Authorization': vm.result.token_type,
+	                        'access_token': vm.result.access_token
+                        }
+                    }).then(function (response) {
+                        vm.users=response.data
                     })
                 }
             }
