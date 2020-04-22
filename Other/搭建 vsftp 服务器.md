@@ -29,7 +29,7 @@ pam_service_name=vsftpd
 userlist_enable=YES
 tcp_wrappers=YES
 allow_writeable_chroot=YES
-# 在 CentOS 7 上设置了 chroot_local_user=YES 后，需要配置此参数，否则无法登陆。
+# 在 CentOS 7 上设置了 chroot_local_user=YES 后，需要配置此参数，否则无法登陆
 ```
 
 创建用户
@@ -169,3 +169,15 @@ systemctl start vsftpd
 ```
 
 参考博文：https://blog.51cto.com/xmomo/2074258
+
+
+
+### 内外可以访问，外网可以访问
+
+> 可能是ftp的保护设置 配置文件中增加 pasv_promiscuous 关闭PASV模式的安全检查
+
+```
+pasv_promiscuous=YES
+```
+
+参考博文：https://blog.csdn.net/hajistark/article/details/82954777
