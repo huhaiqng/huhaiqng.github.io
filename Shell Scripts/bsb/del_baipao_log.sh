@@ -10,3 +10,8 @@ rm -f `ls -t *.tar.gz | tail -n +15`
 cd /usr/local/baipao/driverapp/applog
 tar zcvf ${name}.tar.gz $name --remove-files
 rm -f `ls -t *.tar.gz | tail -n +15`
+
+# 压缩删除 schedule 日志
+cd /usr/local/baipao/schedule/applog
+tar zcvf ${name}.tar.gz $name --remove-files
+rm -f `ls -t *.tar.gz | tail -n +15`
