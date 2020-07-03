@@ -1,4 +1,4 @@
-#### 在 CentOS 7 上部署 Kubernetes 集群 
+#### 在 CentOS 7 上部署 Kubernetes 集群 (内网)
 
 ##### 1、服务器说明和配置
 
@@ -137,6 +137,10 @@ centos76-001   Ready    master   52m   v1.15.3
 centos76-002   Ready    <none>   47m   v1.15.3
 centos76-003   Ready    <none>   80s   v1.15.3
 ```
+
+
+
+#### 在 CentOS 7 上部署 Kubernetes 集群 (翻墙)
 
 
 

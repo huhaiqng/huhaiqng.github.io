@@ -1,3 +1,39 @@
+#### 安装 docker
+
+```
+# 安装依赖包
+yum install yum-utils device-mapper-persistent-data lvm2
+# 配置yum 源
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# 安装
+yum install docker-ce
+# 配置
+mkdir /etc/docker
+# Setup daemon.
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+# 启动
+systemctl daemon-reload
+systemctl enable docker
+systemctl start docker
+```
+
+
+
 #### 常用命令
 
 ##### Docker
@@ -144,9 +180,4 @@ ENTRYPOINT ["java", "-jar", "/usr/local/eureka/baipao-eureka.jar"]
 docker run -id -p 9090:9090 eureka.jar:1.0 
 ```
 
-
-
-#### 私有镜像仓库 Harbor
-
-##### 安装
 
