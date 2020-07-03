@@ -20,7 +20,7 @@ git rev-list --objects --all | grep "$(git verify-pack -v .git/objects/pack/*.id
 > YOU-FILE-NAME 你查找出来的大文件名字
 
 ```
-git filter-branch --force --prune-empty --index-filter 'git rm -rf --cached --ignore-unmatch YOU-FILE-NAME' --tag-name-filter cat -- --all
+git filter-branch --force --prune-empty --index-filter 'git rm -rf --cached --ignore-unmatch "YOU-FILE-NAME"' --tag-name-filter cat -- --all
 ```
 
 强制 push，回收空间
