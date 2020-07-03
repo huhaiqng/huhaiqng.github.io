@@ -1,3 +1,15 @@
+#### 记住 git 用户名和密码
+
+```
+# 执行下面的命令（如果不执行下面的命令，可能会导致设置无效）
+git config --global user.email "你的git的注册邮箱"
+git config --global user.user "你的git用户名"
+# 长期存储密码
+git config --global credential.helper store
+```
+
+
+
 #### 常见问题解决方法
 
 ##### .git 目录过大解决方法
