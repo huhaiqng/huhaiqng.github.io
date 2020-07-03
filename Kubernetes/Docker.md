@@ -181,3 +181,15 @@ docker run -id -p 9090:9090 eureka.jar:1.0
 ```
 
 
+
+#### 管理
+
+##### 实现非 root 用户运行 docker 命令
+
+ 将用户加入到 docker 组
+
+```
+gpasswd -a devops docker
+```
+
+重新登录用户即可执行 docker 命令
