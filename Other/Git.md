@@ -1,3 +1,42 @@
+
+
+
+
+
+
+
+
+
+
+
+
+#### 将 github 的项目拉到本地并修改提交(Windows)
+
+在本地新建项目文件夹
+
+初始化项目
+
+```
+git init
+git remote add origin https://github.com/huhaiqng/devops-note.git
+```
+
+拉取代码
+
+```
+git pull https://github.com/huhaiqng/devops-note.git master
+```
+
+改动后提交
+
+```
+git add .
+git commit -m "commit"
+git push -u origin master
+```
+
+
+
 #### 记住 git 用户名和密码
 
 ```
