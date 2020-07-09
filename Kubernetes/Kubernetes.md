@@ -1,4 +1,4 @@
-#### 在 CentOS 7 上部署 Kubernetes 集群 (内网)
+#### 在 CentOS 7 上部署 Kubernetes 集群 (国内网)
 
 ##### 1、服务器说明和配置
 
@@ -142,9 +142,134 @@ centos76-003   Ready    <none>   80s   v1.15.3
 
 #### 在 CentOS 7 上部署 Kubernetes 集群 (翻墙)
 
+##### 准备翻墙环境
+
+下载翻墙工具 [Chrome一键翻墙包](<http://d1.bdrive.tk/cg.7z>)
+
+修改翻墙工具配置文件 D:\ChromeGo\v2rayB\config.json
+
+> 以 v2ray 为例
+
+![image-20200709162927436](Kubernetes.assets/image-20200709162927436.png)
+
+启动
+
+![image-20200709163203400](Kubernetes.assets/image-20200709163203400.png)
+
+##### 在 CentOS 服务器上安装 Privoxy
+
+编译
+
+```
+wget http://www.privoxy.org/sf-download-mirror/Sources/3.0.28%20%28stable%29/privoxy-3.0.28-stable-src.tar.gz
+tar -zxvf privoxy-3.0.28-stable-src.tar.gz
+cd privoxy-3.0.28-stable
+useradd privoxy
+yum install autoconf automake libtool
+autoheader && autoconf
+./configure
+make && make install
+```
+
+修改配置文件 /usr/local/etc/privoxy/config
+
+> 192.168.1.10 为 CentOS 主机的 IP
+>
+> 192.168.1.8 为运行 v2ray 主机的 IP
+
+```
+listen-address  192.168.1.10:8118
+forward-socks5t / 192.168.1.8:10808 .
+```
+
+启动
+
+```
+privoxy --user privoxy /usr/local/etc/privoxy/config
+```
+
+启用代理
+
+```
+export http_proxy=http://192.168.1.10:8118
+export https_proxy=http://192.168.1.10:8118
+export no_proxy=localhost,127.0.0.1,192.168.1.8
+```
+
+测试
+
+```
+curl -I www.google.com
+```
+
+##### 配置 docker 
+
+> 镜像下载完后应还原
+
+修改文件 /usr/lib/systemd/system/docker.service，添加 Environment
+
+```
+[Service]
+Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.1.8,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
+```
+
+重启 docker
+
+```
+systemctl daemon-reload
+systemctl restart docker
+```
+
 
 
 #### 教程
+
+##### 集群
+
+查看集群
+
+```
+kubectl cluster-info
+```
+
+查看节点
+
+```
+kubectl get nodes
+```
+
+##### 创建 deployment
+
+发布应用
+
+```
+kubectl create deployment kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1
+```
+
+查看
+
+```
+kubectl get deployments
+```
+
+启动代理
+
+```
+kubectl proxy
+```
+
+测试
+
+```
+curl http://localhost:8001/version
+```
+
+查看 pod 名字
+
+```
+export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+echo Name of the Pod: $POD_NAME
+```
 
 
 
