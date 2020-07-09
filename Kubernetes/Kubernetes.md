@@ -271,6 +271,71 @@ export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{
 echo Name of the Pod: $POD_NAME
 ```
 
+#### 了解应用
+
+查看 pod 详情
+
+```
+kubectl describe pods
+```
+
+查看 pod 日志
+
+```
+kubectl logs kubernetes-bootcamp-6f6656d949-gsjj5
+```
+
+在 pod 中执行命令
+
+```
+kubectl exec kubernetes-bootcamp-6f6656d949-gsjj5 env
+```
+
+登录 pod
+
+```
+kubectl exec -it kubernetes-bootcamp-6f6656d949-gsjj5 -- bash
+```
+
+##### 暴露应用
+
+查看 deployments
+
+```
+kubectl get deployments
+```
+
+查看服务
+
+```
+kubectl get services
+```
+
+创建服务
+
+```
+kubectl expose deployment/kubernetes-bootcamp --type="NodePort" --port 8080
+```
+
+查看服务详情
+
+```
+kubectl describe services/kubernetes-bootcamp
+```
+
+查看 NODE_PORT
+
+```
+export NODE_PORT=$(kubectl get services/kubernetes-bootcamp -o go-template='{{(index .spec.ports 0).nodePort}}')
+echo NODE_PORT=$NODE_PORT
+```
+
+访问服务
+
+```
+curl http://NODE_IP:NODE_PORT
+```
+
 
 
 
