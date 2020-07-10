@@ -539,6 +539,105 @@ centos76-003:30001> get k
 "123456"
 ```
 
+##### 部署挂载 NODE 目录的应用
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vol-emptydir-pod
+spec:
+  volumes:
+  - name: html
+    # emptyDir: { }
+    hostPath:
+      path: /tmp/html
+      type: DirectoryOrCreate
+  containers:
+  - name: nginx
+    image: nginx:latest
+    volumeMounts:
+    - name: html
+      mountPath: /usr/share/nginx/html
+  - name: pagegen
+    image: alpine
+    volumeMounts:
+    - name: html
+      mountPath: /html
+    command: [ "/bin/sh", "-c" ]
+    args:                        #定义循环，每10秒向/html/文件中追加写入当前主机名和时间
+    - while true; do
+        echo $(hostname) $(date) >> /html/index.html;
+        sleep 10;
+      done
+```
+
+##### 部署挂载 NFS 目录的应用
+
+> 一个 pv 对应 一个 pvc
+>
+> 如果存在多个可用的 pv，创建 pvc 时会自动选择 pc
+
+```
+# This mounts the nfs volume claim into /mnt and continuously
+# overwrites /mnt/index.html with the time and hostname of the pod.
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: project-a-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 192.168.1.10
+    path: "/nfsdisk"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: project-a-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nfs-busybox
+spec:
+  replicas: 2
+  selector:
+    name: nfs-busybox
+  template:
+    metadata:
+      labels:
+        name: nfs-busybox
+    spec:
+      containers:
+      - image: busybox
+        command:
+          - sh
+          - -c
+          - 'while true; do echo `date`:`hostname` >> /mnt/index.html; sleep 1s; done'
+        imagePullPolicy: IfNotPresent
+        name: busybox
+        volumeMounts:
+          # name must match the volume name below
+          - name: html
+            mountPath: "/mnt"
+      volumes:
+      - name: html
+        persistentVolumeClaim:
+          claimName: project-a-pvc
+```
+
 
 
 #### 资料
@@ -573,3 +672,45 @@ root@mysql-7d7fdd478f-vvtfw:/#
 kubectl logs podname
 ```
 
+登录到 pod 容器中
+
+```
+kubectl exec POD_NAME -c CONTAINER_NAME -it -- sh
+```
+
+
+
+#### 常见问题
+
+##### coredns 无法启动
+
+/var/log/message 日志报一下错误
+
+```
+Jul 10 16:28:19 centos7-001 kubelet: W0710 16:28:19.505758   16742 cni.go:331] CNI failed to retrieve network namespace path: cannot find network namespace for the terminated container "77dc0fbb3f9f1e9c1f017ced6748dbba08e374cc3b46832d87d8d4632153fb15"
+Jul 10 16:28:19 centos7-001 kubelet: E0710 16:28:19.585270   16742 cni.go:385] Error deleting kube-system_coredns-689857ddd7-r6lw2/77dc0fbb3f9f1e9c1f017ced6748dbba08e374cc3b46832d87d8d4632153fb15 from network calico/k8s-pod-network: error getting ClusterInformation: Get https://[10.96.0.1]:443/apis/crd.projectcalico.org/v1/clusterinformations/default: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+Jul 10 16:28:19 centos7-001 kubelet: E0710 16:28:19.586460   16742 remote_runtime.go:128] StopPodSandbox "77dc0fbb3f9f1e9c1f017ced6748dbba08e374cc3b46832d87d8d4632153fb15" from runtime service failed: rpc error: code = Unknown desc = networkPlugin cni failed to teardown pod "coredns-689857ddd7-r6lw2_kube-system" network: error getting ClusterInformation: Get https://[10.96.0.1]:443/apis/crd.projectcalico.org/v1/clusterinformations/default: x509: certificate signed by unknown authority (possibly because of "crypto/rsa: verification error" while trying to verify candidate authority certificate "kubernetes")
+```
+
+coredns pod 的状态
+
+![image-20200710163632189](Kubernetes.assets/image-20200710163632189.png)
+
+处理方法
+
+```
+mv /etc/cni/net.d/10-calico.conflist /tmp/
+mv /etc/cni/net.d/calico-kubeconfig /tmp/
+```
+
+再次检查状态，运行正常
+
+![image-20200710163651797](Kubernetes.assets/image-20200710163651797.png)
+
+
+
+##### coredns ip 无法 ping 通
+
+检查 pod 发现不在同一个子网
+
+![image-20200710183105543](Kubernetes.assets/image-20200710183105543.png)
