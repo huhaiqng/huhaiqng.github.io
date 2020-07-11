@@ -208,3 +208,84 @@ server {
 }
 ```
 
+#### Nginx 反向代理加 '/' 和不加 '/' 的区别
+
+情况1
+
+```
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location /proxy/ {
+        proxy_pass http://192.168.1.5:8090/;
+    }
+}
+```
+
+> 这样，访问http://192.168.1.23/proxy/就会被代理到http://192.168.1.5:8090/。p匹配的proxy目录不需要存在根目录/var/www/html里面
+> 注意，终端里如果访问http://192.168.1.23/proxy（即后面不带"/"），则会访问失败！因为proxy_pass配置的url后面加了"/"
+
+情况2
+
+```
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location  /proxy/ {
+        proxy_pass http://192.168.1.5:8090;
+    }
+}
+```
+
+> 那么访问http://192.168.1.23/proxy或http://192.168.1.23/proxy/，都会失败！
+> 这样配置后，访问http://192.168.1.23/proxy/就会被反向代理到http://192.168.1.5:8090/proxy/
+
+情况3
+
+```
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location /proxy/ {
+        proxy_pass http://192.168.1.5:8090/haha/;
+    }
+}
+```
+
+> 这样配置的话，访问http://103.110.186.23/proxy/代理到http://192.168.1.5:8090/haha/
+
+情况4
+
+```
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location  /proxy/ {
+        proxy_pass http://192.168.1.5:8090/haha;
+    }
+}
+```
+
+> 上面配置后，访问http://192.168.1.23/proxy/index.html就会被代理到http://192.168.1.5:8090/hahaindex.html
+> 同理，访问http://192.168.1.23/proxy/test.html就会被代理到http://192.168.1.5:8090/hahatest.html
+

@@ -220,6 +220,16 @@ systemctl daemon-reload
 systemctl restart docker
 ```
 
+##### 部署 k8s
+
+初始化 master
+
+```
+kubeadm init --pod-network-cidr=10.244.0.0/16
+```
+
+
+
 
 
 #### 教程
