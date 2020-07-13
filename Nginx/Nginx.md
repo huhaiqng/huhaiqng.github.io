@@ -208,6 +208,46 @@ server {
 }
 ```
 
+##### http 转 https 、反向代理配置文件
+
+```
+server {
+    listen       80;
+    server_name  www.example.com;
+    rewrite ^(.*) https://$server_name$1 permanent;
+}
+
+server {
+    listen       443;
+    server_name  www.example.com;
+    ssl on;
+    ssl_certificate ../cert/www.example.com.pem;
+    ssl_certificate_key ../cert/www.example.com.key;
+    ssl_session_timeout 5m;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        root /data/wwwroot;
+        index index.html index.htm;
+    }
+
+    location /api/ {
+        proxy_pass  http://127.0.0.1:8080/;
+        proxy_redirect          off;
+        proxy_set_header    	Host             $host;
+        proxy_set_header        X-Real-IP        $remote_addr;
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_connect_timeout   120;
+        proxy_send_timeout      120;
+        proxy_read_timeout      120;
+    }
+}
+```
+
+
+
 #### Nginx 反向代理加 '/' 和不加 '/' 的区别
 
 情况1
