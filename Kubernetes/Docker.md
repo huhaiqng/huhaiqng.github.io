@@ -182,6 +182,230 @@ docker run -id -p 9090:9090 eureka.jar:1.0
 
 
 
+#### Docker Compose
+
+##### 安装
+
+```
+# curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+# chmod +x /usr/local/bin/docker-compose
+```
+
+##### 开始使用
+
+创建实例程序文件 app.py
+
+> host='redis' : redis 为 redis 的服务名，同一 docker-compose 的服务可以使用服务名进行通信。 
+
+```
+import time
+
+import redis
+from flask import Flask
+
+app = Flask(__name__)
+cache = redis.Redis(host='redis', port=6379)
+
+
+def get_hit_count():
+    retries = 5
+    while True:
+        try:
+            return cache.incr('hits')
+        except redis.exceptions.ConnectionError as exc:
+            if retries == 0:
+                raise exc
+            retries -= 1
+            time.sleep(0.5)
+
+
+@app.route('/')
+def hello():
+    count = get_hit_count()
+    return 'Hello World! I have been seen {} times.\n'.format(count)
+```
+
+创建安装依赖文件 requirements.txt
+
+```
+flask
+redis
+```
+
+创建应用 Dockerfile
+
+> COPY . . : 把当前目录所有的文件拷贝到容器工作目录
+
+```
+FROM python:3.7-alpine
+WORKDIR /code
+ENV FLASK_APP app.py
+ENV FLASK_RUN_HOST 0.0.0.0
+RUN apk add --no-cache gcc musl-dev linux-headers
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["flask", "run"]
+```
+
+创建 docker-compose.yml
+
+```
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+  redis:
+    image: "redis:alpine"
+```
+
+启动
+
+```
+docker-compose up -d
+```
+
+修改 docker-compose 文件，挂载盘和设置环境变量
+
+```
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/code
+    environment:
+      - FLASK_ENV=development
+  redis:
+    image: "redis:alpine"
+```
+
+更新
+
+```
+docker-compose up -d
+```
+
+##### 网络
+
+> docker-compose 以 yml 文件所在的目录为单位创建网络
+>
+> 同一目录中的服务可以使用服务器互相通信
+
+运行 mysql1 目录的服务
+
+```
+docker-compose -f /root/mysql1/compose-mysql.yml -d
+```
+
+生成 mysql1_default 网络
+
+![image-20200713173851918](Docker.assets/image-20200713173851918.png)
+
+运行 mysql2 目录的服务
+
+```
+docker-compose -f /root/mysql2/compose-mysql.yml up -d
+```
+
+生成 mysql2_default 网络
+
+![image-20200713174046279](Docker.assets/image-20200713174046279.png)
+
+
+
+#### Docker Compose 实例
+
+##### 部署 MySQL
+
+创建 yml 文件 compose-mysql.yml
+
+```
+version: '3.1'
+services:
+  mysql-service:
+    image: mysql:5.7.30
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=MySQL5.7
+    ports:
+      - 3366:3306
+    volumes:
+      - /data/mysql-data:/var/lib/mysql
+      - /data/mysql-conf:/etc/mysql/conf.d
+```
+
+创建 MySQL 配置文件 /data/mysql-conf/config-mysql.cnf
+
+```
+[mysqld]
+# general
+server_id=1
+max_connections=2000
+table_open_cache=10000
+open_files_limit=65536
+character-set-server=utf8mb4
+skip_name_resolve=on
+gtid_mode=on
+enforce_gtid_consistency=on
+tmp_table_size=64M
+max_heap_table_size=64M
+max_allowed_packet=64M
+innodb_data_file_path=ibdata1:12M:autoextend:max:4096M
+range_optimizer_max_mem_size=64M
+read_rnd_buffer_size=8M
+join_buffer_size=8M
+sort_buffer_size=8M
+
+# log
+log_timestamps=system
+binlog_format=row
+log_bin=mysql-bin
+slow_query_log=1
+long_query_time=2
+slow_query_log_file=slow.log
+expire-logs-days=7
+innodb_flush_log_at_trx_commit=1
+sync_binlog=1
+
+# innodb
+innodb_buffer_pool_size=2G
+innodb_log_buffer_size=128M
+innodb_log_file_size=1G
+innodb_read_io_threads=8
+innodb_write_io_threads=8
+```
+
+运行
+
+```
+docker-compose -f compose-mysql.yml up -d
+```
+
+重启
+
+```
+docker-compose -f compose-mysql.yml restart
+```
+
+停止
+
+```
+docker-compose -f compose-mysql.yml stop
+```
+
+删除
+
+```
+docker-compose -f compose-mysql.yml rm
+```
+
+
+
 #### 管理
 
 ##### 实现非 root 用户运行 docker 命令
