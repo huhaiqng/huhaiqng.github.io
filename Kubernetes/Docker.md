@@ -324,6 +324,8 @@ docker-compose -f /root/mysql2/compose-mysql.yml up -d
 
 创建 yml 文件 compose-mysql.yml
 
+> 主配置文件会包含 /etc/mysql/conf.d 目录中的配置文件
+
 ```
 version: '3.1'
 services:
@@ -403,6 +405,95 @@ docker-compose -f compose-mysql.yml stop
 ```
 docker-compose -f compose-mysql.yml rm
 ```
+
+##### 部署 mindoc
+
+> mindoc 的数据保存在 MySQL 或 sqlite3
+>
+> 需要备份数据库和 uploads 目录
+
+docker-compose.yml 文件
+
+```
+MinDoc_New:
+  image: registry.cn-hangzhou.aliyuncs.com/mindoc/mindoc:v2.0-beta.2
+  privileged: false
+  restart: always
+  ports:
+    - 8181:8181
+  volumes:
+    - /data/mindoc/database:/mindoc/database
+    - /data/mindoc/uploads:/mindoc/uploads
+  environment:
+    - MINDOC_RUN_MODE=prod
+    - MINDOC_DB_ADAPTER=sqlite3
+    - MINDOC_DB_DATABASE=./database/mindoc.db
+    - MINDOC_CACHE=true
+    - MINDOC_CACHE_PROVIDER=file
+    - MINDOC_ENABLE_EXPORT=false
+    - MINDOC_BASE_URL=
+    - MINDOC_CDN_IMG_URL=
+    - MINDOC_CDN_CSS_URL=
+    - MINDOC_CDN_JS_URL=
+  dns:
+    - 223.5.5.5
+    - 223.6.6.6
+```
+
+##### 部署 zabbix 监控系统
+
+创建 zabbix/docker-compose.yml
+
+> 注意：没有挂载盘重新创建容器后修改会丢失，数据库中的数据也会丢失，会重新初始化数据。
+
+```
+version: '3.1'
+services:
+  server:
+    image: zabbix/zabbix-server-mysql
+    restart: always
+    environment:
+      - DB_SERVER_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=MySQL5.7
+    ports:
+      - 10051:10051
+    depends_on:
+      - mysql
+  web:
+    image: zabbix/zabbix-web-nginx-mysql
+    restart: always
+    environment:
+      - DB_SERVER_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=MySQL5.7
+      - ZBX_SERVER_HOST=server
+      - PHP_TZ=Asia/Shanghai
+    ports:
+      - 6060:8080
+    depends_on:
+      - mysql
+      - server
+  mysql:
+    image: mysql:5.7.30
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=MySQL5.7
+    ports:
+      - 3366:3306
+    volumes:
+      - /data/mysql-data:/var/lib/mysql
+      - /data/mysql-conf:/etc/mysql/conf.d
+```
+
+启动
+
+```
+cd zabbix
+docker-compose up -d
+```
+
+访问地址：http://host-ip:6060 默认用户名 Admin，默认密码 zabbix
 
 
 

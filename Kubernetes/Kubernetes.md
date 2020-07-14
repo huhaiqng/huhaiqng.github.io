@@ -193,7 +193,7 @@ privoxy --user privoxy /usr/local/etc/privoxy/config
 ```
 export http_proxy=http://192.168.1.10:8118
 export https_proxy=http://192.168.1.10:8118
-export no_proxy=localhost,127.0.0.1,192.168.1.8
+export no_proxy=localhost,127.0.0.1,192.168.1.10
 ```
 
 测试
@@ -202,7 +202,39 @@ export no_proxy=localhost,127.0.0.1,192.168.1.8
 curl -I www.google.com
 ```
 
-##### 配置 docker 
+##### 安装 docker
+
+```
+# 配置yum
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# 安装
+yum install docker-ce docker-ce-cli containerd.io
+
+## Create /etc/docker directory.
+mkdir /etc/docker
+
+# Setup daemon.
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+systemctl start docker
+systemctl enable docker
+```
+
+配置 docker 
 
 > 镜像下载完后应还原
 
@@ -210,7 +242,7 @@ curl -I www.google.com
 
 ```
 [Service]
-Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.1.8,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
+Environment="HTTP_PROXY=http_proxy=http://192.168.1.10:8118" "HTTPS_PROXY=http://192.168.1.10:8118" "NO_PROXY=localhost,192.168.1.10,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
 ```
 
 重启 docker
@@ -222,13 +254,107 @@ systemctl restart docker
 
 ##### 部署 k8s
 
-初始化 master
+安装 kubeadm、kubelet 和 kubectl
+
+> worker 不需要安装 kubectl
+
+```
+# 配置yum，完成安装后删除
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+# 安装
+update-alternatives --set iptables /usr/sbin/iptables-legacy
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+systemctl enable kubelet
+mv /etc/yum.repos.d/kubernetes.repo /tmp
+```
+
+在启用翻墙的终端拉取镜像
+
+> worker 节点需要的镜像: k8s.gcr.io/kube-proxy:v1.18.5
+
+```
+kubeadm config images pull
+```
+
+注释 /usr/lib/systemd/system/docker.service 文件的 Environment
+
+```
+# Environment="HTTP_PROXY=http_proxy=http://192.168.1.10:8118" "HTTPS_PROXY=http://192.168.1.10:8118" "NO_PROXY=localhost,192.168.1.10,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
+```
+
+重启 docker
+
+```
+systemctl daemon-reload
+systemctl restart docker
+```
+
+修改 /etc/sysctl.d/99-sysctl.conf, 添加一下内容
+
+```
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+```
+
+设置主机名解析
+
+```
+192.168.1.10  centos7-001
+192.168.1.11  centos7-002
+192.168.1.12  centos7-003
+```
+
+关闭 swap，需要重启服务器
+
+```
+[root@centos7-002 ~]# cat /etc/fstab 
+...
+# /dev/mapper/centos-swap swap                    swap    defaults        0 0
+```
+
+
+
+在新终端初始化 master
 
 ```
 kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 
+配置网络
 
+> 使用的镜像 quay.io/coreos/flannel:v0.12.0-amd64，为了加快速度可以提前准备
+
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+
+测试运行是否正常
+
+> coredns,flannel 都为 running，则正常
+
+```
+[root@centos7-001 ~]# kubectl get pods -n kube-system
+NAME                                  READY   STATUS    RESTARTS   AGE
+coredns-66bff467f8-9bjc6              1/1     Running   0          157m
+coredns-66bff467f8-wbfpl              1/1     Running   0          157m
+etcd-centos7-001                      1/1     Running   0          157m
+kube-apiserver-centos7-001            1/1     Running   0          157m
+kube-controller-manager-centos7-001   1/1     Running   0          157m
+kube-flannel-ds-amd64-577mh           1/1     Running   0          151m
+kube-flannel-ds-amd64-zdv87           1/1     Running   0          92m
+kube-proxy-g2592                      1/1     Running   0          92m
+kube-proxy-q8hzw                      1/1     Running   0          157m
+kube-scheduler-centos7-001            1/1     Running   0          157m
+```
 
 
 
@@ -280,6 +406,8 @@ curl http://localhost:8001/version
 export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 echo Name of the Pod: $POD_NAME
 ```
+
+
 
 #### 了解应用
 
@@ -345,8 +473,6 @@ echo NODE_PORT=$NODE_PORT
 ```
 curl http://NODE_IP:NODE_PORT
 ```
-
-
 
 
 
