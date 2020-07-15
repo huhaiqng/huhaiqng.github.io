@@ -977,6 +977,195 @@ spec:
           claimName: project-a-pvc
 ```
 
+##### 部署 redes 服务(deployment + service)
+
+redis-service.yaml 文件
+
+```
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: redis
+  labels:
+    k8s-app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: redis
+  template:
+    metadata:
+      labels:
+        k8s-app: redis
+    spec:
+      containers:
+      - image: redis
+        imagePullPolicy: IfNotPresent
+        name: app
+        ports:
+          - containerPort: 6379
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis
+spec:
+  ports:
+    - port: 6379
+  selector:
+    k8s-app: redis
+```
+
+应用
+
+```
+kubectl apply -f redis-service.yaml
+```
+
+##### 部署 flask 应用(deployment + service + ingress)
+
+程序文件 app.py
+
+```
+import time
+from datetime import datetime
+import redis
+import socket
+from flask import Flask
+
+app = Flask(__name__)
+cache = redis.Redis(host='redis', port=6379)
+
+
+def get_hit_count():
+    retries = 5
+    while True:
+        try:
+            return cache.incr('hits')
+        except redis.exceptions.ConnectionError as exc:
+            if retries == 0:
+                raise exc
+            retries -= 1
+            time.sleep(0.5)
+
+
+@app.route('/')
+def hello():
+    count = get_hit_count()
+    hn = socket.gethostname()
+    dt = datetime.now()
+    hl='Hello World! I have been seen {} times.'.format(count)
+    return '主机名:%s 时间:%s 内容:%s' % (hn,dt,hl)
+```
+
+dockfile 文件 flask-base-dockerfile
+
+```
+FROM python:3.7-alpine
+WORKDIR /code
+RUN apk add --no-cache gcc musl-dev linux-headers
+RUN pip install flask redis
+ENV FLASK_APP app.py
+ENV FLASK_RUN_HOST 0.0.0.0
+COPY app.py .
+CMD ["flask", "run"]
+```
+
+生成 docker 镜像
+
+```
+docker build -t flask:v1.0 -f flask-dockerfile .
+```
+
+k8s yaml 文件 flask.yaml
+
+```
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: flask
+  labels:
+    k8s-app: flask
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: flask
+  template:
+    metadata:
+      labels:
+        k8s-app: flask
+    spec:
+      containers:
+      - image: flask:v1.0
+        imagePullPolicy: IfNotPresent
+        name: flask
+        ports:
+          - containerPort: 5000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: flask
+spec:
+  ports:
+    - name: web
+      port: 5000
+  selector:
+    k8s-app: flask
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: flask-ingress
+spec:
+  rules:
+  - host: flask.web.ingress
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: flask
+          servicePort: web
+
+```
+
+应用
+
+```
+kubectl apply -f flask.yaml
+```
+
+查看 traefix pod 的 ip 地址
+
+![image-20200715142806561](Kubernetes.assets/image-20200715142806561.png)
+
+在 master 节点(node 节点也可以)安装一个 nginx , server 配置如下
+
+```
+upstream traefix {
+    server 10.244.1.18;
+    server 10.244.1.19;
+}
+
+server {
+    listen       80;
+    server_name  flask.web.ingress;
+
+    location / {
+        proxy_pass	http://traefix;
+        proxy_redirect          off;
+        proxy_set_header    	Host             $host;
+        proxy_set_header        X-Real-IP        $remote_addr;
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+在主机 hosts 文件添加一条记录 "192.168.40.201 traefik.web.ui" ，使用 http://flask.web.ingress 访问 flask
+
 
 
 #### 资料
@@ -1075,3 +1264,17 @@ mv /etc/cni/net.d/calico-kubeconfig /tmp/
 检查 pod 发现不在同一个子网
 
 ![image-20200710183105543](Kubernetes.assets/image-20200710183105543.png)
+
+##### 无法使用本地镜像
+
+因为imagePullPolicy 为“Always”（默认值），修改为“ifNotPresent”即可解决此问题
+
+```
+containers:
+- image: app-nginx:latest
+  imagePullPolicy: IfNotPresent
+  name: app
+  ports:
+  - containerPort: 80
+```
+
