@@ -356,7 +356,210 @@ kube-proxy-q8hzw                      1/1     Running   0          157m
 kube-scheduler-centos7-001            1/1     Running   0          157m
 ```
 
+##### 部署 traefix ingress
 
+创建 traefik-rbac.yaml 文件
+
+```
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+    - extensions
+    resources:
+    - ingresses/status
+    verbs:
+    - update
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+- kind: ServiceAccount
+  name: traefik-ingress-controller
+  namespace: kube-system
+```
+
+应用
+
+```
+kubectl apply -f traefik-rbac.yaml
+或
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/traefik-rbac.yaml
+```
+
+创建 traefik-deployment.yaml 文件
+
+```
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: kube-system
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: traefik-ingress-controller
+  namespace: kube-system
+  labels:
+    k8s-app: traefik-ingress-lb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: traefik-ingress-lb
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik-ingress-lb
+        name: traefik-ingress-lb
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: traefik:v1.7
+        name: traefik-ingress-lb
+        ports:
+        - name: http
+          containerPort: 80
+        - name: admin
+          containerPort: 8080
+        args:
+        - --api
+        - --kubernetes
+        - --logLevel=INFO
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: traefik-ingress-service
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web
+    - protocol: TCP
+      port: 8080
+      name: admin
+  type: NodePort
+```
+
+应用
+
+```
+kubectl apply -f traefik-deployment.yaml
+或
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/traefik-deployment.yaml
+```
+
+查看访问 traefix 的 web ui 的 nodeport 
+
+![image-20200715135834626](Kubernetes.assets/image-20200715135834626.png)
+
+使用地址 http://nodeip:30184 访问 web ui
+
+创建 ui.yaml 文件，实现通过 ingress 的方式访问 web ui
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-ui
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+  - name: web
+    port: 80
+    targetPort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-web-ui
+  namespace: kube-system
+spec:
+  rules:
+  - host: traefik.web.ui
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: traefik-web-ui
+          servicePort: web
+```
+
+应用
+
+```
+kubectl apply -f ui.yaml
+或
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/ui.yaml
+```
+
+查看 traefix pod 的 ip 地址
+
+![image-20200715142806561](Kubernetes.assets/image-20200715142806561.png)
+
+在 master 节点(node 节点也可以)安装一个 nginx , server 配置如下
+
+```
+upstream traefix {
+    server 10.244.1.18;
+    server 10.244.1.19;
+}
+
+server {
+    listen       80;
+    server_name  traefik.web.ui;
+
+    location / {
+        proxy_pass	http://traefix;
+        proxy_redirect          off;
+        proxy_set_header    	Host             $host;
+        proxy_set_header        X-Real-IP        $remote_addr;
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+在主机 hosts 文件添加一条记录 192.168.40.201 traefik.web.ui ，使用 http://traefik.web.ui 访问 web ui
+
+参考文档：https://docs.traefik.io/v1.7/user-guide/kubernetes/
+
+ 
 
 #### 教程
 
@@ -812,6 +1015,28 @@ kubectl logs podname
 
 ```
 kubectl exec POD_NAME -c CONTAINER_NAME -it -- sh
+```
+
+#### 安装 heml
+
+下载
+
+```
+wget https://get.helm.sh/helm-v3.3.0-rc.1-linux-amd64.tar.gz
+```
+
+安装
+
+```
+tar zxvf helm-v3.3.0-rc.1-linux-amd64.tar.gz
+mv linux-amd64/helm /usr/local/bin/
+chmod +x /usr/local/bin/helm
+```
+
+检查版本
+
+```
+helm version
 ```
 
 
