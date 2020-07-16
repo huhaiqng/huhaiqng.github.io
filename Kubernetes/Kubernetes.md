@@ -280,7 +280,13 @@ mv /etc/yum.repos.d/kubernetes.repo /tmp
 
 在启用翻墙的终端拉取镜像
 
-> worker 节点需要的镜像: k8s.gcr.io/kube-proxy:v1.18.5, k8s.gcr.io/pause:3.2 
+> worker 节点需要的镜像: 
+>
+> k8s.gcr.io/kube-proxy:v1.18.5
+>
+> k8s.gcr.io/pause:3.2 
+>
+> k8s.gcr.io/coredns:1.6.7
 
 ```
 kubeadm config images pull
@@ -325,8 +331,10 @@ net.bridge.bridge-nf-call-iptables = 1
 
 在新终端初始化 master
 
+> --kubernetes-version=1.18.5 指定安装版本
+
 ```
-kubeadm init --pod-network-cidr=10.244.0.0/16
+kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=1.18.5
 ```
 
 配置网络
@@ -355,6 +363,27 @@ kube-proxy-g2592                      1/1     Running   0          92m
 kube-proxy-q8hzw                      1/1     Running   0          157m
 kube-scheduler-centos7-001            1/1     Running   0          157m
 ```
+
+节点加入
+
+```
+# 显示加入节点命令
+kubeadm token create --print-join-command
+# 加入节点
+kubeadm join 192.168.40.201:6443 --token qqe25f.8l45ojbosy9hxpkc     --discovery-token-ca-cert-hash sha256:84a8f25f211461cfe9c33243445e1d31d0cb81944728c44804d806a022cc01fe
+```
+
+查看节点
+
+```
+[root@centos7-001 ~]# kubectl get nodes
+NAME          STATUS   ROLES    AGE   VERSION
+centos7-001   Ready    master   43h   v1.18.5
+centos7-002   Ready    <none>   42h   v1.18.5
+centos7-003   Ready    <none>   85m   v1.18.6
+```
+
+
 
 ##### 部署 traefix ingress
 
