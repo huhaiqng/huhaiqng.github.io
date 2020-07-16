@@ -158,6 +158,8 @@ centos76-003   Ready    <none>   80s   v1.15.3
 
 ##### 在 CentOS 服务器上安装 Privoxy
 
+> 只需在一台上安装，其它的可以通过该台代理
+
 编译
 
 ```
@@ -178,8 +180,8 @@ make && make install
 > 192.168.1.8 为运行 v2ray 主机的 IP
 
 ```
-listen-address  192.168.1.10:8118
-forward-socks5t / 192.168.1.8:10808 .
+listen-address  192.168.40.201:8118
+forward-socks5t / 192.168.40.200:10808 .
 ```
 
 启动
@@ -191,9 +193,9 @@ privoxy --user privoxy /usr/local/etc/privoxy/config
 启用代理
 
 ```
-export http_proxy=http://192.168.1.10:8118
-export https_proxy=http://192.168.1.10:8118
-export no_proxy=localhost,127.0.0.1,192.168.1.10
+export http_proxy=http://192.168.40.201:8118
+export https_proxy=http://192.168.40.201:8118
+export no_proxy=localhost,127.0.0.1,192.168.40.201
 ```
 
 测试
@@ -209,7 +211,7 @@ curl -I www.google.com
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum install docker-ce docker-ce-cli containerd.io
+yum install -y docker-ce docker-ce-cli containerd.io
 
 ## Create /etc/docker directory.
 mkdir /etc/docker
@@ -242,7 +244,7 @@ systemctl enable docker
 
 ```
 [Service]
-Environment="HTTP_PROXY=http_proxy=http://192.168.1.10:8118" "HTTPS_PROXY=http://192.168.1.10:8118" "NO_PROXY=localhost,192.168.1.10,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
+Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.40.201,127.0.0.1,10.96.0.0/12,192.168.99.0/24"
 ```
 
 重启 docker
@@ -278,7 +280,7 @@ mv /etc/yum.repos.d/kubernetes.repo /tmp
 
 在启用翻墙的终端拉取镜像
 
-> worker 节点需要的镜像: k8s.gcr.io/kube-proxy:v1.18.5
+> worker 节点需要的镜像: k8s.gcr.io/kube-proxy:v1.18.5, k8s.gcr.io/pause:3.2 
 
 ```
 kubeadm config images pull
@@ -287,7 +289,7 @@ kubeadm config images pull
 注释 /usr/lib/systemd/system/docker.service 文件的 Environment
 
 ```
-# Environment="HTTP_PROXY=http_proxy=http://192.168.1.10:8118" "HTTPS_PROXY=http://192.168.1.10:8118" "NO_PROXY=localhost,192.168.1.10,127.0.0.1,10.96.0.0/12,192.168.99.0/24,192.168.39.0/24"
+# Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.40.201,127.0.0.1,10.96.0.0/12,192.168.99.0/24"
 ```
 
 重启 docker
@@ -320,8 +322,6 @@ net.bridge.bridge-nf-call-iptables = 1
 ...
 # /dev/mapper/centos-swap swap                    swap    defaults        0 0
 ```
-
-
 
 在新终端初始化 master
 
@@ -1166,6 +1166,54 @@ server {
 
 在主机 hosts 文件添加一条记录 "192.168.40.201 traefik.web.ui" ，使用 http://flask.web.ingress 访问 flask
 
+##### 部署使用阿里云镜像的应用
+
+> 虽然 docker login 后可以通过 docker pull 命令拉取镜像, 但无法通过k8s创建pod方式拉取
+
+生成密钥
+
+```
+kubectl create secret docker-registry aliyun --docker-server=registry.cn-shenzhen.aliyuncs.com --docker-username=胡海青2020 --docker-password=******
+```
+
+查看生成的密钥
+
+```
+[root@centos7-001 ~]# kubectl get secret
+NAME                  TYPE                                  DATA   AGE
+aliyun                kubernetes.io/dockerconfigjson        1      14m
+default-token-8qr67   kubernetes.io/service-account-token   3      43h
+```
+
+在 yaml 文件中指定 imagePullSecrets
+
+```
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: flask
+  labels:
+    k8s-app: flask
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      k8s-app: flask
+  template:
+    metadata:
+      labels:
+        k8s-app: flask
+    spec:
+      containers:
+      - image: registry.cn-shenzhen.aliyuncs.com/nsa/flask:v2.9
+        imagePullPolicy: IfNotPresent
+        name: flask
+        ports:
+          - containerPort: 5000
+      imagePullSecrets:
+      - name: aliyun
+```
+
 
 
 #### 资料
@@ -1205,6 +1253,14 @@ kubectl logs podname
 ```
 kubectl exec POD_NAME -c CONTAINER_NAME -it -- sh
 ```
+
+重新生成 token, 并打印加入 master 命令
+
+```
+kubeadm token create --print-join-command
+```
+
+
 
 #### 安装 heml
 
