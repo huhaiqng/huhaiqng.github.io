@@ -666,7 +666,7 @@ kubectl -n kube-system describe secret admin-token-bdt8h
 
 使用地址 https://192.168.40.201:6443/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ 登录 
 
-参考博文：
+参考文档：
 
 https://jimmysong.io/kubernetes-handbook/guide/auth-with-kubeconfig-or-token.html
 
@@ -694,9 +694,9 @@ hostNetwork: true
 
 ```
 command:
-        - /metrics-server
-        - --kubelet-insecure-tls
-        - --kubelet-preferred-address-types=InternalDNS,InternalIP,ExternalDNS,ExternalIP,Hostname
+- /metrics-server
+- --kubelet-insecure-tls
+- --kubelet-preferred-address-types=InternalDNS,InternalIP,ExternalDNS,ExternalIP,Hostname
 ```
 
 ![image-20200717172427845](Kubernetes.assets/image-20200717172427845.png)
@@ -722,6 +722,12 @@ centos7-003   24m          2%     496Mi           56%
 Dashboard 显示资源使用情况
 
 ![image-20200717172716758](Kubernetes.assets/image-20200717172716758.png)
+
+参考文档：
+
+[https://p1htmlkernalweb.mybluemix.net/articles/%E4%BC%81%E4%B8%9A%E7%BA%A7%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF+k8s+%E8%B5%84%E6%BA%90%E7%9B%91%E6%8E%A7%E7%9A%84%E9%83%A8%E7%BD%B2%E5%92%8Cui%E7%95%8C%E9%9D%A2%E7%9A%84%E9%83%A8%E7%BD%B2_3978660_csdn.html](https://p1htmlkernalweb.mybluemix.net/articles/企业级容器技术+k8s+资源监控的部署和ui界面的部署_3978660_csdn.html)
+
+https://www.cnblogs.com/binghe001/p/12821804.html
 
 
 
