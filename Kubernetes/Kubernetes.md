@@ -588,7 +588,142 @@ server {
 
 参考文档：https://docs.traefik.io/v1.7/user-guide/kubernetes/
 
- 
+ ##### 部署 Dashboard UI
+
+部署
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+```
+
+生成 client-certificate-data
+
+```
+grep 'client-certificate-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> kubecfg.crt
+```
+
+生成 client-key-data
+
+```
+grep 'client-key-data' ~/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> kubecfg.key
+```
+
+生成p12
+
+```
+openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name "kubernetes-client"
+```
+
+将 kubecfg.p12 导入到 firefox 浏览器
+
+![image-20200717143304536](Kubernetes.assets/image-20200717143304536.png)
+
+创建生成 token 的 yaml 文件 admin-role.yaml
+
+```
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: admin
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: admin
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+```
+
+应用
+
+```bash
+kubectl create -f admin-role.yaml
+```
+
+获取 admin-token 的secret名字
+
+```
+kubectl -n kube-system get secret | grep admin-token
+```
+
+获取 token 的值
+
+```
+kubectl -n kube-system describe secret admin-token-bdt8h
+```
+
+使用地址 https://192.168.40.201:6443/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/ 登录 
+
+参考博文：
+
+https://jimmysong.io/kubernetes-handbook/guide/auth-with-kubeconfig-or-token.html
+
+https://www.cnblogs.com/rainingnight/p/deploying-k8s-dashboard-ui.html
+
+https://kubernetes.io/zh/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+##### 部署 metrics-server
+
+下载 yaml 文件
+
+```
+wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+```
+
+修改 deployment 第一处，添加一下内容
+
+```
+hostNetwork: true
+```
+
+![image-20200717171637242](Kubernetes.assets/image-20200717171637242.png)
+
+修改 deployment 第二处，添加一下内容
+
+```
+command:
+        - /metrics-server
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalDNS,InternalIP,ExternalDNS,ExternalIP,Hostname
+```
+
+![image-20200717172427845](Kubernetes.assets/image-20200717172427845.png)
+
+应用
+
+> 需要提前翻墙下载好镜像 k8s.gcr.io/metrics-server-amd64:v0.3.6
+
+```
+kubectl apply -f components.yaml
+```
+
+等待1分钟左右，检测
+
+```
+[root@centos7-001 ~]# kubectl top nodes
+NAME          CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+centos7-001   150m         7%     1539Mi          41%       
+centos7-002   28m          2%     504Mi           57%       
+centos7-003   24m          2%     496Mi           56% 
+```
+
+Dashboard 显示资源使用情况
+
+![image-20200717172716758](Kubernetes.assets/image-20200717172716758.png)
+
+
 
 #### 教程
 
@@ -910,34 +1045,45 @@ centos76-003:30001> get k
 ##### 部署挂载 NODE 目录的应用
 
 ```
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: vol-emptydir-pod
+  name: applog
+  labels:
+    app: applog
 spec:
-  volumes:
-  - name: html
-    # emptyDir: { }
-    hostPath:
-      path: /tmp/html
-      type: DirectoryOrCreate
-  containers:
-  - name: nginx
-    image: nginx:latest
-    volumeMounts:
-    - name: html
-      mountPath: /usr/share/nginx/html
-  - name: pagegen
-    image: alpine
-    volumeMounts:
-    - name: html
-      mountPath: /html
-    command: [ "/bin/sh", "-c" ]
-    args:                        #定义循环，每10秒向/html/文件中追加写入当前主机名和时间
-    - while true; do
-        echo $(hostname) $(date) >> /html/index.html;
-        sleep 10;
-      done
+  replicas: 1
+  selector:
+    matchLabels:
+      app: applog
+  template:
+    metadata:
+      labels:
+        app: applog
+    spec:
+      containers:
+      - name: applog
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - >
+          i=0;
+          while true;
+          do
+            echo "$i: $(date)" >> /var/log/1.log;
+            echo "$(date) INFO $i" >> /var/log/2.log;
+            i=$((i+1));
+            sleep 1;
+          done
+        volumeMounts:
+        - name: applog-volume
+          mountPath: /var/log
+      volumes:
+      - name: applog-volume
+        hostPath:
+          path: /data/project/app/log
+          type: Directory
 ```
 
 ##### 部署挂载 NFS 目录的应用
