@@ -211,7 +211,7 @@ curl -I www.google.com
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum install -y docker-ce docker-ce-cli containerd.io
+yum update && yum install -y docker-ce docker-ce-cli containerd.io
 
 ## Create /etc/docker directory.
 mkdir /etc/docker
@@ -1468,6 +1468,16 @@ helm version
 
 
 #### 常见问题
+
+##### dockers 无法启动
+
+> 测试可能是 amd 处理器的问题
+
+报错信息
+
+![1595059870772](C:\Users\haiqi\Desktop\devops-note\Kubernetes\assets\1595059870772.png)
+
+处理方法: 重新安装 CentOS 7 系统，分区类别设置为 ext4。运行 yum update 将系统更新到最新。
 
 ##### coredns 无法启动
 
