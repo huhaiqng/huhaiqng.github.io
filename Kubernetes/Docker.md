@@ -126,6 +126,8 @@ docker build -t <REPOSITORY:TAG> .
 
 创建 Dockerfile 文件
 
+> 需要提前下载好 jdk-8u151-linux-x64.tar.gz
+
 ```
 FROM centos:7.6.1810
 
@@ -488,12 +490,44 @@ services:
 
 启动
 
+> 访问地址：http://host-ip:6060 默认用户名 Admin，默认密码 zabbix
+
 ```
 cd zabbix
 docker-compose up -d
 ```
 
-访问地址：http://host-ip:6060 默认用户名 Admin，默认密码 zabbix
+##### 部署 dubbo-admin
+
+创建 docker-compose.yml 文件
+
+```
+version: '3'
+
+services:
+  zookeeper:
+    image: zookeeper
+    ports:
+      - 2181:2181
+  admin:
+    image: apache/dubbo-admin
+    depends_on:
+      - zookeeper
+    ports:
+      - 8080:8080
+    environment:
+      - admin.registry.address=zookeeper://zookeeper:2181
+      - admin.config-center=zookeeper://zookeeper:2181
+      - admin.metadata-report.address=zookeeper://zookeeper:2181
+```
+
+启动
+
+> 访问地址:  http://hostip:8080 
+
+```
+docker-compose up -d
+```
 
 
 
