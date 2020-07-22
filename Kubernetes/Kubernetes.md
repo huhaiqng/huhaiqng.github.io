@@ -588,6 +588,184 @@ server {
 
 参考文档：https://docs.traefik.io/v1.7/user-guide/kubernetes/
 
+##### 部署边缘节点(trafix ingress)
+
+创建 traefik-rbac.yaml 文件
+
+```
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+    - extensions
+    resources:
+    - ingresses/status
+    verbs:
+    - update
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+- kind: ServiceAccount
+  name: traefik-ingress-controller
+  namespace: kube-system
+```
+
+应用
+
+```
+kubectl apply -f traefik-rbac.yaml 或
+kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/traefik-rbac.yaml
+```
+
+选择一个 node 标记为边缘节点
+
+```
+kubectl label nodes NODE_NAME edgenode=true
+```
+
+创建文件 traefik-ds.yaml
+
+> 选择 DaemonSet 不用 Deployment 是因为 Deployment 更新时，会不停止旧的 pod 同时生成新的 pod ，这与 hostNetwork: true 产生冲突，hostNetwork: true 会将 80和8080 端口绑定到 node ip。
+>
+> nodeSelector: 选择部署在边缘服务器。如果有多台边缘主机可以使用 keepalived 实现高可用。
+
+```
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: kube-system
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: traefik-ingress-controller
+  namespace: kube-system
+  labels:
+    k8s-app: traefik-ingress-lb
+spec:
+  selector:
+    matchLabels:
+      k8s-app: traefik-ingress-lb
+      name: traefik-ingress-lb
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik-ingress-lb
+        name: traefik-ingress-lb
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      hostNetwork: true
+      containers:
+      - image: traefik:v1.7
+        name: traefik-ingress-lb
+        ports:
+        - name: http
+          containerPort: 80
+          hostPort: 80
+        - name: https
+          containerPort: 443
+          hostPort: 443
+        - name: admin
+          containerPort: 8080
+          hostPort: 8080
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+        args:
+        - --api
+        - --kubernetes
+        - --logLevel=INFO
+        - --defaultentrypoints=http,https
+        - --entrypoints=Name:https Address::443 TLS
+        - --entrypoints=Name:http Address::80
+      nodeSelector:
+        edgenode: "true"
+```
+
+应用
+
+```
+kubectl apply -f traefik-ds.yaml
+```
+
+80和8080端口绑定到了 node ip
+
+![image-20200722110641925](Kubernetes.assets/image-20200722110641925.png)
+
+创建 ui.yaml
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-ui
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+  - name: web
+    port: 80
+    targetPort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-web-ui
+  namespace: kube-system
+spec:
+  rules:
+  - host: traefix.myk8s.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: traefik-web-ui
+          servicePort: web
+```
+
+在访问 traefik web ui 的主机添加一条将 traefix.myk8s.com 解析到 node ip 的记录，就可以直接使用地址 http://traefik.myk8s.com/dashboard/ 访问 traefix web ui
+
+参考博文：
+
+https://jimmysong.io/kubernetes-handbook/practice/edge-node-configuration.html
+
+https://docs.traefik.io/v1.7/user-guide/kubernetes/
+
  ##### 部署 Dashboard UI
 
 部署
@@ -1395,9 +1573,252 @@ spec:
       - name: aliyun
 ```
 
+##### 部署基于 name 的 ingress 和 tls(https) 加密的应用
+
+创建 cheese-deployments.yaml 文件
+
+```
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: stilton
+  labels:
+    app: cheese
+    cheese: stilton
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cheese
+      task: stilton
+  template:
+    metadata:
+      labels:
+        app: cheese
+        task: stilton
+        version: v0.0.1
+    spec:
+      containers:
+      - name: cheese
+        image: errm/cheese:stilton
+        ports:
+        - containerPort: 80
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cheddar
+  labels:
+    app: cheese
+    cheese: cheddar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cheese
+      task: cheddar
+  template:
+    metadata:
+      labels:
+        app: cheese
+        task: cheddar
+        version: v0.0.1
+    spec:
+      containers:
+      - name: cheese
+        image: errm/cheese:cheddar
+        ports:
+        - containerPort: 80
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: wensleydale
+  labels:
+    app: cheese
+    cheese: wensleydale
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cheese
+      task: wensleydale
+  template:
+    metadata:
+      labels:
+        app: cheese
+        task: wensleydale
+        version: v0.0.1
+    spec:
+      containers:
+      - name: cheese
+        image: errm/cheese:wensleydale
+        ports:
+        - containerPort: 80
+```
+
+应用
+
+```
+kubectl apply -f cheese-deployments.yaml 
+```
+
+创建 cheese-services.yaml 文件
+
+```
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stilton
+spec:
+  ports:
+  - name: http
+    targetPort: 80
+    port: 80
+  selector:
+    app: cheese
+    task: stilton
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cheddar
+spec:
+  ports:
+  - name: http
+    targetPort: 80
+    port: 80
+  selector:
+    app: cheese
+    task: cheddar
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wensleydale
+  annotations:
+    traefik.backend.circuitbreaker: "NetworkErrorRatio() > 0.5"
+spec:
+  ports:
+  - name: http
+    targetPort: 80
+    port: 80
+  selector:
+    app: cheese
+    task: wensleydale
+```
+
+应用
+
+```
+kubectl apply -f cheese-services.yaml 
+```
+
+创建 secret
+
+> tls 证书是在阿里云上申请的免费证书，下载的类别为 Nginx。
+>
+> Deployment，Service，Ingress，secret 需要在同一个 namespace。
+
+```
+cd stilton-tls
+kubectl create secret tls stilton-tls-cert --key=tls.key --cert=tls.pem
+cd cheddar-tls
+kubectl create secret tls cheddar-tls-cert --key=tls.key --cert=tls.pem
+cd wensleydale-tls
+kubectl create secret tls wensleydale-tls-cert --key=tls.key --cert=tls.pem
+```
+
+创建 cheese-ingress.yaml 文件
+
+```
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wensleydale
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: wensleydale.huhaiqing.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: wensleydale
+          servicePort: http
+  tls:
+  - secretName: wensleydale-tls-cert
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: stilton
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: stilton.huhaiqing.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: stilton
+          servicePort: http
+  tls:
+  - secretName: stilton-tls-cert
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cheddar
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: cheddar.huhaiqing.xyz
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: cheddar
+          servicePort: http
+  tls:
+  - secretName: cheddar-tls-cert
+```
+
+应用
+
+```
+kubectl apply -f cheese-ingress.yaml
+```
+
+在 hosts 文件中添加 IP 域名映射
+
+> 192.168.40.203 为 Ingress 边缘 node 的 IP
+
+```
+192.168.40.203 stilton.huhaiqing.xyz cheddar.huhaiqing.xyz wensleydale.huhaiqing.xyz
+```
+
+通过 以下https 地址 访问部署的应用
+
+https://stilton.huhaiqing.xyz
+
+https://cheddar.huhaiqing.xyz 
+
+https://wensleydale.huhaiqing.xyz
+
+参考博文：
+
+https://docs.traefik.io/v1.7/user-guide/kubernetes/#add-a-tls-certificate-to-the-ingress
 
 
-#### 资料
+
+#### 资料 
 
 **Kubernet**
 
@@ -1493,8 +1914,6 @@ mv /etc/cni/net.d/calico-kubeconfig /tmp/
 再次检查状态，运行正常
 
 ![image-20200710163651797](Kubernetes.assets/image-20200710163651797.png)
-
-
 
 ##### coredns ip 无法 ping 通
 

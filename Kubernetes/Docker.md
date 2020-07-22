@@ -176,10 +176,43 @@ ADD baipao-eureka.jar /usr/local/eureka
 ENTRYPOINT ["java", "-jar", "/usr/local/eureka/baipao-eureka.jar"] 
 ```
 
+生成镜像
+
+```
+docker build -t eureka.jar:1.0 .
+```
+
 创建 docker
 
 ```
 docker run -id -p 9090:9090 eureka.jar:1.0 
+```
+
+##### 生成 redis 镜像
+
+创建 Dockerfile 文件
+
+> redis.conf 下载地址 http://download.redis.io/redis-stable/redis.conf
+>
+> bind 和 requirepass 需要修改
+
+```
+FROM redis:6.0
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+COPY redis.conf /usr/local/etc/redis/redis.conf
+CMD [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+```
+
+生成镜像
+
+```
+docker build -t redis-cst:6.0 .
+```
+
+创建 docker
+
+```
+docker run -id -p 6379:6379 redis-cst:6.0
 ```
 
 
@@ -542,3 +575,18 @@ gpasswd -a devops docker
 ```
 
 重新登录用户即可执行 docker 命令
+
+##### 配置镜像加速器
+
+修改daemon配置文件 /etc/docker/daemon.json 来使用加速器
+
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://mw9jlg9p.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
