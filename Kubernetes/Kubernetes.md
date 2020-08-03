@@ -211,7 +211,7 @@ curl -I www.google.com
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum install -y docker-ce docker-ce-cli containerd.io
+yum update && yum install -y docker-ce docker-ce-cli containerd.io
 
 ## Create /etc/docker directory.
 mkdir /etc/docker
@@ -244,7 +244,7 @@ systemctl enable docker
 
 ```
 [Service]
-Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.40.201,127.0.0.1,10.96.0.0/12,192.168.99.0/24"
+Environment="HTTP_PROXY=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,127.0.0.1,192.168.40.201"
 ```
 
 重启 docker
@@ -280,7 +280,7 @@ mv /etc/yum.repos.d/kubernetes.repo /tmp
 
 在启用翻墙的终端拉取镜像
 
-> worker 节点需要的镜像: 
+> worker 节点需要的镜像(具体版本和 master 一致): 
 >
 > k8s.gcr.io/kube-proxy:v1.18.5
 >
@@ -295,7 +295,7 @@ kubeadm config images pull
 注释 /usr/lib/systemd/system/docker.service 文件的 Environment
 
 ```
-# Environment="HTTP_PROXY=http_proxy=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,192.168.40.201,127.0.0.1,10.96.0.0/12,192.168.99.0/24"
+# Environment="HTTP_PROXY=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,127.0.0.1,192.168.40.201"
 ```
 
 重启 docker
@@ -305,11 +305,9 @@ systemctl daemon-reload
 systemctl restart docker
 ```
 
-修改 /etc/sysctl.d/99-sysctl.conf, 添加一下内容
+修改 /etc/sysctl.d/99-sysctl.conf, 添加一下内容，并命令 sysctl -p 加载
 
 ```
-net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 ```
 
@@ -367,9 +365,9 @@ kube-scheduler-centos7-001            1/1     Running   0          157m
 节点加入
 
 ```
-# 显示加入节点命令
+# 显示加入节点命令(在 master 执行)
 kubeadm token create --print-join-command
-# 加入节点
+# 加入节点(在 node 执行)
 kubeadm join 192.168.40.201:6443 --token qqe25f.8l45ojbosy9hxpkc     --discovery-token-ca-cert-hash sha256:84a8f25f211461cfe9c33243445e1d31d0cb81944728c44804d806a022cc01fe
 ```
 
@@ -541,7 +539,7 @@ metadata:
   namespace: kube-system
 spec:
   rules:
-  - host: traefik.web.ui
+  - host: traefik.myk8s.com
     http:
       paths:
       - path: /
@@ -558,9 +556,9 @@ kubectl apply -f ui.yaml
 kubectl apply -f https://raw.githubusercontent.com/containous/traefik/v1.7/examples/k8s/ui.yaml
 ```
 
-查看 traefix pod 的 ip 地址
+查看 traefix services clusterip 地址
 
-![image-20200715142806561](Kubernetes.assets/image-20200715142806561.png)
+![](Kubernetes.assets/image-20200715142806561.png)
 
 在 master 节点(node 节点也可以)安装一个 nginx , server 配置如下
 
@@ -1336,7 +1334,7 @@ spec:
           claimName: project-a-pvc
 ```
 
-##### 部署 redes 服务(deployment + service)
+##### 部署 redis 服务(deployment + service)
 
 redis-service.yaml 文件
 
@@ -1889,6 +1887,16 @@ helm version
 
 
 #### 常见问题
+
+##### dockers 无法启动
+
+> 测试可能是 amd 处理器的问题
+
+报错信息
+
+![1595059870772](C:\Users\haiqi\Desktop\devops-note\Kubernetes\assets\1595059870772.png)
+
+处理方法: 重新安装 CentOS 7 系统，分区类别设置为 ext4。运行 yum update 将系统更新到最新，重启系统。
 
 ##### coredns 无法启动
 
