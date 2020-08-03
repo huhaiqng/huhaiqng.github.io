@@ -23,6 +23,6 @@ systemctl start nfs
 > chown: changing ownership of `/zabbixdb/was': Invalid argument
 
 ```
-mount -o vers=3 192.168.1.10/nfsdisk /nfsdisk
+mount -o vers=3 192.168.1.10:/nfsdisk /nfsdisk
 ```
 

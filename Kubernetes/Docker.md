@@ -144,7 +144,7 @@ RUN sh -c echo 'Asia/Shanghai' >/etc/timezone
 生成镜像
 
 ```
-docker build -t oraclejdk:1.8 .
+docker build --no-cache -t oraclejdk:1.8 .
 ```
 
 创建 docker
@@ -179,7 +179,7 @@ ENTRYPOINT ["java", "-jar", "/usr/local/eureka/baipao-eureka.jar"]
 生成镜像
 
 ```
-docker build -t eureka.jar:1.0 .
+docker build --no-cache -t eureka.jar:1.0 .
 ```
 
 创建 docker
@@ -206,7 +206,7 @@ CMD [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
 生成镜像
 
 ```
-docker build -t redis-cst:6.0 .
+docker build --no-cache -t redis-cst:6.0 .
 ```
 
 创建 docker
