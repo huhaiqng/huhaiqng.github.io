@@ -233,8 +233,8 @@ server {
         index index.html index.htm;
     }
 
-    location /api/ {
-        proxy_pass  http://127.0.0.1:8080/;
+    location /api {
+        proxy_pass  http://127.0.0.1:8080;
         proxy_redirect          off;
         proxy_set_header    	Host             $host;
         proxy_set_header        X-Real-IP        $remote_addr;

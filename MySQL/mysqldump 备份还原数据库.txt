@@ -39,7 +39,7 @@ mysqldump --databases zabbix \
 --triggers \
 --routines \
 --events \
---no-data
+--no-data \
 --single-transaction \
 --quick > zabbix.dump
 	
