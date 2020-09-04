@@ -10,13 +10,12 @@ echo 1024 > /proc/sys/net/core/somaxconn
 vim /etc/sysctl.conf
 vm.overcommit_memory = 1
 
-安装redis 5
+安装redis 5(redis 默认安装到 /usr/local/bin)
 yum install -y gcc gcc-c++
 wget http://download.redis.io/releases/redis-5.0.3.tar.gz
 tar xzf redis-5.0.3.tar.gz
-mv redis-5.0.3 redis
-cd redis
-make MALLOC=libc
+cd redis-5.0.3
+make install MALLOC=libc
 
 master 配置文件 redis.conf 修改以下参数
 #绑定IP
