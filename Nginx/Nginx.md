@@ -205,6 +205,13 @@ server {
     server_name  example.org  www.example.org;
     location / {
         proxy_pass http://backend;
+        proxy_redirect     off;
+        proxy_set_header   Host             $host;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_connect_timeout      120;
+        proxy_send_timeout         120;
+        proxy_read_timeout         120;
     }
 }
 ```
