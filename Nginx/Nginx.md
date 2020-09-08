@@ -27,6 +27,7 @@ server {
         server_name  download.example.com;
 		limit_rate 2m;
         location / {
+        		root /data/download;
                 autoindex on;
                 autoindex_exact_size off;
                 autoindex_localtime on;

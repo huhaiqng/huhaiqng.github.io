@@ -17,6 +17,8 @@ redis-benchmark  redis-check-aof  redis-check-rdb  redis-cli  redis-sentinel  re
 
 初始化服务
 
+> 多次执行，初始化多个实例
+
 ```
 # cd utils/
 # sh install_server.sh 
