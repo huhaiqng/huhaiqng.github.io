@@ -254,6 +254,41 @@ server {
 }
 ```
 
+##### location rewrite 实现自动跳转到移动端
+
+```
+server {
+	listen       80;
+        server_name  www.example.com;
+
+        location / {
+                if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+                        rewrite ^/(.*) /m$1;
+                }
+      
+                proxy_pass http://localhost:9090;
+                proxy_redirect     off;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+
+        location /m {
+                proxy_pass http://localhost:9090;
+                proxy_redirect     off;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+}
+```
+
 
 
 #### Nginx 反向代理加 '/' 和不加 '/' 的区别
