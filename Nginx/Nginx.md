@@ -603,3 +603,90 @@ server {
 ```
 
 **参考博文**：https://xuexb.com/post/nginx-url-rewrite.html
+
+
+
+#### 问题案例
+
+##### 反向代理出现循环
+
+目的：通过该配置实现自动跳转到移动端页面
+
+问题：uri login 出现循环
+
+![image-20201019181947059](Nginx.assets/image-20201019181947059.png)
+
+分析原因：由于后端设置了404自动跳转到 /login, 而又不存在 /m/login。
+
+解决方法：使用 proxy_redirect 将后端的重定向重写。 
+
+源配置文件如下
+
+```
+server {
+        listen       80;
+        server_name  test.example.net;
+
+        location / {
+                if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+                        rewrite ^/(.*) /m$1;
+                }
+
+                proxy_pass http://localhost:9090;
+                proxy_redirect     off;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+
+        location /m {
+                proxy_pass http://localhost:9090;
+                proxy_redirect     off;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+}
+```
+
+修改后的配置文件
+
+```
+server {
+        listen       80;
+        server_name  test.example.net;
+
+        location / {
+                if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+                        rewrite ^/(.*) /m$1;
+                }
+
+                proxy_pass http://localhost:9090;
+                proxy_redirect     off;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+
+        location /m {
+                proxy_pass http://localhost:9090;
+                proxy_redirect     http://$server_name/login http://$server_name;
+                proxy_set_header   Host             $host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+                proxy_connect_timeout      120;
+                proxy_send_timeout         120;
+                proxy_read_timeout         120;
+        }
+}
+```
+
