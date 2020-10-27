@@ -1,0 +1,5 @@
+# 项目名	# 用户名@服务器		# ssh 端口号	# 代码目录	# 环境
+project_a	root@192.168.40.202	22		dist		prod
+project_a       root@192.168.40.202     22              dist            test
+project_b       root@192.168.40.202     22              self            prod
+project_b	root@192.168.40.202	22		self		test
