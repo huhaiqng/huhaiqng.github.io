@@ -70,3 +70,7 @@ rm -rf .git/refs/original/
 git reflog expire --expire=now --all
 git gc --prune=now
 ```
+
+##### push 提示找不到项目
+
+解决方法：在链接中添加用户名，例如：http://user@192.168.1.10/huhaiqing/abc.git
