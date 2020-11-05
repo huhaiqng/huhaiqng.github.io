@@ -6,7 +6,7 @@ yum install yum-utils device-mapper-persistent-data lvm2
 # 配置yum 源
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum install docker-ce
+yum install docker-ce docker-ce-cli containerd.io
 # 配置
 mkdir /etc/docker
 # Setup daemon.

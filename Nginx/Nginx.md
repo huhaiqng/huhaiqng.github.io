@@ -226,9 +226,8 @@ server {
 }
 
 server {
-    listen       443;
+    listen       443 ssl;
     server_name  www.example.com;
-    ssl on;
     ssl_certificate ../cert/www.example.com.pem;
     ssl_certificate_key ../cert/www.example.com.key;
     ssl_session_timeout 5m;
