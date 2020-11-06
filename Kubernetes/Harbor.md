@@ -10,13 +10,15 @@ tar zxvf harbor-offline-installer-v2.0.2.tgz -C /data
 准备配置文件
 
 ```
+cd /data/harbor
 cp harbor.yml.tmpl harbor.yml
 ```
 
-修改配置文件
+修改配置文件 harbor.yml
 
 ```
 # nginx SSL 证书
+hostname: harbor.huhaiqing.xyz
 https:
   # https port for harbor, default is 443
   port: 443
