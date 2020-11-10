@@ -566,6 +566,177 @@ docker-compose up -d
 
 #### Docker Swarm
 
+##### 常用命令
+
+开启 swarm 模式
+
+> --advertise-addr: 配置 manager ip
+
+```
+docker swarm init --advertise-addr 192.168.99.100
+```
+
+查看加入集群命令
+
+```
+docker swarm join-token worker
+```
+
+加入集群
+
+```
+docker swarm join \
+  --token SWMTKN-1-49nj1cmql0jkz5s954yi3oex3nedyz0fb0xx14ie39trti4wxv-8vxv8rssmk743ojnwacrr2e7c \
+  192.168.99.100:2377
+```
+
+退出 swarm 模式
+
+```
+docker swarm leave
+```
+
+
+
+创建集群
+
+```
+docker stack deploy -f docker-compose.yml stackdemo
+```
+
+删除集群
+
+```
+docker stack rm stackdemo
+```
+
+列出集群
+
+```
+docker stack ls
+```
+
+查看集群
+
+```
+docker stack ps stackdemo
+```
+
+
+
+##### 部署 java 微服务集群
+
+jar 信息文件 jar_info.txt
+
+```
+# 项目名	# 模块名		# 包名					# 端口号
+zuul		hystrix-dashboard 	hystrix-dashboard-0.0.1-SNAPSHOT.jar    8910
+zuul		product-service		product-service-0.0.1-SNAPSHOT.jar	2200
+zuul		service-discovery	service-discovery-0.0.1-SNAPSHOT.jar	8260
+zuul		user-service		user-service-0.0.1-SNAPSHOT.jar		2100
+zuul		zuul-server		zuul-server-0.0.1-SNAPSHOT.jar 		8280
+```
+
+生成 docker 镜像脚本 build_jar_image.sh
+
+```shell
+#!/bin/bash
+set -e
+PROJECT_NAME=$1
+MODULE_NAME=$2
+TIME_TAG=$3
+
+if [ $# -ne 3 ]; then
+    echo "参数错误。正在执行方式: sh $0 PROJECT_NAME MODULE_NAME TIME_TAG"
+    exit 1
+fi
+
+MODULE_COUNT=`grep "^${PROJECT_NAME}[[:space:]]\+" $(dirname $0)/jar_info.txt | wc -l`
+
+if [ ${MODULE_COUNT} -eq 0 ]; then
+    echo "不存在 ${PROJECT_NAME} 项目"
+    exit
+fi
+
+function create_dockerfile {
+cat >/tmp/${MODULE_NAME}-dockerfile <<EOF
+FROM mcr.microsoft.com/java/jdk:8-zulu-alpine
+WORKDIR /data
+ADD ${MODULE_NAME}/target/${JAR_NAME} /data/${MODULE_NAME}.jar
+EOF
+}
+
+function build_image {
+    MODULE_NAME=`echo ${MODULE_INFO} | awk '{print $2}'`
+    JAR_NAME=`echo ${MODULE_INFO} | awk '{print $3}'`
+    JAR_PORT=`echo ${MODULE_INFO} | awk '{print $4}'`
+    IMAGE_NAME=harbor.huhaiqing.xyz/${PROJECT_NAME}/${MODULE_NAME}:${TIME_TAG}
+    create_dockerfile
+    docker build -t "${IMAGE_NAME}" -f /tmp/${MODULE_NAME}-dockerfile .
+    docker push ${IMAGE_NAME}
+}
+
+if [ "${MODULE_NAME}" = "all" ]; then
+    cat $(dirname $0)/jar_info.txt | grep "^${PROJECT_NAME}[[:space:]]\+" | while read MODULE_INFO
+    do
+        build_image
+    done
+else
+    MODULE_INFO=`grep "^${PROJECT_NAME}[[:space:]]\+" $(dirname $0)/jar_info.txt | grep "[[:space:]]\+${MODULE_NAME}[[:space:]]\+"`
+    if [ -n "${MODULE_INFO}" ];then
+        build_image
+    else
+        echo "项目 ${PROJECT_NAME} 的模块 ${MODULE_NAME} 不存在！"
+    fi
+fi
+```
+
+docker-compose.yml 文件
+
+```yaml
+version: "3.8"
+
+services:
+  hystrix-dashboard:
+    image: harbor.huhaiqing.xyz/zuul/hystrix-dashboard:${TAG}
+    entrypoint: ["java", "-jar", "hystrix-dashboard.jar"]
+    deploy:
+      replicas: 2
+  product-service:
+    image: harbor.huhaiqing.xyz/zuul/product-service:${TAG}
+    entrypoint: ["java", "-jar", "product-service.jar"]
+    deploy:
+      replicas: 2
+  service-discovery:
+    image: harbor.huhaiqing.xyz/zuul/service-discovery:${TAG}
+    ports:
+      - "8260:8260"
+    entrypoint: ["java", "-jar", "service-discovery.jar"]
+    deploy:
+      replicas: 2
+  user-service:
+    image: harbor.huhaiqing.xyz/zuul/user-service:${TAG}
+    entrypoint: ["java", "-jar", "user-service.jar"]
+    deploy:
+      replicas: 2
+    ports:
+      - "2100:2100"
+  zuul-server:
+    image: harbor.huhaiqing.xyz/zuul/zuul-server:${TAG}
+    entrypoint: ["java", "-jar", "zuul-server.jar"]
+    ports:
+      - "8280:8280"
+    deploy:
+      replicas: 2
+```
+
+启动集群
+
+```shell
+export TAG=20201109170037
+docker stack deploy -c docker-compose.yml zuul
+```
+
 
 
 #### 管理

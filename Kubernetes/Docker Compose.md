@@ -219,39 +219,3 @@ Hello Hello TestWeb! I have been seen 34 times.
 ```
 
 
-
-### 问题
-
-##### docker-compose 拉取镜像失败
-
-docker-compose.yml 文件
-
-```
-...
-web:
-    image: harbor.huhaiqing.xyz/stack/stackdemo
-...
-```
-
-报错日志
-
-```
-Nov  6 12:01:16 centos7-002 dockerd: time="2020-11-06T12:01:16.798995770+08:00" level=error msg="pulling image failed" error="unauthorized: unauthorized to access repository: stack/stackdemo, action: pull: unauthorized to access repository: stack/stackdemo, action: pull" module=node/agent/taskmanager node.id=i97nf37v63qgw1qaog7csdz8c service.id=t01jxmgqmpgvya5qesl5wh3di task.id=13x68ndceavqfq1v6oir7au95
-```
-
-原因：docker login 了多个站点，检查文件  ~/.docker/config.json，将不相关的站点 logout
-
-```
-cat ~/.docker/config.json
-{
-	"auths": {
-		"harbor.huhaiqing.xyz": {
-			"auth": "YWRtaW46SGFyYm9yMTIzNDU="
-		}
-	},
-	"HttpHeaders": {
-		"User-Agent": "Docker-Client/19.03.12 (linux)"
-	}
-}
-```
-
