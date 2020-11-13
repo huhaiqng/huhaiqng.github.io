@@ -44,3 +44,16 @@ vim /etc/fstab
 # /dev/mapper/centos-swap swap                    swap    defaults        0 0
 ```
 
+
+
+#### 设置对所有用户永久生效的环境变量 npm
+
+创建文件 /etc/profile.d/custom.sh
+
+> /etc/profile 会加载此文件
+
+```
+PATH=$PATH:/usr/local/node/bin
+export PATH
+```
+
