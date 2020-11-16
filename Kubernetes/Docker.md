@@ -596,8 +596,6 @@ docker swarm join \
 docker swarm leave
 ```
 
-
-
 创建集群
 
 ```
@@ -732,9 +730,93 @@ services:
 
 启动集群
 
+> --with-registry-auth: 拉取镜像需要认证, docker 
+
 ```shell
 export TAG=20201109170037
-docker stack deploy -c docker-compose.yml zuul
+docker stack deploy -c docker-compose.yml zuul --with-registry-auth
+```
+
+##### docker swarm 部署 wordpress
+
+创建 docker-compose.yml 文件
+
+> visualizer 用于查看容器的运行状态
+
+```
+version: "3"
+
+services:
+  wordpress:
+    image: wordpress
+    ports:
+      - 80:80
+    networks:
+      - overlay
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  db:
+    image: mysql
+    networks:
+       - overlay
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+volumes:
+  db-data:
+networks:
+  overlay:
+```
+
+启动集群
+
+```
+docker stack deploy -c docker-compose.yml wordpress
+```
+
+##### 通过 node label 将服务部署到指定的节点
+
+给节点添加 label
+
+```
+docker node update centos7-001 --label-add project=zuul
+```
+
+在 docker-compose.yml 指定部署节点
+
+> node.labels.project
+
+```
+zuul-server:
+    image: harbor.huhaiqing.xyz/zuul/zuul-server:${TAG}
+    deploy:
+      placement:
+        constraints: [node.labels.project == zuul]
 ```
 
 
