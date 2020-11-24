@@ -73,6 +73,8 @@ web_1    |  * Debugger PIN: 330-787-903
 redis_1  | 1:M 17 Aug 22:11:10.483 * Ready to accept connections
 ```
 
+
+
 ### 常用命令
 
  后台运行 
@@ -97,6 +99,39 @@ docker-compose run web env
 
 ```
 docker-compose stop
+```
+
+
+
+### 部署系统基础服务软件
+
+> project  为项目名称
+
+docker-compose-base.yml 文件
+
+```yaml
+version: "3.8"
+services:
+  redis:
+    image: redis:5.0.10
+    ports:
+      - "6379:6379"
+      
+  rabbitmq:
+    image: rabbitmq:3.8.9-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=Rab123
+      - RABBITMQ_DEFAULT_VHOST=default_vhost
+```
+
+启动
+
+```
+docker-compose -f docker-compose-base.yml -p project-base up -d
 ```
 
 
