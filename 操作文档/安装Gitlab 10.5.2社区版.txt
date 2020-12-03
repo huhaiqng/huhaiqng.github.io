@@ -2,7 +2,7 @@
 2、安装gitlab
 #安装
 yum install curl policycoreutils openssh-server openssh-clients postfix
-curl -sS http://packages.gitlab.cc/install/gitlab-ce/script.rpm.sh | sudo bash (报错继续执行后面的步骤)
+curl -s https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash (报错继续执行后面的步骤)
 EXTERNAL_URL="http://gitlab.domain.com" yum install gitlab-ce
 #更改数据目录
 vim /etc/gitlab/gitlab.rb 
