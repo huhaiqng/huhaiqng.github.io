@@ -1,0 +1,5 @@
+# PROJECT_NAME	# BUILD_SERVER		# PUBLISH_SERVER	# PUBLISH_ENV
+piomin		devops@192.168.40.202   devops@192.168.40.203   test
+forezp16	devops@192.168.40.202   devops@192.168.40.203   test
+test-project    devops@192.168.40.202   devops@192.168.40.203   test
+myclouds	devops@192.168.40.202	devops@192.168.40.203   test
