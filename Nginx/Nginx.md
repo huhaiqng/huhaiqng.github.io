@@ -240,7 +240,7 @@ server {
         index index.html index.htm;
     }
 
-    location /api {
+    location ^〜 /api {
         proxy_pass  http://127.0.0.1:8080;
         proxy_redirect          off;
         proxy_set_header    	Host             $host;
@@ -275,7 +275,7 @@ server {
                 proxy_read_timeout         120;
         }
 
-        location /m {
+        location ^〜 /m {
                 proxy_pass http://localhost:9090;
                 proxy_redirect     off;
                 proxy_set_header   Host             $host;

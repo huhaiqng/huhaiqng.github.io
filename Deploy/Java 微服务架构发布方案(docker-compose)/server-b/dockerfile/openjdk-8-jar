@@ -1,0 +1,4 @@
+FROM openjdk:8-alpine-cts
+RUN addgroup -g 1201 -S spring && adduser -u 1201 -S spring -G spring
+USER spring:spring
+COPY target/*.jar app.jar

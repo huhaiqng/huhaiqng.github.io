@@ -102,6 +102,65 @@ git 参数化
 
 #### 在 SERVER-B 进行相关配置 
 
+##### 依赖启动脚本 entrypoint.sh
+
+```shell
+#!/bin/sh
+SERVICE_NAME=$1
+SERVICE_PORT=$2
+
+while ! curl -I --connect-timeout 5 http://${SERVICE_NAME}:${SERVICE_PORT} >/dev/null 2>&1
+do
+    echo "等待启动 ${SERVICE_NAME}:${SERVICE_PORT} ......"
+    sleep 5s
+done
+
+shift 2
+cmd="$@"
+$cmd
+[root@server-b dockerfile]# cat openjdk-8-alpine-cts
+FROM openjdk:8-jdk-alpine
+RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories ;\
+    apk add tzdata ;\
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ;\
+    echo "Asia/Shanghai" >/etc/timezone ;\
+    apk add curl --no-cache && rm -f /var/cache/apk/*
+WORKDIR /data
+COPY entrypoint.sh .
+```
+
+##### 基础镜像 dockerfile openjdk-8-alpine-cts
+
+> 包含 jdk1.8, cts 时区, curl 工具
+>
+> curl 用来探测 java 服务是否已启动
+
+```
+FROM openjdk:8-jdk-alpine
+RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories ;\
+    apk add tzdata ;\
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ;\
+    echo "Asia/Shanghai" >/etc/timezone ;\
+    apk add curl --no-cache && rm -f /var/cache/apk/*
+WORKDIR /data
+COPY entrypoint.sh .
+```
+
+##### 生成基础镜像
+
+```
+docker build -t openjdk:8-alpine-cts -f openjdk-8-alpine-cts .
+```
+
+##### 服务镜像 docker openjdk-8-jar
+
+```
+FROM openjdk:8-alpine-cts
+RUN addgroup -g 1201 -S spring && adduser -u 1201 -S spring -G spring
+USER spring:spring
+COPY target/*.jar app.jar
+```
+
 ##### 创建模块列表文件 /data/scripts/module_list.txt
 
 ```
@@ -126,7 +185,7 @@ if [ $# -ne 4 ]; then
 fi
 
 function create_image {
-    IMAGE_NAME="harbor.huhaiqing.xyz/${PROJECT_NAME}/${MODULE_NAME}:${TIME_TAG}-${PUBLISH_ENV}"
+    IMAGE_NAME="harbor.huhaiqing.xyz/${PROJECT_NAME}/${MODULE_NAME}-${PUBLISH_ENV}:${TIME_TAG}"
     echo -e "\n---------------------------- 开始生成镜像 ${IMAGE_NAME} ----------------------------"
     if [ -d ${MODULE_NAME} ]; then
         docker build -t ${IMAGE_NAME} -f /data/dockerfile/openjdk-8-jar ${MODULE_NAME}
@@ -198,7 +257,9 @@ else
 fi
 
 sed -i "/TAG/d" .env
-echo "TAG=${TIME_TAG}-${PUBLISH_ENV}" >> .env
+sed -i "/PUBLISH_ENV/d" .env
+echo "TAG=${TIME_TAG}" >> .env
+echo "PUBLISH_ENV=${PUBLISH_ENV}" >> .env
 
 if [ "${MODULE_NAME}" = "all" ]; then
     docker-compose up -d
@@ -219,27 +280,27 @@ version: "3.8"
 
 services:
   config-service:
-    image: harbor.huhaiqing.xyz/piomin/config-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/config-service:${TAG}
     entrypoint: ["java", "-jar", "app.jar"]
   discovery-service:
-    image: harbor.huhaiqing.xyz/piomin/discovery-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/discovery-service:${TAG}
     entrypoint: ["./entrypoint.sh","config-service","8088","java", "-jar", "app.jar"]
     ports:
       - "8061:8061"
   department-service:
-    image: harbor.huhaiqing.xyz/piomin/department-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/department-service:${TAG}
     entrypoint: ["./entrypoint.sh","discovery-service","8061","java","-jar","app.jar"]
   employee-service:
-    image: harbor.huhaiqing.xyz/piomin/employee-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/employee-service:${TAG}
     entrypoint: ["./entrypoint.sh","discovery-service","8061","java","-jar","app.jar"]
   gateway-service:
-    image: harbor.huhaiqing.xyz/piomin/gateway-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/gateway-service:${TAG}
     entrypoint: ["./entrypoint.sh","discovery-service","8061","java","-jar","app.jar"]
   organization-service:
-    image: harbor.huhaiqing.xyz/piomin/organization-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/organization-service:${TAG}
     entrypoint: ["./entrypoint.sh","discovery-service","8061","java","-jar","app.jar"]
   proxy-service:
-    image: harbor.huhaiqing.xyz/piomin/proxy-service:${TAG}
+    image: harbor.huhaiqing.xyz/piomin-${PUBLISH_ENV}/proxy-service:${TAG}
     entrypoint: ["./entrypoint.sh","discovery-service","8061","java","-jar","app.jar"]
 ```
 
