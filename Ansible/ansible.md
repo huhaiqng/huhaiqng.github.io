@@ -38,6 +38,8 @@ ansible_ssh_user
 # 默认的 ssh 用户名
 ansible_ssh_pass
 # ssh 密码(这种方式并不安全,我们强烈建议使用 --ask-pass 或 SSH 密钥)
+ansible_ssh_private_key_file
+# ssh 使用的私钥文件.适用于有多个密钥,而你不想使用 SSH 代理的情况.
 ```
 
 ### 常用命令
@@ -52,6 +54,15 @@ ansible all -m ping
 
 ```
 ansible webservers -m shell -a 'hostname'
+```
+
+### 实例
+
+```
+some_host         ansible_ssh_port=2222     ansible_ssh_user=manager
+aws_host          ansible_ssh_private_key_file=/home/example/.ssh/aws.pem
+freebsd_host      ansible_python_interpreter=/usr/local/bin/python
+ruby_module_host  ansible_ruby_interpreter=/usr/bin/ruby.1.9.3
 ```
 
 ### 常见问题
