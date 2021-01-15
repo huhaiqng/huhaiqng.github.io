@@ -5,7 +5,10 @@
 ##### 安装 centos 7 zabbix yum 源
 
 ```
+# 3.4
 rpm -ivh http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-1.el7.centos.noarch.rpm
+# 5.0
+rpm -ivh http://repo.zabbix.com/zabbix/5.0/rhel/7/x86_64/zabbix-release-5.0-1.el7.noarch.rpm
 ```
 
 ##### 安装 server

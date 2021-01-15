@@ -215,6 +215,56 @@ docker build --no-cache -t redis-cst:6.0 .
 docker run -id -p 6379:6379 redis-cst:6.0
 ```
 
+##### 生成 easyswoole3 镜像
+
+> 在官方的基础上新增了自动启动和 /easyswoole 目录挂载到本地
+
+Dockerfile
+
+```
+FROM easyswoole/easyswoole3:latest
+VOLUME /easyswoole
+ENTRYPOINT [ "sh", "-c", "php easyswoole start" ]
+```
+
+创建镜像
+
+```
+docker build -t easyswoole:3 .
+```
+
+创建容器
+
+```
+docker run -id -p 9501:9501 --mount source=easyswoole,target=/easyswoole easyswoole:3
+```
+
+创建 volume 路径
+
+```
+# docker volume ls
+DRIVER              VOLUME NAME
+local               easyswoole
+# docker volume inspect easyswoole
+[
+    {
+        "CreatedAt": "2021-01-15T15:06:14+08:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/opt/docker/volumes/easyswoole/_data",
+        "Name": "easyswoole",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+```
+
+创建软链接，方便更新
+
+```
+ln -s /opt/docker/volumes/easyswoole/_data /data/easyswoole
+```
+
 
 
 #### Docker Compose
@@ -847,3 +897,24 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
+
+
+
+#### Dockerfile 中设置需要 bash 环境的启动命令
+
+CMD
+
+```
+......
+CMD bash -c 'cd /easyswoole ;php easyswoole start'
+......
+```
+
+ENTRYPOINT
+
+```
+......
+ENTRYPOINT [ "sh", "-c", "php easyswoole start" ]
+......
+```
+
