@@ -215,7 +215,7 @@ docker build --no-cache -t redis-cst:6.0 .
 docker run -id -p 6379:6379 redis-cst:6.0
 ```
 
-##### 生成 easyswoole3 镜像
+##### 生成 easyswoole3.3.x 镜像
 
 > 在官方的基础上新增了自动启动和 /easyswoole 目录挂载到本地
 
