@@ -144,6 +144,7 @@ RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories 
     apk add curl --no-cache && rm -f /var/cache/apk/*
 WORKDIR /data
 COPY entrypoint.sh .
+RUN chmod +x /data/entrypoint.sh
 ```
 
 ##### 生成基础镜像
