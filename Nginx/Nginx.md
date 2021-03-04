@@ -689,3 +689,31 @@ server {
 }
 ```
 
+##### 修改 nginx 启动用户导致 springboot 接口文档访问不了
+
+> 使用了反向代理
+
+错误信息
+
+```
+net::ERR_INCOMPLETE_CHUNKED_ENCODING 200
+```
+
+原因：新启动的用户没有缓存文件夹的权限
+
+```
+$ ll /var/cache/nginx
+total 20
+drwx------  2 nginx root 4096 Feb 19 16:44 client_temp
+drwx------  2 nginx root 4096 Feb  1 12:01 fastcgi_temp
+drwx------ 12 nginx root 4096 Feb  1 12:15 proxy_temp
+drwx------  2 nginx root 4096 Feb  1 12:01 scgi_temp
+drwx------  2 nginx root 4096 Feb  1 12:01 uwsgi_temp
+
+```
+
+解决方法：
+
+1、删除缓存文件夹，重启 nginx
+
+2、恢复原来的账号启动 nginx
