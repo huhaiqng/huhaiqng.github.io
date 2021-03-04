@@ -74,3 +74,24 @@ git gc --prune=now
 ##### push 提示找不到项目
 
 解决方法：在链接中添加用户名，例如：http://user@192.168.1.10/huhaiqing/abc.git
+
+
+
+#### 代理
+
+设置代理
+
+> --global 全部项目生效，--local 本项目生效
+
+```
+git config --local http.proxy 'socks5://127.0.0.1:1080'
+git config --local https.proxy 'socks5://127.0.0.1:1080'
+```
+
+取消代理
+
+```
+git config --local --unset http.proxy
+git config --local --unset https.proxy
+```
+
