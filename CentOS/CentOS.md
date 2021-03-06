@@ -57,3 +57,16 @@ PATH=$PATH:/usr/local/node/bin
 export PATH
 ```
 
+
+
+#### 设置对所有用户永久生效的环境变量 java
+
+创建文件 /etc/profile.d/custom.sh
+
+```
+JAVA_HOME=/usr/local/jdk1.8.0_261
+CLASSPATH=$JAVA_HOME/lib
+PATH=$JAVA_HOME/bin:$PATH
+export PATH JAVA_HOME CLASSPATH
+```
+
