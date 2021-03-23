@@ -16,7 +16,8 @@ function create_image {
     IMAGE_NAME="harbor.huhaiqing.xyz/${PROJECT_NAME}/${MODULE_NAME}:${TIME_TAG}-${PUBLISH_ENV}"
     echo -e "\n---------------------------- 开始生成镜像 ${IMAGE_NAME} ----------------------------"
     if [ -d ${MODULE_NAME} ]; then
-        docker build -t ${IMAGE_NAME} -f /data/dockerfile/openjdk-8-jar ${MODULE_NAME}
+		# 设置 label 方便清理镜像时指定需要清理哪个项目的镜像
+        docker build -t ${IMAGE_NAME} --label "project=${PROJECT_NAME}" -f /data/dockerfile/openjdk-8-jar ${MODULE_NAME}
         docker push ${IMAGE_NAME} && docker rmi ${IMAGE_NAME}
     else
         echo "项目 ${PROJECT_NAME} 模块 ${MODULE_NAME} 不存在"

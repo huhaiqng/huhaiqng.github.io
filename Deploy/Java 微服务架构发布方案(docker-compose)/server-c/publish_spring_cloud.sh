@@ -23,4 +23,5 @@ else
 fi
 
 echo "清理没有使用的镜像"
-docker image prune -a -f
+# 清理指定项目的对象，label 创建镜像的时候设置的
+docker image prune --filter="label=project=${PROJECT_NAME}" -a -f

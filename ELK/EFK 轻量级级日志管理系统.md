@@ -108,10 +108,12 @@ filebeat modules enable nginx
     var.paths: ["/var/log/nginx/access.log"]
 ```
 
-修改 Filebeat 配置文件，重新定义 index 名称
+修改 Filebeat 配置文件 /etc/filebeat/filebeat.yml，重新定义 index 名称
+
+> indexname 可以自行更改做区分
 
 ```
-output.elasticsearch.index: "%{[event.dataset]}-%{+yyyy.MM.dd}"
+output.elasticsearch.index: "%{[event.dataset]}-%{+yyyy.MM.dd}-indexname"
 setup.template.name: "log"
 setup.template.pattern: "log-*"
 setup.ilm.enabled: false
@@ -240,6 +242,22 @@ systemctl restart elasticsearch
 三角形已经消失
 
 ![1566375672954](assets/1566375672954.png)
+
+
+
+删除文件 /usr/share/filebeat/module/nginx/access/ingest/default.json  中的以下内容，保留 message
+
+> 执行 DELETE _ingest/pipeline/*
+>
+> 重启全部 filebeat
+
+```
+		{
+            "remove": {
+                "field": "message"
+            }
+        },
+```
 
 
 

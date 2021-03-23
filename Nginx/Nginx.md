@@ -194,6 +194,8 @@ server {
 
 ##### 反向代理虚拟主机配置文件 upstream.conf
 
+> 如果设置 proxy_redirect     off，如果通过浏览器访问 http://www.example.org，则浏览器中显示 http://backend。
+
 ```
 upstream backend {
     server backup1.example.com:8080;
@@ -288,6 +290,30 @@ server {
 }
 ```
 
+##### 文件下载虚拟主机
+
+```
+server {
+	listen 80;
+	server_name download.example.com;
+
+	autoindex on;
+	autoindex_exact_size off;
+	autoindex_localtime on;
+
+	location / {
+		root /software;
+		allow 14.153.52.0/24;
+		allow 14.153.53.0/24;
+		allow 14.153.54.0/24;
+		allow 14.153.55.0/24;
+        deny  all;
+	}
+}
+```
+
+
+
 
 
 #### Nginx 反向代理加 '/' 和不加 '/' 的区别
@@ -370,6 +396,26 @@ server {
 
 > 上面配置后，访问http://192.168.1.23/proxy/index.html就会被代理到http://192.168.1.5:8090/hahaindex.html
 > 同理，访问http://192.168.1.23/proxy/test.html就会被代理到http://192.168.1.5:8090/hahatest.html
+
+情况5
+
+```
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /var/www/html;
+        index index.html;
+    }
+
+    location  /proxy {
+        proxy_pass http://192.168.1.5:8090/haha;
+    }
+}
+```
+
+> 上面配置后，访问http://192.168.1.23/proxy/index.html就会被代理到http://192.168.1.5:8090/haha/index.html
+> 同理，访问http://192.168.1.23/proxy/test.html就会被代理到http://192.168.1.5:8090/haha/test.html
 
 
 

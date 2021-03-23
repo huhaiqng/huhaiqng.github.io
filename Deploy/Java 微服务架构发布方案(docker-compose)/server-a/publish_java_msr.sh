@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TIME_TAG=`date +%s`
+TIME_TAG=`date +%Y%m%d%H%M%S`
 PROJECT_NAME=$1
 MODULE_NAME=$2
 PUBLISH_ENV=$3
