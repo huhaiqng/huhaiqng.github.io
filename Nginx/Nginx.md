@@ -826,11 +826,11 @@ server {
 
 ```
 location ^~ /logs/wms {
+		alias /data/logs/wms;
+		
         autoindex on;
         autoindex_exact_size off;
         autoindex_localtime on;
-
-		alias /data/logs/wms;
 }
 ```
 
