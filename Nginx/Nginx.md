@@ -763,3 +763,77 @@ drwx------  2 nginx root 4096 Feb  1 12:01 uwsgi_temp
 1、删除缓存文件夹，重启 nginx
 
 2、恢复原来的账号启动 nginx
+
+
+
+#### 方案
+
+##### 通过 Nginx 实现日志下载
+
+> 说明：用户通过主 Nginx 服务器下载日志，主 Nginx 服务器通过反向代理到生成日志文件服务器上的 Nginx 下载日志。
+
+主 Nginx 服务器 nginx 配置文件 download-log.conf
+
+> 注意: 浏览器中服务器访问 http://logs.example.org/jpark-test/data/logs/jparklogs/jpark-gem-machineg 相当于服务器 http://jpark-test-logs.lingfannao.net/jpark-gem-machineg
+
+```
+server {
+    listen       80;
+    server_name  logs.example.org;
+    
+    location /jpark-test/data/logs/jparklogs/jpark-gem-machineg {
+        proxy_pass http://jpark-test-logs.lingfannao.net/jpark-gem-machineg;
+        proxy_set_header   Host             "jpark-test-logs.lingfannao.net";
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_connect_timeout      120;
+        proxy_send_timeout         120;
+        proxy_read_timeout         120;
+    }
+}
+
+```
+
+生成日志服务器 nginx 配置文件 download-log.conf
+
+- 新增虚拟主机方式，需要新增域名
+
+```
+server {
+	listen 80;
+	server_name jpark-test-logs.lingfannao.net;
+
+	autoindex on;
+	autoindex_exact_size off;
+	autoindex_localtime on;
+
+	gzip            on;
+   	gzip_min_length 1024;
+    gzip_comp_level 9;
+    gzip_proxied    expired no-cache no-store private auth;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+
+	location /jpark-gem-machineg {
+		alias /data/logs/jparklogs/jpark-gem-machineg;
+		allow 113.104.246.161;
+	    deny  all;
+	}
+}
+```
+
+- 在现有域名下添加
+
+
+```
+location ^~ /logs/wms {
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
+
+		alias /data/logs/wms;
+}
+```
+
+
+
+  
