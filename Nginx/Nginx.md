@@ -163,6 +163,9 @@ server {
     listen       80;
     server_name  example.org  www.example.org;
     
+    error_log  /var/log/nginx/example.error_log  warn;
+	access_log /var/log/nginx/example.access.log main;
+    
     location / {
     	root html;
     	index index.html;
@@ -185,6 +188,10 @@ server {
     ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
     ssl_prefer_server_ciphers on;
+    
+    error_log  /var/log/nginx/example.error_log  warn;
+	access_log /var/log/nginx/example.access.log main;
+	
     location / {
         root html;
         index index.html index.htm;
@@ -205,6 +212,10 @@ upstream backend {
 server {
 	listen       80;
     server_name  example.org  www.example.org;
+    
+    error_log  /var/log/nginx/example.error_log  warn;
+	access_log /var/log/nginx/example.access.log main;
+	
     location / {
         proxy_pass http://backend;
         proxy_redirect     off;
@@ -236,6 +247,9 @@ server {
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
     ssl_prefer_server_ciphers on;
+    
+    error_log  /var/log/nginx/example.error_log  warn;
+	access_log /var/log/nginx/example.access.log main;
 
     location / {
         root /data/wwwroot;
@@ -261,6 +275,9 @@ server {
 server {
 	listen       80;
         server_name  www.example.com;
+        
+        error_log  /var/log/nginx/example.error_log  warn;
+		access_log /var/log/nginx/example.access.log main;
 
         location / {
                 if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
@@ -300,6 +317,9 @@ server {
 	autoindex on;
 	autoindex_exact_size off;
 	autoindex_localtime on;
+	
+	error_log  /var/log/nginx/example.error_log  warn;
+	access_log /var/log/nginx/example.access.log main;
 
 	location / {
 		root /software;
