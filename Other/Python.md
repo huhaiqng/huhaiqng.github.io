@@ -68,3 +68,22 @@ pip freeze > requirements.txt
 pip install -r requirements.txt
 ```
 
+
+
+#### Pycharm中虚拟环境下更新pip
+
+在Pycharm中使用虚拟环境（默认设置）创建新项目后，发现pip版本为10.0.1，想要更新到18.1则提示更新失败，解决办法如下。
+
+根据提示，使用如下命令更新pip
+
+```
+python -m pip install --upgrade pip
+```
+
+结果提示更新失败，但是通过settings已经可以看到pip版本为18.1
+
+删除venv  Lib\site-packages下的pip文件夹（包括10.0.1和18.1两个文件夹）
+
+![img](Python.assets/15868452-01b108beca0b0a62.webp)
+
+再次使用python -m pip install --upgrade pip命令进行更新，提示更新成功。查看已安装库，可以看到pip版本已经是18.1

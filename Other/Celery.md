@@ -99,7 +99,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 ```
 
-修改文件 schedule_task/__init__.py
+修改文件 schedule_task/\__init__.py
 
 ```
 from __future__ import absolute_import, unicode_literals
