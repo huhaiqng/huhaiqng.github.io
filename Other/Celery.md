@@ -67,10 +67,12 @@ INSTALLED_APPS = [
 
 LANGUAGE_CODE = 'zh-hans'
 TIME_ZONE = 'Asia/Shanghai'
+USE_TZ = False
 
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BROKER_URL = 'redis://192.168.40.159:6379/3'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_TIMEZONE = 'Asia/Shanghai'
 ```
 
 数据库迁移，创建超级用户

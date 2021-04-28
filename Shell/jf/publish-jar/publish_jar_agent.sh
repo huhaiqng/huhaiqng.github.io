@@ -40,7 +40,7 @@ function start_package {
             fi
         else
             echo "启动失败"
-            break
+            exit 1
         fi
     done
 }
@@ -74,6 +74,11 @@ function rm_expire_package {
 }
 
 function publish_package {
+    if [ ! -f /tmp/${PACKAGE_NAME} ]; then
+        echo "包 /tmp/${PACKAGE_NAME} 不存在"
+        exit 1
+    fi
+
     stop_package
     [ ! -d ${PUBLISH_PATH} ] && mkdir -pv ${PUBLISH_PATH}
     [ ! -d ${PUBLISH_PATH}/versions ] && mkdir -pv ${PUBLISH_PATH}/versions
