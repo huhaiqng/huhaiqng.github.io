@@ -1,6 +1,6 @@
 1、配置 epel 源安装 sysbench
-
 yum install -y sysbench
+
 2、初始化数据
 sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --mysql-host=192.168.1.226 \
@@ -14,6 +14,7 @@ sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --time=120 \
 --report-interval=10 \
 --db-driver=mysql prepare
+
 3、执行测试
 sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --mysql-host=192.168.1.226 \
@@ -26,7 +27,8 @@ sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --threads=10 \
 --time=120 \
 --db-driver=mysql \
---report-interval=10 run 
+--report-interval=10 run
+
 4、清理数据
 sysbench /usr/share/sysbench/tests/include/oltp_legacy/oltp.lua \
 --mysql-host=192.168.1.226 \
