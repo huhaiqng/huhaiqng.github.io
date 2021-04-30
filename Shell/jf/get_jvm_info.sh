@@ -22,7 +22,7 @@ do
             if [ `echo "$THRD_CPU > 20.0" | bc` -eq 1 ]; then
                 OX_TID=`printf "%x\n" ${THRD_ID}`
                 echo -e "\n进程 ${PROC_ID} 的线程 ${THRD_ID}($OX_TID) 的 CPU 使用率为 ${THRD_CPU}%"
-                /usr/local/jdk1.7.0_79/bin/jstack ${PROC_ID} | sed "/${OX_TID}/, /^$/!d"
+                /usr/local/jdk1.7.0_79/bin/jstack ${PROC_ID} | sed "/0x${OX_TID}/, /^$/!d"
             fi
         done
     fi
