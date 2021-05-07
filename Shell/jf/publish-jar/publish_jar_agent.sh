@@ -70,7 +70,12 @@ function stop_package {
 function rm_expire_package {
     cd ${VERSION_PATH}
     EXPIRE_PACKAGE=`ls -t *.jar | tail -n +4`
-    [ -n "${EXPIRE_PACKAGE}" ] && rm -f `ls -t *.jar | tail -n +4`
+	if [ -n "${EXPIRE_PACKAGE}" ]; then
+        echo "清理历史版本: ${EXPIRE_PACKAGE}"
+        rm -f ${EXPIRE_PACKAGE}
+    else
+        echo "没有需要清理的历史版本"
+    fi
 }
 
 function publish_package {
