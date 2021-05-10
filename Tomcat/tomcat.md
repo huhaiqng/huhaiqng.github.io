@@ -130,7 +130,7 @@ Paste_Image.png
 TOP15_PROC="/tmp/proc"
 TOP15_THRD="/tmp/thrd"
 
-top -d 5 -n 1 -b | grep java | grep www | grep -v grep | head -n 15 >${TOP15_PROC}
+top -d 5 -n 1 -b | grep java | grep www | grep -v grep >${TOP15_PROC}
 
 cat ${TOP15_PROC} | while read PROC
 do
@@ -140,14 +140,16 @@ do
         echo -e "\n\n\n`date`"
         echo -e "\n进程 ${PROC_ID} 的 CPU 使用率为 ${PROC_CPU}%"
         ps -ef | grep ${PROC_ID} | grep -v grep
+        
+        /usr/local/jdk1.7.0_79/bin/jstack ${PROC_ID} >/tmp/stack/`date +%H%M`-${PROC_ID}
 
-        top -d 5 -n 1 -b -Hp ${PROC_ID} | grep java | grep www | grep -v grep | head -n 15 >${TOP15_THRD}
+        top -d 5 -n 1 -b -Hp ${PROC_ID} | grep java | grep www | grep -v grep >${TOP15_THRD}
 
         cat ${TOP15_THRD} | while read THRD
         do
             THRD_ID=`echo $THRD | awk '{print $1}'`
             THRD_CPU=`echo $THRD | awk '{print $9}'`
-            if [ `echo "$THRD_CPU > 20.0" | bc` -eq 1 ]; then
+            if [ `echo "$THRD_CPU > 10.0" | bc` -eq 1 ]; then
                 OX_TID=`printf "%x\n" ${THRD_ID}`
                 echo -e "\n进程 ${PROC_ID} 的线程 ${THRD_ID}($OX_TID) 的 CPU 使用率为 ${THRD_CPU}%"
                 /usr/local/jdk1.7.0_79/bin/jstack ${PROC_ID} | sed "/0x${OX_TID}/, /^$/!d"
