@@ -1,3 +1,61 @@
+#### 常用命令
+
+生成线程 dump，用于分析 CUP 负载过高
+
+> pid 为进程号
+
+```
+jstack pid >/tmp/stackdump
+```
+
+生成堆 dump，用于分析内存溢出
+
+> pid 为进程号
+
+```
+jmap -dump:live,format=b,file=/tmp/heapdump.hprof pid
+```
+
+#### 使用 Eclipse Memory Analyzer 分析堆 dump
+
+
+
+#### 常用 jvm 参数
+
+| 描述                         | 配置格式                             |
+| ---------------------------- | ------------------------------------ |
+| 初始化堆空间大小             | -Xms64m                              |
+| 最大堆空间大小               | -Xmx128m                             |
+| 当抛出OOM时进行HeapDump      | -XX:+HeapDumpOnOutOfMemoryError      |
+| 指定HeapDump的文件路径和目录 | -XX:HeapDumpPath=/tmp/heapdump.hprof |
+
+
+
+
+#### 使用 Java VisualVM 监控 tomcat 运行状态
+
+在 catalina.sh 添加以下参数，开启 jmx
+
+```
+CATALINA_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=12345 -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=192.168.40.202"
+```
+
+在 Windows 上进入目录 C:\Program Files\Java\jdk1.8.0_271\bin，双击 jvisualvm.exe 打开 Java VisualVM
+
+![image-20210511115254733](tomcat.assets/image-20210511115254733.png)
+
+添加远程主机
+
+
+
+![image-20210511115451253](tomcat.assets/image-20210511115451253.png)
+
+创建 jmx 连接
+
+![image-20210511115539166](tomcat.assets/image-20210511115539166.png)
+
+
+
 #### 常见故障
 
 ##### Java程序导致服务器CPU占用率过高
