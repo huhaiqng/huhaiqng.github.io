@@ -16,6 +16,8 @@ jstack pid >/tmp/stackdump
 jmap -dump:live,format=b,file=/tmp/heapdump.hprof pid
 ```
 
+
+
 #### 使用 Eclipse Memory Analyzer 分析堆 dump
 
 

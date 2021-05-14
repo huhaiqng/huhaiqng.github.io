@@ -163,8 +163,8 @@ server {
     listen       80;
     server_name  example.org  www.example.org;
     
+    access_log /var/log/nginx/example.access_log main;
     error_log  /var/log/nginx/example.error_log  warn;
-	access_log /var/log/nginx/example.access.log main;
     
     location / {
     	root html;
@@ -236,6 +236,8 @@ server {
     listen       80;
     server_name  www.example.com;
     rewrite ^(.*) https://$server_name$1 permanent;
+    access_log /var/log/nginx/example.access_log main;
+    error_log  /var/log/nginx/example.error_log  warn;
 }
 
 server {
@@ -248,8 +250,8 @@ server {
     ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
     ssl_prefer_server_ciphers on;
     
+    access_log /var/log/nginx/example.access_log main;
     error_log  /var/log/nginx/example.error_log  warn;
-	access_log /var/log/nginx/example.access.log main;
 
     location / {
         root /data/wwwroot;
