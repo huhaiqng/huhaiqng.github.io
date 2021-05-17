@@ -181,6 +181,22 @@ Paste_Image.png
 
 
 
+##### Tomcat 卡顿
+
+查看监控系统，发现 CPU 使用率高
+
+![image-20210517094006198](tomcat.assets/image-20210517094006198.png)
+
+查看线程 CPU 使用情况，发现 gc 线程占用 CPU
+
+![image-20210517094456521](tomcat.assets/image-20210517094456521.png)
+
+查看请求日志，发现有个请求超过100秒，经确认是由改接口引起的
+
+![image-20210517094740629](tomcat.assets/image-20210517094740629.png)
+
+
+
 #### 脚本
 
 获取 java 线程 的 jvm 堆栈信息
