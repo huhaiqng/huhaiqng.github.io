@@ -11,7 +11,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 server-id=1
 gtid_mode=on
 enforce_gtid_consistency=on
-log_bin
+log_bin=mysqld-bin
 binlog_format=row
 expire-logs-days=1
 slave_parallel_type=logical_clock
@@ -26,7 +26,7 @@ pid-file=/var/run/mysqld/mysqld.pid
 server-id=2
 gtid_mode=on
 enforce_gtid_consistency=on
-log_bin
+log_bin=mysqld-bin
 binlog_format=row
 expire-logs-days=1
 slave_parallel_type=logical_clock
