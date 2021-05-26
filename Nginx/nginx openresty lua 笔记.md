@@ -25,6 +25,8 @@ cd openresty-1.13.6.2
 make && make install
 ```
 
+
+
 ### 常见问题
 
 ##### http 重定向到 https 引起的问题
