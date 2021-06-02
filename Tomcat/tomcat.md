@@ -208,6 +208,8 @@ TOP15_THRD="/tmp/thrd"
 
 top -d 5 -n 1 -b | grep java | grep www | grep -v grep >${TOP15_PROC}
 
+[ ! -d /tmp/stack ] && mkdir /tmp/stack
+
 cat ${TOP15_PROC} | while read PROC
 do
     PROC_ID=`echo $PROC | awk '{print $1}'`
