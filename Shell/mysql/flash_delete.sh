@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e
+et -e
 echo "说明：此脚本需要5个参数(提取二进制日志开始时间、结束时间，数据库，表和二进制日志文件！"
 echo "      脚本运行完后会生成包含恢复记录的SQL语句的 insert.sql 文件！"
 if [ $# -ne 5 ];then
@@ -54,3 +53,4 @@ do
     fi
 
 done < $vbinlog
+
