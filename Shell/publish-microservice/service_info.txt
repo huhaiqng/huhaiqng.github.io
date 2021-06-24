@@ -1,0 +1,3 @@
+# 服务名	# 用户名@服务器		# ssh 端口号  	# 环境
+warehouse       www@139.159.252.64      22006           test
+warehouse2      www@139.159.252.64      22006           test
