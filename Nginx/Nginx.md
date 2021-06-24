@@ -337,6 +337,32 @@ server {
 
 
 
+#### 重定向 rewrite
+
+> last:  相当于Apache里的[L]标记，表示完成rewrite
+>
+> break: 本条规则匹配完成之后，终止匹配，不再匹配后面的规则
+>
+> redirect: 返回302临时重定向 地址栏会显示跳转后的地址
+>
+> permanent: 返回301永久重定向 地址栏会显示跳转后的地址
+
+跨域名带 URI 跳转
+
+```
+location ^~ /admin {
+	rewrite ^(.*) https://www.demo.com$1 permanent;
+}
+```
+
+跨域名不带 URI 跳转
+
+```
+location ^~ /admin {
+    rewrite ^(.*) https://www.demo.com permanent;
+}
+```
+
 
 
 #### Nginx 反向代理加 '/' 和不加 '/' 的区别

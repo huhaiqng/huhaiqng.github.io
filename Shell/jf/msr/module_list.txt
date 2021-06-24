@@ -1,0 +1,2 @@
+jew-dist_list=gem-dist-auth gem-dist-config gem-dist-eureka gem-dist-getnumber gem-dist-tools gem-dist-web gem-dist-zuul
+goldtd_list=gold-auth gold-base gold-gateway gold-platform gold-app gold-tools gold-icbc
