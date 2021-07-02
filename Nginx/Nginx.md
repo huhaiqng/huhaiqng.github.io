@@ -365,6 +365,41 @@ location ^~ /admin {
 
 
 
+#### 镜像请求：将一个请求发送到两个后端
+
+> yum 安装的 nginx 已经带有改功能
+>
+> internal: 只能通过 nginx 内部请求，通过浏览器等请求返回 404
+
+```
+location ^~ /cloudwh/douyin/notify/order {
+    proxy_pass http://localhost:7010;
+    proxy_redirect     off;
+    proxy_set_header   Host             $host;
+    proxy_set_header   X-Real-IP        $remote_addr;
+    proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+    proxy_connect_timeout      120;
+    proxy_send_timeout         120;
+    proxy_read_timeout         120;
+
+    mirror /mirror/douyin/notify/order;
+}
+
+location ^~ /mirror/douyin/notify/order {
+    internal;
+    proxy_pass http://warehouse-test.lingfannao.com/cloudwh/douyin/notify/order;
+    proxy_redirect     off;
+    proxy_set_header   Host             "warehouse-test.lingfannao.com";
+    proxy_set_header   X-Real-IP        $remote_addr;
+    proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+    proxy_connect_timeout      120;
+    proxy_send_timeout         120;
+    proxy_read_timeout         120;
+}
+```
+
+
+
 #### Nginx 反向代理加 '/' 和不加 '/' 的区别
 
 情况1

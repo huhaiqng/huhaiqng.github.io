@@ -23,6 +23,7 @@ mysqldump --all-databases \
 --triggers \
 --routines \
 --events \
+--flush-logs \
 --single-transaction \
 --quick > all-databases.dump
 
