@@ -14,6 +14,17 @@ ORDER BY TOTAL DESC
 LIMIT 10;
 ```
 
+##### 查询每个数据库的大小
+
+```sql
+SELECT
+	TABLE_SCHEMA, SUM(DATA_LENGTH + INDEX_LENGTH)/1024/1024/1024 AS TOTAL
+FROM
+	information_schema.`TABLES` 
+GROUP BY TABLE_SCHEMA
+ORDER BY TOTAL DESC;
+```
+
 ##### 查询指定数据库占空间最大的 10 个表
 
 ```sql

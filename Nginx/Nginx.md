@@ -335,6 +335,27 @@ server {
 }
 ```
 
+##### php 虚拟主机
+
+```
+server {
+    listen       80;
+    server_name  phpdemo.example.org;
+    
+    access_log /var/log/nginx/phpdemo.access_log main;
+    error_log  /var/log/nginx/phpdemo.error_log  warn;
+    
+    location / {
+    	root            /data/phpdemo;
+    	fastcgi_pass    127.0.0.1:9000;
+	    fastcgi_index   index.php;
+	    fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+	    fastcgi_param   SCRIPT_NAME        $fastcgi_script_name;
+	    include         fastcgi_params;
+    }
+}
+```
+
 
 
 #### 重定向 rewrite
