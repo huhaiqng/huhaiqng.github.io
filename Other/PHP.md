@@ -78,9 +78,13 @@ server {
     
     access_log /var/log/nginx/phpdemo.access_log main;
     error_log  /var/log/nginx/phpdemo.error_log  warn;
+    root       /data/phpdemo;
     
     location / {
-    	root            /data/phpdemo;
+        index  index.php index.html index.htm;
+    }
+    
+    location ~ \.php$ {
     	fastcgi_pass    127.0.0.1:9000;
 	    fastcgi_index   index.php;
 	    fastcgi_param   SCRIPT_FILENAME    $document_root$fastcgi_script_name;
