@@ -1,4 +1,54 @@
-#### 将 github 的项目拉到本地并修改提交(Windows)
+#### 常用命令
+
+查看当前仓库配置信息
+
+```
+git config --local  --list
+```
+
+查看当前用户（global）配置
+
+```
+git config --global  --list
+```
+
+查看系统config
+
+```
+git config --system --list
+```
+
+设置全局账号
+
+```
+git config --global credential.helper store
+git config --global user.email "你的git的注册邮箱"
+git config --global user.user "你的git用户名"
+```
+
+设置当前仓库账号
+
+```
+git config --local credential.helper store
+git config --local user.email "你的git的注册邮箱"
+git config --local user.user "你的git用户名"
+```
+
+修改 remote.origin.url
+
+```
+git remote set-url origin https://<username>:<token>@github.com/huhaiqng/devops-note.git
+```
+
+#### 创建 token
+
+Settings > Developer settings > Personal access tokens > Generate new token
+
+> 注意选取适当的权限
+
+![image-20210814104701009](Git.assets/image-20210814104701009.png)
+
+#### 将 github 的项目拉到本地并修改提交
 
 在本地新建项目文件夹
 
@@ -6,13 +56,13 @@
 
 ```
 git init
-git remote add origin https://github.com/huhaiqng/devops-note.git
+git remote add origin https://<username>:<token>@github.com/huhaiqng/devops-note.git
 ```
 
 拉取代码
 
 ```
-git pull https://github.com/huhaiqng/devops-note.git master
+git pull https://<username>:<token>@github.com/huhaiqng/devops-note.git master
 ```
 
 改动后提交
