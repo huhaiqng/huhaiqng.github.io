@@ -134,8 +134,8 @@ git gc --prune=now
 > --global 全部项目生效，--local 本项目生效
 
 ```
-git config --local http.proxy 'socks5://127.0.0.1:1080'
-git config --local https.proxy 'socks5://127.0.0.1:1080'
+git config --local http.proxy 'socks5://127.0.0.1:10808'
+git config --local https.proxy 'socks5://127.0.0.1:10808'
 ```
 
 取消代理
