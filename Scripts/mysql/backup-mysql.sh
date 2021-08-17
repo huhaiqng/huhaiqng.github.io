@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+date
 TIME_TAG=`date +%Y%m%d%H%M%S`
 
 function dumpdb() {
