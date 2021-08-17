@@ -19,7 +19,7 @@ function dumpdb() {
         cd $DB_DIR 
 
         echo "开始备份数据库: $DB"
-        mysqldump $SERVER_INFO $DB --triggers --routines --events --single-transaction --quick | gzip > $DB-${TIME_TAG}.gz
+        mysqldump $SERVER_INFO $DB --set-gtid-purged=OFF --triggers --routines --events --single-transaction --quick | gzip > $DB-${TIME_TAG}.gz
         # 删除过期备份
         rm -f `ls -t $DB-*.gz | tail -n +8`
     done
