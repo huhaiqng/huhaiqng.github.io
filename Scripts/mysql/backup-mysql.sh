@@ -28,6 +28,7 @@ function dumpdb() {
             mysqldump $SERVER_INFO $DB --set-gtid-purged=OFF --triggers --routines --events --single-transaction --quick | gzip > $DB-${TIME_TAG}.gz
             # 删除过期备份
             rm -f `ls -t $DB-*.gz | tail -n +8`
+			ls -lh
         else
             echo "不需要备份数据库: ${DB}"
         fi
