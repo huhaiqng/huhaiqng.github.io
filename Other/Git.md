@@ -56,12 +56,22 @@ Settings > Developer settings > Personal access tokens > Generate new token
 
 ```
 git init
+git remote add origin https://github.com/huhaiqng/devops-note.git
+
+# 指定用户名
+git remote add origin https://<username>@github.com/huhaiqng/devops-note.git
+# 指定用户名 token
 git remote add origin https://<username>:<token>@github.com/huhaiqng/devops-note.git
 ```
 
 拉取代码
 
 ```
+git pull https://github.com/huhaiqng/devops-note.git master
+
+# 指定用户名
+git pull https://<username>@github.com/huhaiqng/devops-note.git master
+# 指定用户名 token
 git pull https://<username>:<token>@github.com/huhaiqng/devops-note.git master
 ```
 
