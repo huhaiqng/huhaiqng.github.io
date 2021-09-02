@@ -202,6 +202,8 @@ server {
 ##### 反向代理虚拟主机配置文件 upstream.conf
 
 > 如果设置 proxy_redirect     off，如果通过浏览器访问 http://www.example.org，则浏览器中显示 http://backend。
+>
+> $host 和 $http_host 的区别：$host 不会带浏览器请求地址中的端口号，$http_host 会带浏览器请求地址中的端口号。
 
 ```
 upstream backend {
@@ -219,7 +221,7 @@ server {
     location / {
         proxy_pass http://backend;
         proxy_redirect     off;
-        proxy_set_header   Host             $host;
+        proxy_set_header   Host             $http_host;
         proxy_set_header   X-Real-IP        $remote_addr;
         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
         proxy_connect_timeout      120;
