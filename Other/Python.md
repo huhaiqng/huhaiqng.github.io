@@ -1,3 +1,24 @@
+#### 安装 python 3.10
+
+下载安装包
+
+```
+wget https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
+tar zxvf Python-3.10.0.tgz
+```
+
+安装
+
+```
+cd Python-3.10.0
+./configure --enable-optimizations
+make
+make install
+cp /usr/local/bin/python3 /usr/bin/
+```
+
+
+
 #### 创建虚拟环境
 
 确定要放置它的目录，并将 [`venv`](https://docs.python.org/zh-cn/3/library/venv.html#module-venv) 模块作为脚本运行目录路径
