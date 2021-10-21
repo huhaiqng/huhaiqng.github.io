@@ -8,12 +8,12 @@ TAR_FILE=/tmp/${PROJECT_NAME}-${TIME_TAG}.tar.gz
 
 if [ $# -ne 2 ]; then
     echo "参数错误！正确格式: sh $0 PROJECT_NAME ENV"
-    exit
+    exit 1
 fi
 
 if [ "$BASE_DIR" != "/data/jenkins/workspace" ]; then
     echo "父级目录不是 /data/jenkins/workspace"
-    exit
+    exit 1
 fi
 
 COUNT=`grep "^${PROJECT_NAME}[[:space:]]\+" $(dirname $0)/project_info.txt | grep "${DEPLOY_ENV}$" | wc -l`
@@ -38,11 +38,10 @@ if [ $COUNT -ne 0 ]; then
         fi
         [ $? -ne 0 ] && echo "TAR 包失败" && exit 1
         echo "开始开始传送包 ${TAR_FILE}  到服务器 ${SERVER}"
-        scp -P ${SSH_PORT} ${TAR_FILE} ${SERVER}:/tmp || exit 1
+        scp -i /root/.ssh/deploy -P ${SSH_PORT} ${TAR_FILE} ${SERVER}:/tmp
         echo "开始在服务器 ${SERVER} 上执行更新"
-        ssh -p ${SSH_PORT} ${SERVER} "sh /data/scripts/publish_web_agent.sh ${PROJECT_NAME} ${TIME_TAG}"
+        ssh -i /root/.ssh/deploy -p ${SSH_PORT} ${SERVER} "sh /data/scripts/publish_web_agent.sh ${PROJECT_NAME} ${TIME_TAG}"
     done
-
     echo "清理包 ${TAR_FILE}"
     rm -f ${TAR_FILE}
 else
