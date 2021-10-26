@@ -276,39 +276,43 @@ server {
 
 ##### location rewrite 实现自动跳转到移动端
 
+> last: 本条规则匹配完成后，继续向下匹配新的location URI规则，一般用在 server 和 if 中
+> break: 本条规则匹配完成即终止，不再匹配后面的任何规则，一般使用在 location 中
+> redirect: 返回302临时重定向，浏览器地址会显示跳转后的URL地址
+> permanent: 返回301永久重定向，浏览器地址栏会显示跳转后的URL地址
+
 ```
 server {
-	listen       80;
-        server_name  www.example.com;
-        
-        error_log  /var/log/nginx/example.error_log  warn;
-		access_log /var/log/nginx/example.access.log main;
+    listen       80;
+    server_name  www.example.com;
 
-        location / {
-                if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
-                        rewrite ^/(.*) /m$1;
-                }
-      
-                proxy_pass http://localhost:9090;
-                proxy_redirect     off;
-                proxy_set_header   Host             $host;
-                proxy_set_header   X-Real-IP        $remote_addr;
-                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-                proxy_connect_timeout      120;
-                proxy_send_timeout         120;
-                proxy_read_timeout         120;
+    location / {
+        if ($http_user_agent ~* (mobile|nokia|iphone|ipad|android|samsung|htc|blackberry)) {
+            rewrite ^/(.*) https://www.example.com/m/$1 redirect;
         }
 
-        location ^〜 /m {
-                proxy_pass http://localhost:9090;
-                proxy_redirect     off;
-                proxy_set_header   Host             $host;
-                proxy_set_header   X-Real-IP        $remote_addr;
-                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-                proxy_connect_timeout      120;
-                proxy_send_timeout         120;
-                proxy_read_timeout         120;
-        }
+        proxy_pass  http://127.0.0.1:9090;
+        proxy_redirect          off;
+        proxy_set_header    	Host             $host;
+        proxy_set_header        X-Real-IP        $remote_addr;
+        proxy_set_header        X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_connect_timeout   120;
+        proxy_send_timeout      120;
+        proxy_read_timeout      120;
+    }
+
+    location /m {
+        proxy_pass http://localhost:9090;
+        # proxy_redirect     off;
+        # proxy_redirect     http://$server_name/login http://$server_name;
+        proxy_redirect     http://$server_name/login https://www.example.com/m;
+        proxy_set_header   Host             $host;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+        proxy_connect_timeout      120;
+        proxy_send_timeout         120;
+        proxy_read_timeout         120;
+    }
 }
 ```
 
