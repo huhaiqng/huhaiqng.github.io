@@ -144,64 +144,16 @@ centos76-003   Ready    <none>   80s   v1.15.3
 
 ##### 准备翻墙环境
 
-下载翻墙工具 [Chrome一键翻墙包](<http://d1.bdrive.tk/cg.7z>)
+在本地 windows 电脑上开启 v2rayN 允许局域网的连接
 
-修改翻墙工具配置文件 D:\ChromeGo\v2rayB\config.json
+ ![image-20211108173326173](Kubernetes.assets/image-20211108173326173.png)
 
-> 以 v2ray 为例
-
-![image-20200709162927436](Kubernetes.assets/image-20200709162927436.png)
-
-启动
-
-![image-20200709163203400](Kubernetes.assets/image-20200709163203400.png)
-
-##### 在 CentOS 服务器上安装 Privoxy
-
-> 只需在一台上安装，其它的可以通过该台代理
-
-编译
+在 master, node 上设置代理
 
 ```
-wget http://www.privoxy.org/sf-download-mirror/Sources/3.0.28%20%28stable%29/privoxy-3.0.28-stable-src.tar.gz
-tar -zxvf privoxy-3.0.28-stable-src.tar.gz
-cd privoxy-3.0.28-stable
-useradd privoxy
-yum install autoconf automake libtool
-autoheader && autoconf
-./configure
-make && make install
-```
-
-修改配置文件 /usr/local/etc/privoxy/config
-
-> 192.168.1.10 为 CentOS 主机的 IP
->
-> 192.168.1.8 为运行 v2ray 主机的 IP
-
-```
-listen-address  192.168.40.201:8118
-forward-socks5t / 192.168.40.200:10808 .
-```
-
-启动
-
-```
-privoxy --user privoxy /usr/local/etc/privoxy/config
-```
-
-启用代理
-
-```
-export http_proxy=http://192.168.40.201:8118
-export https_proxy=http://192.168.40.201:8118
-export no_proxy=localhost,127.0.0.1,192.168.40.201
-```
-
-测试
-
-```
-curl -I www.google.com
+export http_proxy=socks5://192.168.40.200:10808
+export https_proxy=socks5://192.168.40.200:10808
+export no_proxy=localhost,127.0.0.1,192.168.40.200
 ```
 
 ##### 安装 docker
@@ -244,7 +196,7 @@ systemctl enable docker
 
 ```
 [Service]
-Environment="HTTP_PROXY=http://192.168.40.201:8118" "HTTPS_PROXY=http://192.168.40.201:8118" "NO_PROXY=localhost,127.0.0.1,192.168.40.201"
+Environment="http_proxy=socks5://192.168.40.200:10808" "https_proxy=socks5://192.168.40.200:10808" "NO_PROXY=localhost,127.0.0.1,192.168.40.200"
 ```
 
 重启 docker
@@ -333,6 +285,20 @@ net.bridge.bridge-nf-call-iptables = 1
 
 ```
 kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=1.18.5
+```
+
+要使非 root 用户可以运行 kubectl，请运行以下命令， 它们也是 `kubeadm init` 输出的一部分：
+
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+或者，如果你是 `root` 用户，则可以运行：
+
+```bash
+export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
 配置网络
