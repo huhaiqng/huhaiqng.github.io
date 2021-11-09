@@ -146,6 +146,8 @@ centos76-003   Ready    <none>   80s   v1.15.3
 
 在本地 windows 电脑上开启 v2rayN 允许局域网的连接
 
+> 重新打开后，需要重新开启
+
  ![image-20211108173326173](Kubernetes.assets/image-20211108173326173.png)
 
 在 master, node 上设置代理
@@ -296,6 +298,8 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 或者，如果你是 `root` 用户，则可以运行：
+
+> 添加到 .bash_profile 文件中
 
 ```bash
 export KUBECONFIG=/etc/kubernetes/admin.conf
@@ -1906,5 +1910,20 @@ containers:
   name: app
   ports:
   - containerPort: 80
+```
+
+##### 节点无法添加到集群
+
+报错信息
+
+```
+"Unable to update cni config" err="no networks found in /etc/cni/net.d"
+```
+
+原因: flannel 网络插件没有启动成功，检查镜像是否已成功下载
+
+```
+quay.io/coreos/flannel                           v0.15.0   
+rancher/mirrored-flannelcni-flannel-cni-plugin   v1.2
 ```
 
