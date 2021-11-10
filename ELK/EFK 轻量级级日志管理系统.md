@@ -385,31 +385,134 @@ filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - /usr/local/baipao/contract/applog/*/*.log
+    - /data/logs/jparklogs/custom/custom
   fields:
-    modelname: contract
+    source: custom
 
 - type: log
   enabled: true
   paths:
-    - /usr/local/baipao/manager/applog/*/*.log
+    - /data/logs/jparklogs/customize/customize
   fields:
-    modelname: manager
+    source: customize
 
 - type: log
   enabled: true
   paths:
-    - /usr/local/baipao/driverapp/applog/*/*.log
+    - /data/logs/jparklogs/jf-jpark-admin-web-api/jf-jpark-admin-web-api
   fields:
-    modelname: driverapp
+    source: jf-jpark-admin-web-api
 
-output.elasticsearch:
-  hosts: ["188.188.1.135:9200"]
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/jf-jpark-appstore-web-api/jf-jpark-appstore-web-api
+  fields:
+    source: jf-jpark-appstore-web-api
 
-output.elasticsearch.index: "%{[fields.modelname]}-%{+yyyy.MM.dd}"
-setup.template.name: "log"
-setup.template.pattern: "log-*"
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/jf-jpark-app-web-api/jf-jpark-app-web-api
+  fields:
+    source: jf-jpark-app-web-api
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/jf-jpark-gem-machineg/*.log
+  fields:
+    source: jf-jpark-gem-machine
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/jf-jpark-mall/jf-jpark-mall
+  fields:
+    source: jf-jpark-mall
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/jf-jpark-zhuxiaoge-web-api/jf-jpark-zhuxiaoge-web-api
+  fields:
+    source: jf-jpark-zhuxiaoge-web-api
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/mall-centre/mall-centre
+  fields:
+    source: mall-centre
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/mall-order/mall-order
+  fields:
+    source: mall-order
+ 
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/marketing/marketing
+  fields:
+    source: marketing
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/payment/payment
+  fields:
+    source: payment
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/system/system
+  fields:
+    source: system
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/user/user
+  fields:
+    source: user
+
+- type: log
+  enabled: true
+  paths:
+    - /data/logs/jparklogs/zhuxiaoge/zhuxiaoge
+  fields:
+    source: zhuxiaoge
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: true
+ 
+setup.template.settings:
+  index.number_of_shards: 1
+ 
+# 定义kibana的IP:PORT
+setup.kibana:
+  host: "172.18.148.238:5601"
+ 
+# 定义模板的相关信息
+setup.template.name: "pro_log"
+setup.template.pattern: "pro-*"
+setup.template.overwrite: true
+setup.template.enabled: true
+# 在7.4这个版本中，自定义ES的索引需要把ilm设置为false
 setup.ilm.enabled: false
+ 
+output.elasticsearch:
+  hosts: ["172.18.148.238:9200"]
+  index: "pro-%{[fields.source]}-%{+yyyy.MM.dd}"
+ 
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
 ```
 
 重启 Filebeat

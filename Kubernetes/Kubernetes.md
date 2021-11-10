@@ -1830,6 +1830,18 @@ kubectl exec POD_NAME -c CONTAINER_NAME -it -- sh
 kubeadm token create --print-join-command
 ```
 
+创建命名空间
+
+```
+kubectl create namespace <insert-namespace-name-here>
+```
+
+删除命名空间
+
+```
+kubectl delete namespaces <insert-some-namespace-name>
+```
+
 
 
 #### 安装 heml
@@ -1837,7 +1849,7 @@ kubeadm token create --print-join-command
 下载
 
 ```
-wget https://get.helm.sh/helm-v3.3.0-rc.1-linux-amd64.tar.gz
+wget https://get.helm.sh/helm-v3.7.1-linux-amd64.tar.gz
 ```
 
 安装
