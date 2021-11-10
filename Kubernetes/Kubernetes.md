@@ -1101,7 +1101,19 @@ Accept-Ranges: bytes
 
 ##### 部署指定节点和 NodePort 的应用
 
-> nodeName 指定节点，nodePort 指定节点端口，type 指定服务类型，默认为 ClusterIP
+> nodeSelector 选择节点，nodePort 指定节点端口，type 指定服务类型，默认为 ClusterIP
+
+将节点打标签
+
+```
+kubectl label nodes <your-node-name> disktype=ssd
+```
+
+查看节点标签
+
+```
+kubectl get nodes --show-labels
+```
 
 创建部署 yaml 文件 redis-master-deployment.yaml 
 
@@ -1126,7 +1138,8 @@ spec:
         role: master
         tier: backend
     spec:
-      nodeName: centos76-003
+      nodeSelector:
+        disktype: ssd
       containers:
       - name: master
         image: redis  # or just image: redis
@@ -1847,7 +1860,7 @@ kubectl delete namespaces <insert-some-namespace-name>
 > 修改 my-nginx deployment 的容器 my-nginx 的镜像
 
 ```
-kubectl set image deployment/my-nginx my-nginx=nginx:1.9.1 -n project-a
+kubectl set image deployment.apps/my-nginx my-nginx=nginx:1.9.1 -n project-a
 ```
 
 
@@ -1947,3 +1960,14 @@ quay.io/coreos/flannel                           v0.15.0
 rancher/mirrored-flannelcni-flannel-cni-plugin   v1.2
 ```
 
+
+
+#### 资料
+
+Kubernetes 文档: https://kubernetes.io/zh/docs/home/
+
+云原生社区: https://jimmysong.io/
+
+Kubernetes 中文指南: https://jimmysong.io/kubernetes-handbook/
+
+创建访问  dashboard token: https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
