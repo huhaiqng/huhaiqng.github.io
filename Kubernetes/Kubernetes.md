@@ -1842,6 +1842,14 @@ kubectl create namespace <insert-namespace-name-here>
 kubectl delete namespaces <insert-some-namespace-name>
 ```
 
+修改镜像版本
+
+> 修改 my-nginx deployment 的容器 my-nginx 的镜像
+
+```
+kubectl set image deployment/my-nginx my-nginx=nginx:1.9.1 -n project-a
+```
+
 
 
 #### 安装 heml
