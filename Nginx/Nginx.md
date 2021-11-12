@@ -94,7 +94,7 @@ http {
         limit_req zone=perip burst=5 nodelay;
         limit_req zone=perserver burst=10;
     }
-}     
+}
 ```
 
 说明
