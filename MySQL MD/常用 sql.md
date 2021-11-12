@@ -46,7 +46,7 @@ LIMIT 10;
 ##### 查询耗时最多的 10 个线程
 
 ```sql
-SELECT * FROM information_schema.`PROCESSLIST` ORDER BY TIME DESC LIMIT 10
+SELECT * FROM information_schema.`PROCESSLIST` ORDER BY TIME DESC LIMIT 10;
 ```
 
 ##### 查询等待的 SQL
