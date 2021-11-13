@@ -822,38 +822,15 @@ https://kubernetes.io/zh/docs/tasks/access-application-cluster/web-ui-dashboard/
 
 ##### 部署 metrics-server
 
-下载 yaml 文件
+执行部署
 
 ```
-wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 ```
 
-修改 deployment 第一处，添加一下内容
+修改 deployment 第一处，添加 `--kubelet-insecure-tls`
 
-```
-hostNetwork: true
-```
-
-![image-20200717171637242](Kubernetes.assets/image-20200717171637242.png)
-
-修改 deployment 第二处，添加一下内容
-
-```
-command:
-- /metrics-server
-- --kubelet-insecure-tls
-- --kubelet-preferred-address-types=InternalDNS,InternalIP,ExternalDNS,ExternalIP,Hostname
-```
-
-![image-20200717172427845](Kubernetes.assets/image-20200717172427845.png)
-
-应用
-
-> 需要提前翻墙下载好镜像 k8s.gcr.io/metrics-server-amd64:v0.3.6
-
-```
-kubectl apply -f components.yaml
-```
+![image-20211113152058981](Kubernetes.assets/image-20211113152058981.png)
 
 等待1分钟左右，检测
 
