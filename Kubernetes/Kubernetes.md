@@ -1840,6 +1840,12 @@ kubectl delete namespaces <insert-some-namespace-name>
 kubectl set image deployment.apps/my-nginx my-nginx=nginx:1.9.1 -n project-a
 ```
 
+删除 label
+
+```
+kubectl label node <nodename> <labelname>-
+```
+
 
 
 #### 安装 heml
