@@ -333,8 +333,6 @@ spec:
 
 ![image-20211122155916978](在 k8s 上部署 doplat 项目.assets/image-20211122155916978.png)
 
-
-
 ##### 部署 Nginx 反向代理 NGINX Ingress Controller
 
 > 如果使用阿里云负载均衡访问服务，则不需要部署 nginx，可以将负载均衡的80端口号映射到 NGINX Ingress Controller 的 NodePort。
