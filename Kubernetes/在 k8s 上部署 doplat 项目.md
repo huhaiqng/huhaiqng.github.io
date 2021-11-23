@@ -154,7 +154,7 @@ net.bridge.bridge-nf-call-iptables = 1
 > --kubernetes-version=v1.22.3 指定安装版本
 
 ```
-kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.22.3
+kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 
 要使非 root 用户可以运行 kubectl，请运行以下命令， 它们也是 `kubeadm init` 输出的一部分：
@@ -224,7 +224,7 @@ centos7-003   Ready    <none>   85m   v1.18.6
 下载 yaml 文件
 
 ```
-https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml
 ```
 
 添加参数`--token-ttl=86400` , 延长会话超时时间
@@ -234,6 +234,17 @@ https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recomme
 修改 `imagePullPolicy: IfNotPresent`， 以免每次重新拉取镜像
 
 ![image-20211122150030156](在 k8s 上部署 doplat 项目.assets/image-20211122150030156.png)
+
+修改 kubernetes-dashboard services，设置 type 和 nodePort
+
+```
+spec:
+  type: NodePort
+  ports:
+    - port: 443
+      targetPort: 8443
+      nodePort: 30443
+```
 
 应用
 
@@ -292,6 +303,12 @@ https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/compo
 
 ![image-20211122152002930](在 k8s 上部署 doplat 项目.assets/image-20211122152002930.png)
 
+应用
+
+```
+kubectl apply -f components.yaml
+```
+
 等待1分钟左右，检测
 
 ```
@@ -307,7 +324,7 @@ centos7-003   24m          2%     496Mi           56%
 在部署的节点上打上标签
 
 ```
-kubectl label nodes <your-node-name> ingress=nginx-ingress
+kubectl label nodes <your-node-name> ingress=ingress-nginx
 ```
 
 下载 yaml 文件
@@ -316,13 +333,12 @@ kubectl label nodes <your-node-name> ingress=nginx-ingress
 https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.5/deploy/static/provider/baremetal/deploy.yaml
 ```
 
-修改 ingress-nginx-controller service, 添加 selector
+修改 ingress-nginx-controller deployment, 添加 selector
 
 ```
 spec:
-  selector:
-    ingress: nginx-ingress
-  type: NodePort
+  nodeSelector:
+    ingress: ingress-nginx
 ```
 
 修改 ingress-nginx-controller service, 添加`externalTrafficPolicy: Local`, 方便后端获取真实 IP
@@ -338,6 +354,23 @@ spec:
 > 如果使用阿里云负载均衡访问服务，则不需要部署 nginx，可以将负载均衡的80端口号映射到 NGINX Ingress Controller 的 NodePort。
 >
 > 如果使用 NAT 或主机公网 IP 访问服务，则需要 Nginx 做反向代理。
+
+配置 nginx yum 源
+
+```
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/7/$basearch/
+gpgkey=http://nginx.org/keys/nginx_signing.key
+gpgcheck=0
+enabled=1
+```
+
+安装
+
+```
+yum install -y nginx
+```
 
 nignx 反向代理配置
 
@@ -364,4 +397,91 @@ server {
     }
 }
 ```
+
+##### 测试实例 hello
+
+yaml 文件
+
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: hello
+spec:
+  selector:
+    matchLabels:
+      app: hello
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+        - name: hello
+          image: "gcr.io/google-samples/hello-go-gke:1.0"
+          ports:
+            - name: http
+              containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello
+  namespace: hello
+spec:
+  selector:
+    app: hello
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: http
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  namespace: hello
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: www.hello.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hello
+                port:
+                  number: 80
+```
+
+应用
+
+```
+kubectl apply -f hello.yaml
+```
+
+本地 hosts 文件添加一条记录
+
+```
+192.168.40.191 www.hello.io
+```
+
+访问地址: http://www.hello.io/
 
