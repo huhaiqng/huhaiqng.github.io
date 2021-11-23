@@ -345,6 +345,35 @@ spec:
 
 ![image-20211122153821035](在 k8s 上部署 doplat 项目.assets/image-20211122153821035.png)
 
+修改 ingress-nginx-controller service, 设置 nodePort
+
+> 设置固定的 nodeport，方便 nginx 反向代理
+
+```
+  ports:
+    - name: http
+      ...
+      nodePort: 31080
+    - name: https
+      ...
+      nodePort: 31443
+```
+
+修改 ingress-nginx-controller ConfigMap，实现获取 real ip
+
+```
+data:
+  allow-snippet-annotations: 'true'
+  proxy-real-ip-cidr: '192.168.40.0/24'
+  use-forwarded-headers: "true"
+```
+
+应用
+
+```
+kubectl apply -f deploy.yaml
+```
+
 查看服务 `kubectl get service -n ingress-nginx`
 
 ![image-20211122155916978](在 k8s 上部署 doplat 项目.assets/image-20211122155916978.png)
@@ -376,13 +405,12 @@ nignx 反向代理配置
 
 ```
 upstream nginxingresscontroller {
-    server nginx_ingress_controller_ip:nginx_ingress_controller_nodeport;
+    server nginx_ingress_controller_ip:http_nodeport;
     ...
 }
 
 server {
 	listen       80;
-	listen       443;
     server_name  _;
 	
     location / {
