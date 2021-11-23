@@ -361,6 +361,8 @@ spec:
 
 修改 ingress-nginx-controller ConfigMap，实现获取 real ip
 
+> 因为使用了 nginx 做反向代理，需要添加配置才能获取真实 IP
+
 ```
 data:
   allow-snippet-annotations: 'true'
