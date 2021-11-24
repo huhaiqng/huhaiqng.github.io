@@ -428,7 +428,7 @@ server {
 }
 ```
 
-##### 测试实例 hello
+##### 测试实例 hello (nginx + ingress nginx)
 
 yaml 文件
 
@@ -484,8 +484,6 @@ kind: Ingress
 metadata:
   name: hello-ingress
   namespace: hello
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   ingressClassName: nginx
   rules:
@@ -514,4 +512,271 @@ kubectl apply -f hello.yaml
 ```
 
 访问地址: http://www.hello.io/
+
+
+
+#### 运行应用
+
+##### 部署 MySQL 服务
+
+yaml 文件 doplat-mysql.yaml
+
+> 数据目录 /var/lib/mysql 挂载到 /data/doplat-mysql/data
+>
+> 自定义配置 /etc/mysql/conf.d 挂载到 /data/doplat-mysql/conf
+>
+> nodeSelector 指定部署到 node01 节点
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: doplat
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: doplat-mysql
+  namespace: doplat
+  labels:
+    app: mysql
+spec:
+  type: NodePort
+  ports:
+    - port: 3306
+      nodePort: 32001
+  selector:
+    app: mysql
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: doplat-mysql
+  namespace: doplat
+  labels:
+    app: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  serviceName: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "MySQL5.7"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-volume
+          mountPath: /var/lib/mysql
+          subPath: data
+        - name: mysql-volume
+          mountPath: /etc/mysql/conf.d
+          subPath: conf
+      volumes:
+      - name: mysql-volume
+        hostPath:
+              path: /data/doplat-mysql
+              type: DirectoryOrCreate
+      nodeSelector:
+        kubernetes.io/hostname: node01
+```
+
+应用
+
+```
+kubectl apply -f doplat-mysql.yaml
+```
+
+##### 部署 Redis
+
+yaml 文件 doplat-redis.yaml
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: doplat-redis
+  namespace: doplat
+  labels:
+    app: redis
+spec:
+  type: NodePort
+  ports:
+    - port: 6379
+      nodePort: 32002
+  selector:
+    app: redis
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-mysql
+  namespace: doplat
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  serviceName: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - image: redis:6.0
+        name: redis
+        ports:
+        - containerPort: 6379
+          name: mysql
+      nodeSelector:
+        kubernetes.io/hostname: node01
+```
+
+应用
+
+```
+kubectl apply -f doplat-redis.yaml
+```
+
+##### 部署 doplat
+
+创建拉取阿里云镜像的
+
+```
+kubectl create secret docker-registry aliyun --docker-server=registry.cn-shenzhen.aliyuncs.com --docker-username=胡海青2020 --docker-password=****** -n doplat
+```
+
+nginx yaml 文件 doplat-nginx.yaml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doplat-nginx
+  namespace: doplat
+spec:
+  selector:
+    matchLabels:
+      app: doplat-nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: doplat-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-nginx:1.0
+        imagePullPolicy: Always
+        ports:
+          - name: nginx
+            containerPort: 90
+      imagePullSecrets:
+      - name: aliyun
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: doplat-nginx
+  namespace: doplat
+spec:
+  selector:
+    app: doplat-nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: nginx
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: doplat
+  namespace: doplat
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: www.doplat.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: doplat-nginx
+                port:
+                  number: 80
+```
+
+django yaml 文件 doplat-django.yaml
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doplat-django
+  namespace: doplat
+spec:
+  selector:
+    matchLabels:
+      app: doplat-django
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: doplat-django
+    spec:
+      containers:
+      - name: django
+        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-django:1.0
+        # image: nginx
+        imagePullPolicy: Always
+        ports:
+          - name: django
+            containerPort: 8000
+      imagePullSecrets:
+      - name: aliyun
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: doplat-django
+  namespace: doplat
+spec:
+  selector:
+    app: doplat-django
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: django
+```
+
+应用
+
+```
+kubectl apply -f doplat-nginx.yaml
+kubectl apply -f doplat-django.yaml
+```
 
