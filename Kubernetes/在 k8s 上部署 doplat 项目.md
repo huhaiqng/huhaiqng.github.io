@@ -785,8 +785,6 @@ kubectl apply -f doplat-django.yaml
 ##### 部署 doplat 方式二: nginx, django 使用同一个 StatefulSet
 
 > 同一 pod 容器之间的通信使用 localhost，需要将 nginx 反向代理 django 的地址设置为 localhost
->
-> /data/logs 挂载了 NFS
 
 yaml 文件 doplat.yaml
 
