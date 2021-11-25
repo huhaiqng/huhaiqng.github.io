@@ -655,7 +655,9 @@ spec:
 kubectl apply -f doplat-redis.yaml
 ```
 
-##### 部署 doplat
+##### 部署 doplat 方式一: nginx, django 分别使用 deployment
+
+> 不同一 pod 容器之间的通信使用服务，需要将 nginx 反向代理 django 的地址设置为 django 的服务名
 
 创建拉取阿里云镜像的
 
@@ -778,5 +780,81 @@ spec:
 ```
 kubectl apply -f doplat-nginx.yaml
 kubectl apply -f doplat-django.yaml
+```
+
+##### 部署 doplat 方式二: nginx, django 使用同一个 deployment
+
+> 同一 pod 容器之间的通信使用 localhost，需要将 nginx 反向代理 django 的地址设置为 localhost
+
+yaml 文件 doplat.yaml
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doplat
+  namespace: doplat
+spec:
+  selector:
+    matchLabels:
+      app: doplat
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: doplat
+    spec:
+      containers:
+      - name: nginx
+        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-nginx:1.0
+        imagePullPolicy: Always
+        ports:
+          - name: nginx
+            containerPort: 90
+      - name: django
+        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-django:1.0
+        imagePullPolicy: Always
+        ports:
+          - name: django
+            containerPort: 8000
+      imagePullSecrets:
+      - name: aliyun
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: doplat
+  namespace: doplat
+spec:
+  selector:
+    app: doplat
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: nginx
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: doplat
+  namespace: doplat
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: www.doplat.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: doplat
+                port:
+                  number: 80
+
 ```
 
