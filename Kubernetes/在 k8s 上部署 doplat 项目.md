@@ -82,7 +82,7 @@ export https_proxy=socks5://192.168.40.200:10808
 export no_proxy=localhost,127.0.0.1,192.168.40.200
 ```
 
-修改文件`/usr/lib/systemd/system/docker.service`, 添加 Environment, 设置 docker pull 代理
+修改文件 /usr/lib/systemd/system/docker.service, 添加 Environment, 设置 docker pull 代理
 
 ```
 [Service]
@@ -96,7 +96,7 @@ systemctl daemon-reload
 systemctl restart docker
 ```
 
-快速切换脚本`change-docker-service.sh`
+快速切换脚本 change-docker-service.sh
 
 ```
 #!/bin/bash
@@ -147,6 +147,18 @@ net.bridge.bridge-nf-call-iptables = 1
 [root@centos7-002 ~]# cat /etc/fstab 
 ...
 # /dev/mapper/centos-swap swap                    swap    defaults        0 0
+```
+
+查看集群需要的镜像
+
+```
+kubeadm config images list
+```
+
+拉取集群需要的镜像
+
+```
+kubeadm config images pull
 ```
 
 初始化 master
@@ -227,11 +239,11 @@ centos7-003   Ready    <none>   85m   v1.18.6
 https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml
 ```
 
-添加参数`--token-ttl=86400` , 延长会话超时时间
+添加参数 --token-ttl=86400 , 延长会话超时时间
 
 ![image-20211122145819329](在 k8s 上部署 doplat 项目.assets/image-20211122145819329.png)
 
-修改 `imagePullPolicy: IfNotPresent`， 以免每次重新拉取镜像
+修改 imagePullPolicy: IfNotPresent， 以免每次重新拉取镜像
 
 ![image-20211122150030156](在 k8s 上部署 doplat 项目.assets/image-20211122150030156.png)
 
@@ -302,6 +314,10 @@ https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/compo
 修改 deployment args 添加 `--kubelet-insecure-tls`
 
 ![image-20211122152002930](在 k8s 上部署 doplat 项目.assets/image-20211122152002930.png)
+
+修改 `imagePullPolicy: IfNotPresent`， 以免每次重新拉取镜像
+
+
 
 应用
 
