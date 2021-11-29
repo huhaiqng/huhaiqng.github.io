@@ -888,3 +888,39 @@ spec:
                   number: 80
 ```
 
+
+
+#### 备份恢复
+
+##### etcd
+
+> snapshotdb 为备份文件
+
+备份
+
+```
+ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt snapshot save snapshotdb
+```
+
+恢复
+
+```
+ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt snapshot restore snapshotdb
+```
+
+##### master
+
+备份
+
+1. /etc/kubernetes/目录下的所有文件(证书，manifest文件)
+2. 用户主目录下.kube/config文件(kubectl连接认证)
+3. /var/lib/kubelet/目录下所有文件(plugins容器连接认证)
+
+恢复
+
+1. 按之前的安装脚本进行全新安装。
+2. 停止系统服务 systemctl stop kubelet.service。
+3. 删除相关插件容器 (coredns,flannel,dashboard)。
+4. 恢复etcd数据。
+5. 将之前备份的三个目录依次还原。
+6. 重启系统服务 systemctl start kubelet.service。
