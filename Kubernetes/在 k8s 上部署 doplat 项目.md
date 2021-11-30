@@ -905,19 +905,28 @@ spec:
 备份
 
 ```
-ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt snapshot save snapshotdb
+ETCDCTL_API=3 etcdctl \
+--endpoints 127.0.0.1:2379 \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+snapshot save snapshotdb
 ```
 
 恢复
 
-> 默认数据文件 恢复到当前目录的 default.etcd
->
-> 删除 member/snap/ 下的 .snap 文件
->
-> 需要将 default.etcd/member 替换 /var/lib/etcd/member
+> 需要移走目录 /var/lib/etcd
 
 ```
-ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt snapshot restore snapshotdb
+ETCDCTL_API=3 etcdctl \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+--name=master \
+--initial-cluster=master=https://192.168.40.191:2380 \
+--initial-advertise-peer-urls=https://192.168.40.191:2380 \
+--data-dir=/var/lib/etcd \
+snapshot restore snapshotdb
 ```
 
 ##### master
