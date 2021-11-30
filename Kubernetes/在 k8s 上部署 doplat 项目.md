@@ -16,6 +16,12 @@
 192.168.40.195  node02
 ```
 
+安装工具包
+
+```
+yum install -y vim etcd lrzsz ntp
+```
+
 同步时间
 
 ```
@@ -39,7 +45,7 @@ setenforce 0
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum update && yum install -y docker-ce docker-ce-cli containerd.io
+yum install -y docker-ce docker-ce-cli containerd.io
 
 ## Create /etc/docker directory.
 mkdir /etc/docker
@@ -903,6 +909,12 @@ ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd
 ```
 
 恢复
+
+> 默认数据文件 恢复到当前目录的 default.etcd
+>
+> 删除 member/snap/ 下的 .snap 文件
+>
+> 需要将 default.etcd/member 替换 /var/lib/etcd/member
 
 ```
 ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key --cacert=/etc/kubernetes/pki/etcd/ca.crt snapshot restore snapshotdb
