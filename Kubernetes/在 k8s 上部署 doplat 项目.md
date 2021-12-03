@@ -169,7 +169,7 @@ kubeadm config images pull
 
 初始化 master
 
-> --kubernetes-version=v1.22.3 指定安装版本
+> --kubernetes-version=v1.22.4 指定安装版本
 
 ```
 kubeadm init --pod-network-cidr=10.244.0.0/16
