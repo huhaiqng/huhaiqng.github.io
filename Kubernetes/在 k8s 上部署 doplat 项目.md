@@ -145,6 +145,7 @@ mv /etc/yum.repos.d/kubernetes.repo /tmp
 
 ```
 net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
 ```
 
 关闭 swap，需要重启服务器
