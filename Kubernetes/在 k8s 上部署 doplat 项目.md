@@ -917,6 +917,8 @@ snapshot save snapshotdb
 恢复
 
 > 需要移走目录 /var/lib/etcd
+>
+> 如果无法启动，删除 /var/lib/etcd/member/snap 下的 .snap 文件
 
 ```
 ETCDCTL_API=3 etcdctl \
