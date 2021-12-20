@@ -612,6 +612,53 @@ services:
 docker-compose up -d
 ```
 
+##### 部署禅道
+
+创建 docker-compose.yml 文件
+
+```
+version: "3.6"
+
+services:
+  phpfpm:
+    image: bitnami/php-fpm:7.4-prod
+    volumes:
+      - /data/zentaopms:/app
+
+  nginx:
+    image: nginx:1.19.10
+    volumes:
+      - ./nginx-vhost.conf:/etc/nginx/conf.d/nginx-vhost.conf
+      - /data/zentaopms:/app
+    ports:
+      - "88:90"
+```
+
+nginx-vhost.conf 文件
+
+```
+server {
+    listen       90;
+    server_name  example.org  www.example.org;
+
+    root /app;
+
+    location /www {
+        index index.php;
+    }
+
+    location ~ \.php$ {
+        try_files $uri = 404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass phpfpm:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+}
+```
+
 
 
 #### Docker Swarm
