@@ -119,6 +119,28 @@ systemctl restart docker
 
 ##### 安装 kubeadm、kubelet 和 kubectl
 
+允许 iptables 检查桥接流量
+
+```
+lsmod | grep br_netfilter
+modprobe br_netfilter
+```
+
+设置加载模块 br_netfilter
+
+```
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+```
+
+修改内核参数文件 /usr/lib/sysctl.d/00-system.conf，查看结果 sysctl --system
+
+```
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+```
+
 > worker 不需要安装 kubectl
 
 ```
@@ -133,20 +155,12 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 # 安装
-update-alternatives --set iptables /usr/sbin/iptables-legacy
 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable kubelet
 mv /etc/yum.repos.d/kubernetes.repo /tmp
 ```
 
 ##### 创建集群
-
-修改 /etc/sysctl.d/99-sysctl.conf, 添加一下内容，并命令 sysctl -p 加载
-
-```
-net.bridge.bridge-nf-call-iptables = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-```
 
 关闭 swap，需要重启服务器
 
@@ -273,7 +287,7 @@ kubectl apply -f recommended.yaml
 
 查看服务 `kubectl get service -n kubernetes-dashboard`
 
-> 访问地址为: https://masterip:30655
+> 访问地址为: https://masterip:30443
 
 ![image-20211122151312396](在 k8s 上部署 doplat 项目.assets/image-20211122151312396.png)
 
@@ -323,8 +337,6 @@ https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/compo
 ![image-20211122152002930](在 k8s 上部署 doplat 项目.assets/image-20211122152002930.png)
 
 修改 `imagePullPolicy: IfNotPresent`， 以免每次重新拉取镜像
-
-
 
 应用
 
