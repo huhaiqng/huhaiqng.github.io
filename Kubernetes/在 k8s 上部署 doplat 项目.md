@@ -721,7 +721,7 @@ spec:
       containers:
       - name: nginx
         image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-nginx:1.0
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
           - name: nginx
             containerPort: 90
@@ -787,7 +787,7 @@ spec:
       - name: django
         image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/doplat-django:1.0
         # image: nginx
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
           - name: django
             containerPort: 8000
