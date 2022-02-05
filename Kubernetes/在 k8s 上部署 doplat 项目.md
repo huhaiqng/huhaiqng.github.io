@@ -19,7 +19,7 @@
 安装工具包
 
 ```
-yum install -y vim etcd lrzsz ntp
+yum install -y vim etcd lrzsz ntp ebtables ethtool
 ```
 
 同步时间
