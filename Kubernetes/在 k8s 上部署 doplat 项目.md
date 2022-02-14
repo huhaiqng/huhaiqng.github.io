@@ -144,7 +144,7 @@ net.bridge.bridge-nf-call-iptables = 1
 > worker 不需要安装 kubectl
 
 ```
-# 配置yum，完成安装后删除
+# 配置官方 yum 源，完成安装后删除
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -153,6 +153,17 @@ enabled=1
 gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+# 或配置阿里 yum 源
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+       http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
 # 安装
 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
@@ -179,7 +190,10 @@ kubeadm config images list
 拉取集群需要的镜像
 
 ```
+# 拉取官方镜像
 kubeadm config images pull
+# 拉取阿里云镜像
+kubeadm config images pull --image-repository registry.aliyuncs.com/google_containers
 ```
 
 初始化 master
@@ -187,7 +201,10 @@ kubeadm config images pull
 > --kubernetes-version=v1.22.4 指定安装版本
 
 ```
+# 使用官方镜像
 kubeadm init --pod-network-cidr=10.244.0.0/16
+# 使用阿里云镜像
+kubeadm init --pod-network-cidr=10.244.0.0/16 --image-repository registry.aliyuncs.com/google_containers
 ```
 
 要使非 root 用户可以运行 kubectl，请运行以下命令， 它们也是 `kubeadm init` 输出的一部分：

@@ -1,12 +1,19 @@
 面试自我介绍
 您好，我2011年毕业，学的专业是计算机网络技术，毕业后一直从事运维的工作。
-先后运维过旅游，新能源充电，珠宝商城等系统。
+先后运维过旅游商城，珠宝商城，新能源充电，共享汽车等项目。
 运维过的系统大部分由 java 开发，少部分由 .net 和 php 开发。
-熟悉由 java 开发的 war 包和 java 包的部署。
+熟悉由 java 开发的 war 包和 jar 包的部署。
 熟悉 MySQL，MongoDB，Oracle 等数据库的管理。
 熟悉 tomcat，nginx，redis，mq 消息队列等中间件的管理。
 熟悉 doker，k8s 的使用。
-熟悉 jenkins，gitlab，elk，禅道，ansible 等工具的使用。
+熟悉 jenkins，gitlab，elk，禅道，ansible 等运维工具的使用。
 熟悉阿里云，华为的使用。
-熟悉 VMware Esxi 系统的使用。
+熟悉使用 VMware Esxi 搭建私有云。
 熟悉 python web 框架 django 的开发。
+在运维过程中主要使用了这些技术。
+
+负责搭建生产环境和测试环境。
+负责数据的备份。
+负责自动化发布平台的管理。
+负责服务器和系统的监控。
+负责 nginx 日志访问日志的分析。
