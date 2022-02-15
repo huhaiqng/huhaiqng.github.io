@@ -103,6 +103,15 @@ backend nginxhttps
 yum install -y keepalived
 ```
 
+检测脚本 /etc/keepalived/check_nginx.sh
+```
+#!/bin/bash
+V_IP=192.168.40.170
+
+# haproxy 异常，vip 迁移
+nc -zv localhost 80 || exit 1
+```
+
 MASTER 配置文件 /etc/keepalived/keepalived.conf
 
 > interface: 修改为服务器对应的网卡名
