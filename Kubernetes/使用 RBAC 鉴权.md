@@ -64,6 +64,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: jim
+  namespace: dev
 ```
 
 或创建 rolebinding.yaml，绑定  clusterrole edit

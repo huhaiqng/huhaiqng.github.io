@@ -169,6 +169,7 @@ server {
     location / {
     	root html;
     	index index.html;
+        try_files $uri $uri/ /index.html;
     }
 }
 ```
@@ -195,6 +196,7 @@ server {
     location / {
         root html;
         index index.html index.htm;
+        try_files $uri $uri/ /index.html;
     }
 }
 ```
@@ -259,6 +261,7 @@ server {
     location / {
         root /data/wwwroot;
         index index.html index.htm;
+        try_files $uri $uri/ /index.html;
     }
 
     location ^~ /api {
