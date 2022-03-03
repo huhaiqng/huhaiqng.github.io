@@ -130,3 +130,10 @@ kubectl get nodes
 kubectl describe nodes | grep Taint
 ```
 
+##### TASK 5
+
+Output the pod name that uses most CPU resource to file /root/cka/name.txt
+
+##### TASK 6
+
+There is pod name pod-nginx, create a service name service-nginx, use nodePort to expose the pod. Then create a pod use image busybox to nslookup the pod pod-nginx and service service-nginx.
