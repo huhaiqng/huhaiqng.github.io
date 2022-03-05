@@ -936,11 +936,11 @@ spec:
 
 ```
 ETCDCTL_API=3 etcdctl \
---endpoints 127.0.0.1:2379 \
---cert=/etc/kubernetes/pki/etcd/server.crt \
---key=/etc/kubernetes/pki/etcd/server.key \
+--endpoints=https://192.168.40.191:2379 \
 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
-snapshot save snapshotdb
+--cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+--key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+snapshot save snap
 ```
 
 恢复
@@ -951,15 +951,26 @@ snapshot save snapshotdb
 
 ```
 ETCDCTL_API=3 etcdctl \
---cert=/etc/kubernetes/pki/etcd/server.crt \
---key=/etc/kubernetes/pki/etcd/server.key \
---cacert=/etc/kubernetes/pki/etcd/ca.crt \
---name=master \
---initial-cluster=master=https://192.168.40.191:2380 \
+--endpoints=https://192.168.40.191:2379 \
 --initial-advertise-peer-urls=https://192.168.40.191:2380 \
---data-dir=/var/lib/etcd \
-snapshot restore snapshotdb
+--initial-cluster=default=https://192.168.40.191:2380 \
+--data-dir /var/lib/etcd \
+snapshot restore snap
 ```
+
+重启 master docker
+
+```
+systemctl restart docker
+```
+
+重启所以节点的 kubelet
+
+```
+systemctl restart kubelet
+```
+
+
 
 ##### master
 

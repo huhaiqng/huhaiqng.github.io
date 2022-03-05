@@ -874,6 +874,13 @@ kubectl drain <node name> --delete-emptydir-data --force --ignore-daemonsets
 kubeadm reset
 ```
 
+删除网络
+
+```
+ip link delete cni0
+ip link delete flannel.1
+```
+
 重置过程不会重置或清除 iptables 规则或 IPVS 表。如果你希望重置 iptables，则必须手动进行：
 
 ```bash
@@ -1899,8 +1906,6 @@ kubectl label node <nodename> <labelname>-
 ```
 kubeadm config print init-defaults
 ```
-
-
 
 
 

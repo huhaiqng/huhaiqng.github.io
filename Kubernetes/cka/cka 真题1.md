@@ -137,3 +137,93 @@ Output the pod name that uses most CPU resource to file /root/cka/name.txt
 ##### TASK 6
 
 There is pod name pod-nginx, create a service name service-nginx, use nodePort to expose the pod. Then create a pod use image busybox to nslookup the pod pod-nginx and service service-nginx.
+
+yaml
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-nginx 
+spec:
+  selector:
+    name: pod-nginx
+  type: NodePort
+  ports:
+  - name: nginx 
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-nginx
+  labels:
+    name: pod-nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    ports:
+    - containerPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox
+  labels:
+    name: busybox
+spec:
+  containers:
+  - image: busybox:1.28
+    command:
+      - sleep
+      - "1d"
+    name: nsbusybox
+```
+
+命令
+
+```
+kubectl get pods -o wide
+kubectl exec busybox -- nslookup 10.244.2.204
+kubectl exec busybox -- nslookup nginx-service
+```
+
+##### TASK 7
+
+ Scale the deployment scale-deploy in namespace dev to three pod and record it.
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scale-deploy
+  namespace: dev
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+yaml
+
+命令
+
+```
+kubectl scale deployment.v1.apps/scale-deploy --replicas=3 -n dev --record
+```
+
