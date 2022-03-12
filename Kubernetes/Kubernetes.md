@@ -874,7 +874,7 @@ kubectl drain <node name> --delete-emptydir-data --force --ignore-daemonsets
 kubeadm reset
 ```
 
-删除网络
+删除网络(可选)
 
 ```
 ip link delete cni0
