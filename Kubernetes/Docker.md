@@ -614,6 +614,8 @@ docker-compose up -d
 
 ##### 部署禅道
 
+**方式1:** nginx + php-fpm
+
 创建 docker-compose.yml 文件
 
 ```
@@ -657,6 +659,28 @@ server {
         fastcgi_param PATH_INFO $fastcgi_path_info;
     }
 }
+```
+
+方式2: apache
+
+创建 docker-compose.yml 文件
+
+```
+version: "3.6"
+
+services:
+  phpfpm:
+    image: php:7.3-apache
+    volumes:
+      - /data/zentaopms:/var/www/html
+    ports:
+      - "80:80"
+```
+
+修改目录权限
+
+```
+chown -R 33:33 /data/zentaopms
 ```
 
 
