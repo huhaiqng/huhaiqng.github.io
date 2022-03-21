@@ -1829,6 +1829,114 @@ https://docs.traefik.io/v1.7/user-guide/kubernetes/#add-a-tls-certificate-to-the
 
 
 
+#### 访问应用
+
+##### hostNetwork
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  hostNetwork: true
+  containers:
+    - name: nginx
+      image: nginx
+```
+
+##### hostPort
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+          hostPort: 80
+```
+
+##### NodePort
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      nodePort: 30000
+  selector:
+    name: nginx
+```
+
+##### LoadBalancer
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+  selector:
+    name: nginx
+```
+
+##### Ingress
+
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx
+spec:
+  rules:
+    - host: nginx.kube.example.com
+      http:
+        paths:
+          - backend:
+              serviceName: nginx
+              servicePort: 80
+```
+
+
+
 #### 资料 
 
 **Kubernet**
