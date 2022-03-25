@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: springboot
-        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/springboot-demo:1.4
+        image: registry.cn-shenzhen.aliyuncs.com/huhaiqing/springboot-demo:1.5
+        command: ['java', '-jar', '/data/app.jar']
         ports:
         - containerPort: 8080
       imagePullSecrets:

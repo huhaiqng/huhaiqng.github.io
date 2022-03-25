@@ -5,4 +5,3 @@ ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 RUN chown -R spring.spring /data
 USER spring:spring
-ENTRYPOINT ["java","-jar","/data/app.jar"]
