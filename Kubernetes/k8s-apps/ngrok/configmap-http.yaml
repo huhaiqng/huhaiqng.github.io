@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  http.cfg: |
+    server_addr: "zhubaogongyuan.cn:4443"
+    trust_host_root_certs: false
+    
+    tunnels:
+        jf:
+            subdomain: "jf"
+            proto:
+                http: "192.168.40.159:1"
+        lfn-sms:
+            subdomain: "sms"
+            proto:
+                http: "192.168.40.70:2"
+kind: ConfigMap
+metadata:
+  name: ngrok-http
+  namespace: devops

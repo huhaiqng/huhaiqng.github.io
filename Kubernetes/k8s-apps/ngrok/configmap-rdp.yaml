@@ -1,0 +1,35 @@
+apiVersion: v1
+data:
+  rdp.cfg: |
+    server_addr: "zhubaogongyuan.cn:4443"
+    trust_host_root_certs: false
+    
+    tunnels:
+        gxh:
+            remote_port: 20101
+            proto:
+                tcp: "192.168.40.63:3389"
+        gxh1:
+            remote_port: 20111
+            proto:
+                tcp: "192.168.40.63:8000"
+        sjq:
+             remote_port: 20102
+             proto:
+                 tcp: "192.168.40.74:3389"
+        zb:
+             remote_port: 20105
+             proto:
+                 tcp: "192.168.40.193:3389"
+        lj:
+             remote_port: 20103
+             proto:
+                 tcp: "192.168.40.60:3389"
+        hr:
+             remote_port: 20104
+             proto:
+                 tcp: "192.168.40.39:3389"
+kind: ConfigMap
+metadata:
+  name: ngrok-rdp
+  namespace: devops

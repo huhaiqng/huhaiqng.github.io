@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ngrok
+  namespace: devops
+  labels:
+    app: ngrok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ngrok
+  template:
+    metadata:
+      labels:
+        app: ngrok
+    spec:
+      containers:
+      - name: ngrok-ssh
+        image: harbor.lingfannao.net:4436/yunwei/ngrok:v0.2
+        command: ['/app/ngrok', '-config=/app/ssh.cfg', '-log=stdout', 'start-all']
+        volumeMounts:
+        - name: ngrok-ssh
+          mountPath: "/app/ssh.cfg"
+          subPath: ssh.cfg
+          readOnly: true
+      - name: ngrok-rdp
+        image: harbor.lingfannao.net:4436/yunwei/ngrok:v0.2
+        command: ['/app/ngrok', '-config=/app/rdp.cfg', '-log=stdout', 'start-all']
+        volumeMounts:
+        - name: ngrok-rdp
+          mountPath: "/app/rdp.cfg"
+          subPath: rdp.cfg
+          readOnly: true
+      - name: ngrok-http
+        image: harbor.lingfannao.net:4436/yunwei/ngrok:v0.2
+        command: ['/app/ngrok', '-config=/app/http.cfg', '-log=stdout', 'start-all']
+        volumeMounts:
+        - name: ngrok-http
+          mountPath: "/app/http.cfg"
+          subPath: http.cfg
+          readOnly: true
+      volumes:
+      - name: ngrok-ssh
+        configMap:
+          name: ngrok-ssh
+          items:
+          - key: ssh.cfg
+            path: ssh.cfg
+      - name: ngrok-rdp
+        configMap:
+          name: ngrok-rdp
+          items:
+          - key: rdp.cfg
+            path: rdp.cfg
+      - name: ngrok-http
+        configMap:
+          name: ngrok-http
+          items:
+          - key: http.cfg
+            path: http.cfg
+      imagePullSecrets:
+      - name: hwyharbor
+      nodeSelector:
+        kubernetes.io/hostname: yw-sys-01
