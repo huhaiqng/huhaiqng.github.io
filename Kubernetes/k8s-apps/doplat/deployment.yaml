@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doplat
+  namespace: devops
+  labels:
+    app: doplat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: doplat
+  template:
+    metadata:
+      labels:
+        app: doplat
+    spec:
+      containers:
+      - name: django
+        image: python:3.8.9
+        ports:
+        - containerPort: 8000
+        command: ['sh', '-c', '/doplat/entrypoint.sh']
+        volumeMounts:
+        - mountPath: /doplat
+          name: doplat-volume
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      - name: nginx
+        image: nginx:1.19.10
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /doplat
+          name: doplat-volume
+        - name: nginx-conf
+          mountPath: "/etc/nginx/conf.d/default.conf"
+          subPath: default.conf
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      volumes:
+      - name: doplat-volume
+        hostPath:
+          path: /data/doplat
+          type: Directory
+      - name: nginx-conf
+        configMap:
+          name: nginx-default
+          items:
+          - key: default.conf
+            path: default.conf
+      nodeSelector:
+        kubernetes.io/hostname: yw-sys-01

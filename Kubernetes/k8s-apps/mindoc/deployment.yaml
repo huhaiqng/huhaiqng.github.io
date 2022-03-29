@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindoc
+  namespace: devops
+  labels:
+    app: mindoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindoc
+  template:
+    metadata:
+      labels:
+        app: mindoc
+    spec:
+      containers:
+      - name: mindoc
+        image: harbor.lingfannao.net:4436/yunwei/mindoc:v1.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      imagePullSecrets:
+      - name: hwyharbor
