@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: mindoc
-        image: harbor.lingfannao.net:4436/yunwei/mindoc:v1.0
+        image: centos:7
+        command: ['/mindoc/mindoc_linux_amd64']
         ports:
         - containerPort: 8080
         resources:
@@ -27,5 +28,13 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "250m"
-      imagePullSecrets:
-      - name: hwyharbor
+        volumeMounts:
+        - mountPath: /mindoc
+          name: mindoc-volume
+      nodeSelector:
+        kubernetes.io/hostname: yw-sys-01
+      volumes:
+      - name: mindoc-volume
+        hostPath:
+          path: /data/mindoc
+          type: Directory

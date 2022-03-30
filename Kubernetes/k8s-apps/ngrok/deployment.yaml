@@ -24,6 +24,13 @@ spec:
           mountPath: "/app/ssh.cfg"
           subPath: ssh.cfg
           readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "100m"
       - name: ngrok-rdp
         image: harbor.lingfannao.net:4436/yunwei/ngrok:v0.2
         command: ['/app/ngrok', '-config=/app/rdp.cfg', '-log=stdout', 'start-all']
@@ -32,6 +39,13 @@ spec:
           mountPath: "/app/rdp.cfg"
           subPath: rdp.cfg
           readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "100m"
       - name: ngrok-http
         image: harbor.lingfannao.net:4436/yunwei/ngrok:v0.2
         command: ['/app/ngrok', '-config=/app/http.cfg', '-log=stdout', 'start-all']
@@ -40,6 +54,13 @@ spec:
           mountPath: "/app/http.cfg"
           subPath: http.cfg
           readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "100m"
       volumes:
       - name: ngrok-ssh
         configMap:
