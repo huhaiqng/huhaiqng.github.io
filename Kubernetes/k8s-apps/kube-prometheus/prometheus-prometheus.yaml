@@ -46,3 +46,4 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
   version: 2.33.3
+  retention: 30d
