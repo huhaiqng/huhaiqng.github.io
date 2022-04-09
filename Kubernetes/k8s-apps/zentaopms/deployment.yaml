@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: chandao
-        image: php-apache:7.4.28
+        # image: php-apache:7.4.28
+        image: harbor.lingfannao.net:4436/yunwei/php-apache:7.4.28
         ports:
         - containerPort: 80
         volumeMounts:
@@ -47,3 +48,5 @@ spec:
             path: php.ini
       nodeSelector:
         kubernetes.io/hostname: yw-sys-02
+      imagePullSecrets:
+      - name: hwyharbor
