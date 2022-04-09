@@ -26,3 +26,10 @@ kubectl apply -f kube-prometheus/dingding
 kubectl apply -f kube-prometheus
 ```
 
+##### prometheus 数据持久化目录
+
+```
+mkdir -pv /data/prometheus-db/
+chown 1000.1000 /data/prometheus-db/
+```
+

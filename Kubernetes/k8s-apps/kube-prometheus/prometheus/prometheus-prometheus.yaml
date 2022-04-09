@@ -47,3 +47,10 @@ spec:
   serviceMonitorSelector: {}
   version: 2.33.3
   retention: 30d
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: manual
+        resources:
+          requests:
+            storage: 50Gi
