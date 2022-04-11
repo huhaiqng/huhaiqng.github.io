@@ -1,0 +1,15 @@
+kind: Probe
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: probe-http
+  namespace: monitoring
+spec:
+  interval: 60s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:19115
+  targets:
+    staticConfig:
+      static:
+      - https://baidu.com
+      - https://qq.com
