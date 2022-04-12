@@ -134,7 +134,7 @@ br_netfilter
 EOF
 ```
 
-修改内核参数文件 /usr/lib/sysctl.d/00-system.conf，查看结果 sysctl --system
+修改内核参数文件 /usr/lib/sysctl.d/00-system.conf，应用更新 `sysctl --system`
 
 ```
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -225,6 +225,8 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 
 配置网络
 
+> 需要先配置网络，node 状态才会是 Ready
+>
 > 使用的镜像 quay.io/coreos/flannel:v0.12.0-amd64，为了加快速度可以提前准备
 
 ```
@@ -342,6 +344,8 @@ kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get
 ```
 
 ##### 部署 Metrics Server
+
+> 如果要部署 kube-prometheus，则不需要部署 Metrics Server
 
 下载 yaml 文件
 
