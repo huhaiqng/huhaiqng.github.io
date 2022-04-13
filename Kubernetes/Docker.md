@@ -124,21 +124,35 @@ docker build -t <REPOSITORY:TAG> .
 
 ##### 生成 jdk 1.8 镜像
 
-创建 Dockerfile 文件
+创建 Dockerfile 文件(centos)
 
 > 需要提前下载好 jdk-8u151-linux-x64.tar.gz
 
 ```
 FROM centos:7.6.1810
-
 ADD jdk-8u151-linux-x64.tar.gz /usr/local/
-
 ENV JAVA_HOME /usr/local/jdk1.8.0_151
 ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 ENV PATH $PATH:$JAVA_HOME/bin
-
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN sh -c echo 'Asia/Shanghai' >/etc/timezone
+```
+
+创建 Dockerfile 文件(alpine)
+
+> 需要提前下载好 jdk-8u151-linux-x64.tar.gz
+
+```
+FROM alpine:3.14
+ADD jdk-8u151-linux-x64.tar.gz /usr/local/
+ENV JAVA_HOME /usr/local/jdk1.8.0_151
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+ENV PATH $PATH:$JAVA_HOME/bin
+RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories ;\
+    apk add tzdata ;\
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ;\
+    echo "Asia/Shanghai" >/etc/timezone ;\
+    rm -f /var/cache/apk/*
 ```
 
 生成镜像

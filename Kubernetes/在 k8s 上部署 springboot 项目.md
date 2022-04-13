@@ -15,12 +15,22 @@ ssh -i /root/.ssh/deploy -p 6666 pro@192.168.1.100 "${KUBE_CMD}"
 北京时间 jdk 镜像 Dockerfile
 
 ```
+# openjdk
 FROM openjdk:8-jdk-alpine
 RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories ;\
     apk add tzdata ;\
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ;\
     echo "Asia/Shanghai" >/etc/timezone ;\
     rm -f /var/cache/apk/*
+
+# oracle jdk
+FROM centos:7.9.2009
+ADD jdk-8u321-linux-x64.tar.gz /usr/local/
+ENV JAVA_HOME /usr/local/jdk1.8.0_321
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+ENV PATH $PATH:$JAVA_HOME/bin
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN sh -c echo 'Asia/Shanghai' >/etc/timezone
 ```
 
 jar 包镜像 Dockerfile
@@ -35,6 +45,7 @@ ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 RUN chown -R spring.spring /data
 USER spring:spring
+LABEL del=true
 ```
 
 doployment yaml 文件

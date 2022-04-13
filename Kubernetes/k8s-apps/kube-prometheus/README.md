@@ -21,9 +21,18 @@
 ##### 部署
 
 ```
-kubectl apply -f kube-prometheus/setup
-kubectl apply -f kube-prometheus/dingding
-kubectl apply -f kube-prometheus
+kubectl create namespace devops
+kubectl create -f ./setup
+kubectl apply -f ./prometheus
+kubectl apply -f ./prometheus-adapter
+kubectl apply -f ./prometheus-operator
+kubectl apply -f ./node-exporter
+kubectl apply -f ./kube-statemetrics
+kubectl apply -f ./kubernetes-controlplane
+kubectl apply -f ./grafana
+kubectl apply -f ./blackbox-exporter
+kubectl apply -f ./alertmanager
+kubectl apply -f ./dingding
 ```
 
 ##### prometheus 数据持久化目录
