@@ -1,0 +1,36 @@
+##
+# This config is for prometheus-webhook-dingtalk instead of Kubernetes!
+##
+
+## Request timeout
+# timeout: 5s
+
+## Customizable templates path
+templates:
+  #- /etc/prometheus-webhook-dingtalk/defaulta.tmpl
+  - /etc/prometheus-webhook-dingtalk/templates/default.tmpl
+## You can also override default template using `default_message`
+## The following example to use the 'legacy' template from v0.3.0
+# default_message:
+#   title: '{{ template "legacy.title" . }}'
+#   text: '{{ template "legacy.content" . }}'
+targets:
+  webhook1:
+    url: https://oapi.dingtalk.com/robot/send?access_token=94747def79a6288d3c054b6abb83afb29a42b0678e685bc8f9888b74d0f5d95f
+  webhook2:
+    url: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxx
+  webhook_legacy:
+    url: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxx
+    # Customize template content
+    message:
+      # Use legacy template
+      title: '{{ template "legacy.title" . }}'
+      text: '{{ template "legacy.content" . }}'
+  webhook_mention_all:
+    url: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxx
+    mention:
+      all: true
+  webhook_mention_users:
+    url: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxx
+    mention:
+      mobiles: ['156xxxx8827', '189xxxx8325']

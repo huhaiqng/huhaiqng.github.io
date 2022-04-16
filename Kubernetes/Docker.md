@@ -679,6 +679,8 @@ server {
 
 创建 docker-compose.yml 文件
 
+> 启用重定向和MySQL模块: a2enmod rewrite && docker-php-ext-install pdo_mysql
+
 ```
 version: "3.6"
 
