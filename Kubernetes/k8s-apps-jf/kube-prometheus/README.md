@@ -18,40 +18,12 @@
       - url: http://dingding:8060/dingtalk/webhook1/send
  ```
 
-##### 部署 kube-prometheus
+##### 部署
 
 ```
-kubectl create namespace devops
-kubectl create -f ./setup
-kubectl apply -f ./prometheus
-kubectl apply -f ./prometheus-adapter
-kubectl apply -f ./prometheus-operator
-kubectl apply -f ./node-exporter
-kubectl apply -f ./kube-statemetrics
-kubectl apply -f ./kubernetes-controlplane
-kubectl apply -f ./grafana
-kubectl apply -f ./blackbox-exporter
-kubectl apply -f ./alertmanager
-```
-
-##### 部署钉钉
-
-项目地址: https://github.com/yunlzheng/alertmanaer-dingtalk-webhook
-
-创建 configmap
-
-> 配置文件: config.yml 模板文件: default.tmpl
->
-> 需要修个钉钉 webhook
-
-```
-kubectl create configmap dingding-config -n monitoring --from-file=config.yml --from-file=default.tmpl
-```
-
-部署
-
-```
-kubectl apply -f deployment.yaml -f service.yaml
+kubectl apply -f kube-prometheus/setup
+kubectl apply -f kube-prometheus/dingding
+kubectl apply -f kube-prometheus
 ```
 
 ##### prometheus 数据持久化目录
@@ -61,9 +33,3 @@ mkdir -pv /data/prometheus-db/
 chown 1000.1000 /data/prometheus-db/
 ```
 
-##### grafana 数据持久化目录
-
-```
-mkdir /data/grafana
-chown -R 65534.65534 /data/grafana
-```
