@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler
+  labels:
+    app.kubernetes.io/name: kube-scheduler
+spec:
+  ports:
+  - name: https-metrics
+    port: 10259
+  selector:
+    component: kube-scheduler
+---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

@@ -58,3 +58,20 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-controller-manager
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 10257
+      targetPort: 10257
+      name: https-metrics
+  selector:
+    component: kube-controller-manager

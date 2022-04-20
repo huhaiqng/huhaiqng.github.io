@@ -67,3 +67,51 @@ chown 1000.1000 /data/prometheus-db/
 mkdir /data/grafana
 chown -R 65534.65534 /data/grafana
 ```
+
+##### 解决 KubeSchedulerDown
+
+修改 /etc/kubernetes/manifests/kube-scheduler.yaml，将`--bind-address=127.0.0.1`改为`--bind-address=0.0.0.0`，自动生效
+
+创建 service
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler
+  labels:
+    app.kubernetes.io/name: kube-scheduler
+spec:
+  ports:
+  - name: https-metrics
+    port: 10259
+  selector:
+    component: kube-scheduler
+```
+
+##### 解决 KubeControllerManagerDown
+
+修改 /etc/kubernetes/manifests/kube-controller-manager.yaml，将`--bind-address=127.0.0.1`改为`--bind-address=0.0.0.0`，自动生效
+
+创建 service
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-controller-manager
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 10257
+      targetPort: 10257
+      name: https-metrics
+  selector:
+    component: kube-controller-manager
+```
+

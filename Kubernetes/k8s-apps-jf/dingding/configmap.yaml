@@ -38,7 +38,7 @@ data:
         mention:
           mobiles: ['156xxxx8827', '189xxxx8325']
   default.tmpl: |
-    {{ define "__subject" }}[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }} {{ if gt (len .CommonLabels) (len .GroupLabels) }}({{ with .CommonLabels.Remove .GroupLabels.Names }}{{ .Values | join " " }}{{ end }}){{ end }}{{ end }}
+    {{ define "__subject" }}{{ if gt (len .Alerts.Firing) 0 -}}警报触发:{{ .Alerts.Firing | len }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 -}}警报解决:{{ .Alerts.Resolved | len }}{{ end }}{{ end }}
 
     {{ define "__text_alert_list" }}{{ range . }}
     **Labels**
@@ -84,8 +84,8 @@ data:
     {{ define "ding.link.content" }}{{ template "default.content" . }}{{ end }}
 kind: ConfigMap
 metadata:
-  creationTimestamp: "2022-04-15T10:32:07Z"
+  creationTimestamp: "2022-04-18T12:44:35Z"
   name: dingding-config
   namespace: monitoring
-  resourceVersion: "411171"
-  uid: b9fa2117-c0aa-4c12-a011-5073cd07cd82
+  resourceVersion: "794363"
+  uid: fd70dbd4-b766-4691-88b9-8c730e7694b5

@@ -1,3 +1,7 @@
+**使用 keepalive+haproxy+nginx 的架构可以事现多个 nginx 同时提供服务**
+
+**使用 keepalive+nginx 的架构只有一个 nginx 提供服务 **
+
 ##### nginx
 
 安装
@@ -183,4 +187,3 @@ vrrp_instance VI_1 {
     }
 }
 ```
-

@@ -1,4 +1,4 @@
-{{ define "__subject" }}{{ if gt (len .Alerts.Firing) 0 -}}警报触发:{{ .Alerts.Firing | len }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 -}}&警报解决:{{ .Alerts.Resolved | len }}{{ end }}{{ end }}
+{{ define "__subject" }}{{ if gt (len .Alerts.Firing) 0 -}}警报触发:{{ .Alerts.Firing | len }}{{ end }}{{ if gt (len .Alerts.Resolved) 0 -}}警报解决:{{ .Alerts.Resolved | len }}{{ end }}{{ end }}
 
 {{ define "__text_alert_list" }}{{ range . }}
 **Labels**
