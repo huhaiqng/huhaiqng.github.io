@@ -17,6 +17,7 @@ spec:
       serviceAccountName: filebeat
       containers:
       - name: app
+        # 更新镜像版本后，需要删除节点上的目录 /var/lib/filebeat-data，否则可能 filebeat 无法启动
         image: elastic/filebeat:7.3.1
         args: [
           "-c", "/etc/filebeat.yml",
@@ -47,6 +48,8 @@ spec:
         - name: varlog
           mountPath: /var/log
           readOnly: true
+        - name: data
+          mountPath: /usr/share/filebeat/data
       volumes:
       - name: varlibdockercontainers
         hostPath:
@@ -57,3 +60,7 @@ spec:
       - name: config
         configMap:
           name: filebeat-config
+      - name: data
+        hostPath:
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate 
