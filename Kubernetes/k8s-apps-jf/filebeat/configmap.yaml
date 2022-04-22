@@ -18,8 +18,14 @@ data:
       index.number_of_shards: 1
     setup.kibana:
       host: "172.18.148.238:5601"
+    setup.ilm.enabled: false
+    setup.template.name: "pro_log"
+    setup.template.pattern: "filebeat"
+    setup.template.overwrite: true
+    setup.template.enabled: true
     output.elasticsearch:
       hosts: ["192.168.1.155:9200"]
+      index: "%{[kubernetes.namespace]}_%{[kubernetes.pod.name]}_%{+yyyy.MM.dd}"
     processors:
       - add_host_metadata: ~
       - add_cloud_metadata: ~
