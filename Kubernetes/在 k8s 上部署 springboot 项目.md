@@ -29,6 +29,7 @@ ADD jdk-8u321-linux-x64.tar.gz /usr/local/
 ENV JAVA_HOME /usr/local/jdk1.8.0_321
 ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 ENV PATH $PATH:$JAVA_HOME/bin
+ENV LANG en_US.UTF-8
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN sh -c echo 'Asia/Shanghai' >/etc/timezone
 ```
