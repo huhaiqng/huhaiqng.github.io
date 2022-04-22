@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ybx
+  namespace: prod
+  labels:
+    app: ybx
+spec:
+  replicas: 1
+  serviceName: "ybx"
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: ybx
+  template:
+    metadata:
+      labels:
+        app: ybx
+    spec:
+      containers:
+      - name: app
+        image: harbor.lingfannao.net:4436/prod/ybx:20220413165521
+        command: ['java', '-jar', '/data/ybx/ybx.jar', '--spring.profiles.active=prod']
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      nodeSelector:
+        kubernetes.io/hostname: hwy-prod-02
+      imagePullSecrets:
+      - name: hwy-harbor
+      hostAliases:
+      - ip: "192.168.1.201"
+        hostnames:
+        - "lfn-mysql80"

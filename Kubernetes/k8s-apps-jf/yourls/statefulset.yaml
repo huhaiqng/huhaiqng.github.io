@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: yourls
+  namespace: prod
+  labels:
+    app: yourls
+spec:
+  replicas: 1
+  serviceName: "yourls"
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: yourls
+  template:
+    metadata:
+      labels:
+        app: yourls
+    spec:
+      containers:
+      - name: app
+        image: harbor.lingfannao.net:4436/yunwei/yourls:v1.0 
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      nodeSelector:
+        kubernetes.io/hostname: hwy-prod-02
+      imagePullSecrets:
+      - name: hwy-harbor
