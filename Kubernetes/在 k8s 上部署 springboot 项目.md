@@ -17,6 +17,7 @@ ssh -i /root/.ssh/deploy -p 6666 pro@192.168.1.100 "${KUBE_CMD}"
 ```
 # openjdk
 FROM openjdk:8-jdk-alpine
+ENV LANG en_US.UTF-8
 RUN echo "https://mirrors.aliyun.com/alpine/v3.9/main/" > /etc/apk/repositories ;\
     apk add tzdata ;\
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ;\
@@ -47,6 +48,7 @@ COPY ${JAR_FILE} app.jar
 RUN chown -R spring.spring /data
 USER spring:spring
 LABEL del=true
+ENV LANG en_US.UTF-8
 ```
 
 doployment yaml 文件
