@@ -44,3 +44,11 @@ helm upgrade nginx1 myrepo/nginx
 helm pull myrepo/nginx
 ```
 
+查看
+
+> -n 可指定命令空间
+
+```
+helm list
+```
+
