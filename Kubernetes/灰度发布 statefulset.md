@@ -1,3 +1,5 @@
+**注意: Deployment 没有此特征**
+
 nginx.yaml 文件
 
 ```
