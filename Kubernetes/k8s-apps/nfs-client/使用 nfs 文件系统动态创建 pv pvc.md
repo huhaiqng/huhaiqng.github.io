@@ -31,6 +31,8 @@ kubectl get pv -n prod
 
 创建 statefulset，动态绑定 pvc
 
+> 需要设置 storageClassName
+
 ```
 kubectl apply -f test-statefulset.yaml
 ```
