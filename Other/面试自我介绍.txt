@@ -2,10 +2,10 @@
 您好，我2011年毕业，学的专业是计算机网络技术，毕业后一直从事运维的工作。
 先后运维过旅游商城，珠宝商城，新能源充电，共享汽车等项目。
 运维过的系统大部分由 java 开发，少部分由 .net 和 php 开发。
-熟悉由 java 开发的 war 包和 jar 包的部署。
+熟悉 k8s 的集群的搭建，kube-prometheus监控系统的使用。
+熟悉部署使用 springcloud 开发的微服务系统。
 熟悉 MySQL，MongoDB，Oracle 等数据库的管理。
 熟悉 tomcat，nginx，redis，mq 消息队列等中间件的管理。
-熟悉 doker，k8s 的使用。
 熟悉 jenkins，gitlab，elk，禅道，ansible 等运维工具的使用。
 熟悉阿里云，华为的使用。
 熟悉使用 VMware Esxi 搭建私有云。
