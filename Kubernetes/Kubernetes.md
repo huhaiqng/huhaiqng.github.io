@@ -2021,7 +2021,7 @@ kubeadm config print init-defaults
 # 查看证书是否过期
 kubeadm certs check-expiration
 # 手动更新证书，执行完此命令之后你需要重启控制面 Pods。
-kubeadm certs renew
+kubeadm certs renew all
 ```
 
 
