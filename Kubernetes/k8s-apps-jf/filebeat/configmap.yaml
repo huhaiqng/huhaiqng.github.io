@@ -4,7 +4,10 @@ data:
     filebeat.inputs:
     - type: container
       paths:
-        - /var/log/containers/*java*.log
+        - /var/log/containers/*prod*.log
+        - /var/log/containers/*test_app*.log
+        - /var/log/containers/*monitoring*.log
+        - /var/log/containers/*kube-system*.log
       processors:
         - add_kubernetes_metadata:
             host: ${NODE_NAME}
