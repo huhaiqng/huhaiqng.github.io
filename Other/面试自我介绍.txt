@@ -3,8 +3,8 @@
 先后运维过旅游商城，珠宝商城，新能源充电，共享汽车等项目。
 运维过的系统大部分由 java 开发，少部分由 .net 和 php 开发。
 1、熟悉 kubernetes 高可用集群的搭建和使用，监控系统 kube-prometheus 的搭建和使用，私用镜像仓库 harbor 的管
-理，工具 helm 的使用以及 helm 私有仓库的搭建，日志收集工具 elasticsearch + kibana + filebeat 管理和使用。
-2、熟悉 MySQL5.7、MySQL8.0 主从环境的搭建，备份还原，从二进制日志中提取SQL，慢日志的分析。
+理，工具 helm 的使用以及 helm 私有仓库的搭建，elasticsearch + kibana + filebeat 日志收集系统的搭建和使用。
+2、熟悉 MySQL5.7、MySQL8.0 主从集群的搭建，备份还原，从二进制日志中提取SQL，慢日志的分析。
 3、熟悉 MongoDB 分片副本集的搭建，备份还原。
 4、熟悉 haproxy + keepalived + nginx 高可用双主 web 集群的搭建。
 5、熟悉阿里云产品 ECS、RDS MySQL、OSS、负载均衡和 NAT 的使用。
