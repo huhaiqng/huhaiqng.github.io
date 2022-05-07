@@ -2,19 +2,19 @@
 您好，我2011年毕业，学的专业是计算机网络技术，毕业后一直从事运维的工作。
 先后运维过旅游商城，珠宝商城，新能源充电，共享汽车等项目。
 运维过的系统大部分由 java 开发，少部分由 .net 和 php 开发。
-1、熟悉 kubernetes 高可用集群的搭建和使用，监控系统 kube-prometheus 的搭建和使用，私用镜像仓库 harbor 的管
+熟悉 kubernetes 高可用集群的搭建和使用，prometheus + grafana 监控系统的搭建和使用，私用镜像仓库 harbor 的管
 理，工具 helm 的使用以及 helm 私有仓库的搭建，elasticsearch + kibana + filebeat 日志收集系统的搭建和使用。
-2、熟悉 MySQL5.7、MySQL8.0 主从集群的搭建，备份还原，从二进制日志中提取SQL，慢日志的分析。
-3、熟悉 MongoDB 分片副本集的搭建，备份还原。
-4、熟悉 haproxy + keepalived + nginx 高可用双主 web 集群的搭建。
-5、熟悉阿里云产品 ECS、RDS MySQL、OSS、负载均衡和 NAT 的使用。
-6、熟悉监控系统 Zabbix 的使用。
-7、熟悉 Jenkins + Gitlab CI/CD 系统的搭建和管理。
-8、熟悉部署基于 spring cloud 开发的微服务系统。
-9、能够使用 vue 和 django + djangorestframework 开发前后端分离的 CMDB 系统。
-10、熟悉shell脚本的编写。
-11、熟悉 VMware ESXI 私有云的搭建和管理。
-12、熟悉 Oracle 的基本管理。
+熟悉 MySQL5.7、MySQL8.0 主从集群的搭建，备份还原，从二进制日志中提取SQL，慢日志的分析。
+熟悉 haproxy + keepalived + nginx 高可用双主 web 集群的搭建。
+熟悉阿里云产品云主机ECS、RDS MySQL、OSS 对象存储、负载均衡和 NAT 的使用。
+熟悉监控系统 Zabbix 的使用。
+熟悉 Jenkins + Gitlab CI/CD 持续构建发布系统的搭建和管理。
+熟悉部署基于 spring cloud 开发的微服务系统。
+能够使用 vue 和 django + djangorestframework 开发前后端分离的 CMDB 系统。
+熟悉shell脚本的编写。
+熟悉 VMware ESXI 私有云的搭建和管理。
+熟悉 MongoDB 分片副本集的搭建，备份还原。
+熟悉 Oracle 的基本管理。
 
 负责搭建生产环境和测试环境。
 负责数据的备份。
