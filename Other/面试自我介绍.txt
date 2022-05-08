@@ -1,19 +1,19 @@
 面试自我介绍
 您好，我2011年毕业，学的专业是计算机网络技术，毕业后一直从事运维的工作。
-先后运维过旅游商城，珠宝商城，新能源充电，共享汽车等项目。
+先后运维过旅游商城，新能源充电，共享汽车，珠宝商城等项目。
 运维过的系统大部分由 java 开发，少部分由 .net 和 php 开发。
-熟悉 kubernetes 高可用集群的搭建和使用，prometheus + grafana 监控系统的搭建和使用，私用镜像仓库 harbor 的管理。
+熟悉 k8s 集群的搭建和使用，prometheus + grafana 监控系统的搭建和使用，私用镜像仓库 harbor 的管理。
 熟悉 MySQL5.7、MySQL8.0 主从集群的搭建，数据库的备份和还原，二进制日志的解析以及慢日志的分析。
 熟悉 MongoDB、Oracle 数据库的基本管理。
-熟悉 tomcat,nginx,redis,mq消息队列等中间件的部署。
-熟悉 haproxy + keepalived + nginx 高可用双主 web 集群的搭建。
-熟悉阿里云云主机ECS、RDS MySQL、OSS 对象存储、负载均衡和 NAT 的使用。
+熟悉 tomcat,nginx,redis,zookeeper,kafka,mq消息队列等中间件的部署。
+熟悉 haproxy + keepalived + nginx 双主 web 集群的搭建。
+熟悉阿里云云主机 ECS、RDS MySQL、OSS 对象存储、负载均衡和 NAT 的使用。
 熟悉 VMware ESXI 私有云的搭建和管理。
 熟悉 Jenkins + Gitlab CI/CD 持续构建发布系统的搭建和管理。
-熟悉 elasticsearch + kibana + filebeat 日志收集系统的搭建和使用。
-熟悉监控系统 Zabbix 的使用。
+熟悉 ELK 日志收集系统的搭建和使用。
+熟悉 Zabbix 监控系统的搭建和使用。
 熟悉shell脚本的编写。
-能够使用 vue 和 python web 框架 django 开发前后端分离的 CMDB 系统。
+能够使用 vue 和 python web 框架 django 开发 CMDB 系统。
 
 负责搭建生产环境和测试环境。
 负责数据的备份。
