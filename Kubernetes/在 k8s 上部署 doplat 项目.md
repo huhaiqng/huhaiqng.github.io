@@ -200,7 +200,7 @@ kubeadm config images pull --image-repository registry.aliyuncs.com/google_conta
 
 > --kubernetes-version=v1.22.4 指定安装版本
 >
-> --control-plane-endpoint 指定集群名称
+> --control-plane-endpoint 指定集群名称，可扩展为多 master 的集群。
 
 ```
 # 使用官方镜像
