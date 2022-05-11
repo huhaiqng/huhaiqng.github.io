@@ -203,6 +203,8 @@ kubeadm config images pull --image-repository registry.aliyuncs.com/google_conta
 > --control-plane-endpoint 指定集群名称，可扩展为多 master 的集群。
 
 ```
+# 查看默认配置
+kubeadm config print init-defaults
 # 使用官方镜像
 kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint=k8s-cluster --upload-certs
 # 使用阿里云镜像
