@@ -11,7 +11,7 @@
 修改`/etc/hosts`, 设置主机名解析
 
 ```
-192.168.40.191  master
+192.168.40.191  master	k8s-cluster
 192.168.40.192  node01
 192.168.40.195  node02
 ```
@@ -199,12 +199,14 @@ kubeadm config images pull --image-repository registry.aliyuncs.com/google_conta
 初始化 master
 
 > --kubernetes-version=v1.22.4 指定安装版本
+>
+> --control-plane-endpoint 指定集群名称
 
 ```
 # 使用官方镜像
-kubeadm init --pod-network-cidr=10.244.0.0/16
+kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint=k8s-cluster --upload-certs
 # 使用阿里云镜像
-kubeadm init --pod-network-cidr=10.244.0.0/16 --image-repository registry.aliyuncs.com/google_containers
+kubeadm init --pod-network-cidr=10.244.0.0/16 --image-repository=registry.aliyuncs.com/google_containers --control-plane-endpoint=k8s-cluster --upload-certs
 ```
 
 要使非 root 用户可以运行 kubectl，请运行以下命令， 它们也是 `kubeadm init` 输出的一部分：
