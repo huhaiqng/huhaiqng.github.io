@@ -14,13 +14,6 @@ spec:
       labels:
         app: filebeat
     spec:
-      tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
-      - key: node-role.kubernetes.io/master
-        operator: Exists
-        effect: NoSchedule
       serviceAccountName: filebeat
       containers:
       - name: app

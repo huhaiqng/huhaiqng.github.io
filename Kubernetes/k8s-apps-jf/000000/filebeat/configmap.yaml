@@ -5,7 +5,7 @@ data:
     - type: container
       paths:
         - /var/log/containers/*prod*.log
-        - /var/log/containers/*test*.log
+        - /var/log/containers/*test_app*.log
         - /var/log/containers/*monitoring*.log
         - /var/log/containers/*kube-system*.log
       processors:
