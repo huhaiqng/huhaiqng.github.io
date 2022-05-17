@@ -55,3 +55,15 @@ var rs = dba.createReplicaSet("testRS")
 rs.addInstance('root@mysql02')
 ```
 
+查看状态
+
+```
+rs.status()
+```
+
+切换主节点
+
+```
+rs.setPrimaryInstance('root@mysql01')
+```
+
