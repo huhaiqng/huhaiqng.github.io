@@ -16,7 +16,13 @@ blfile=$5
 vbinlog=vbl.log
 rbinlog=insert.sql
 # 提取二进制日志
-mysqlbinlog --base64-output=decode-rows --start-datetime="$s_time" --stop-datetime="$e_time" --result-file=$vbinlog -v $blfile
+mysqlbinlog \
+--base64-output=decode-rows \
+--start-datetime="$s_time" \
+--database=$db \
+--stop-datetime="$e_time" \
+--skip-gtids \
+-v $blfile | grep -A50 "DELETE FROM \`$db\`.\`$tb\`" > $vbinlog
 
 st=0
 vl=''

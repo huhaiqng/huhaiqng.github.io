@@ -41,7 +41,7 @@ mysqlbinlog --base64-output=decode-rows -v binlog.000006 > result.sql
 mysql -S /tmp/mysql3309.sock -u root -pMySQL8.0 < testdb.dump
 
 将删除数据前的二进制日志重新应用到数据库
-mysqlbinlog --stop-datetime="2018-11-12 10:34:00" \
+mysqlbinlog --stop-datetime="2018-11-12 10:34:00" --database=testdb \
 --skip-gtids binlog.000006 | \
 mysql -S /tmp/mysql3309.sock -u root -pMySQL8.0
 
