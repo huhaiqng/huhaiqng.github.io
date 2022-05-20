@@ -19,7 +19,7 @@ grep -B 1 -A 5 "DELETE FROM \`sbtest\`.\`sbtest1\`" > delete.sql
 
 > -B 1:  过滤行前面的行数，显示执行的时间
 >
-> -A 5:  过滤行后面的行数，等于表字段数加1的两倍
+> -A 10:  过滤行后面的行数，等于表字段数加1的两倍
 
 ```
 mysqlbinlog \
