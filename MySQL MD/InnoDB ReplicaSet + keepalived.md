@@ -60,7 +60,10 @@ rs.addInstance('root@mysql02')
 查看状态
 
 ```
+# 查看基本信息
 rs.status()
+# 查看详细信息
+rs.status({extended:2})
 ```
 
 切换主节点
