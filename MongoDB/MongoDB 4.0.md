@@ -230,7 +230,7 @@ db.createUser(
 
 使用普通账号登陆
 
-> 主要认证数据库
+> 注意认证数据库
 
 ```
 bin/mongo -u mongo -p --authenticationDatabase test
