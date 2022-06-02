@@ -29,3 +29,25 @@
 记录构建信息
 
 ![image-20200709152109835](Jenkins.assets/image-20200709152109835.png)
+
+
+
+##### 权限管理
+
+添加插件 [Role-based Authorization Strategy](https://plugins.jenkins.io/role-strategy)
+
+定义用户角色
+
+![image-20220602103428327](Jenkins.assets/image-20220602103428327.png)
+
+定义项目角色
+
+![image-20220602103450032](Jenkins.assets/image-20220602103450032.png)
+
+用户角色关联
+
+![image-20220602103532140](Jenkins.assets/image-20220602103532140.png)
+
+用户项目关联
+
+![image-20220602103651396](Jenkins.assets/image-20220602103651396.png)
