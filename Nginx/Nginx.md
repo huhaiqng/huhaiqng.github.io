@@ -1,3 +1,115 @@
+#### yum 安装 nginx
+
+1、关闭selinux、firewall
+2、修改/etc/security/limits.conf添加以下内容：
+
+```
+*	soft    nofile  65535
+*	hard    nofile  65535
+*   soft    nproc   65535  
+*   hard    nproc   65535 
+```
+
+3、修改/etc/security/limits.d/20-nproc.conf 
+
+```
+*          soft    nproc     65535
+```
+
+4、重启系统，查看修改结果
+
+```
+ulimit -a
+```
+
+5、配置yum源/etc/yum.repos.d/nginx.repo
+
+```
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/7/$basearch/
+gpgkey=http://nginx.org/keys/nginx_signing.key
+gpgcheck=0
+enabled=1
+```
+
+6、安装Nginx、修改Nginx配置文件/etc/nginx/nginx.conf
+
+```
+#安装Nginx
+yum install -y nginx
+```
+
+
+
+####   编译安装 nginx
+
+安装依赖包
+
+```
+yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel
+```
+
+安装
+
+```
+# 下载安装包
+cd /usr/local/src
+wget http://nginx.org/download/nginx-1.22.0.tar.gz
+tar zxvf nginx-1.22.0.tar.gz
+cd nginx-1.22.0
+
+useradd -s /sbin/nologin www
+mkdir /var/cache/nginx
+
+#生成makefile文件
+./configure \
+--prefix=/usr/local/nginx \
+--sbin-path=/usr/sbin/nginx \
+--error-log-path=/data/log/nginx/error.log \
+--http-log-path=/data/log/nginx/access.log \
+--pid-path=/var/run/nginx.pid \
+--lock-path=/var/run/nginx.lock \
+--http-client-body-temp-path=/var/cache/nginx/client_temp \
+--http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+--http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+--user=www \
+--group=www \
+--with-file-aio \
+--with-threads \
+--with-http_addition_module \
+--with-http_auth_request_module \
+--with-http_dav_module \
+--with-http_flv_module \
+--with-http_gunzip_module \
+--with-http_gzip_static_module \
+--with-http_mp4_module \
+--with-http_random_index_module \
+--with-http_realip_module \
+--with-http_secure_link_module \
+--with-http_slice_module \
+--with-http_ssl_module \
+--with-http_stub_status_module \
+--with-http_sub_module \
+--with-http_v2_module \
+--with-mail \
+--with-mail_ssl_module \
+--with-stream \
+--with-stream_realip_module \
+--with-stream_ssl_module \
+--with-stream_ssl_preread_module 
+```
+
+测试
+
+```
+nginx -v
+```
+
+
+
 #### 实现简单的认证
 
 使用命令 htpasswd 添加用户文件和创建用户
