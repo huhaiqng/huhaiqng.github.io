@@ -5,7 +5,7 @@
 安装依赖包
 
 ```
-yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel
+yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel wget net-tools lrzsz
 ```
 
 安装
@@ -120,7 +120,7 @@ yum install -y libxml2 libxml2-devel openssl openssl-devel bzip2 bzip2-devel lib
 
 编译
 
-> 不要随意更改 php 版本
+> 不要更改 php 版本
 
 ```
 cd /usr/local/src
