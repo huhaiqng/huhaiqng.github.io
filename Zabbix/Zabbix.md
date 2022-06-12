@@ -289,7 +289,7 @@ ALTER USER root@'localhost' IDENTIFIED BY 'MySQL8.0';
 安装依赖
 
 ```
-yum install gcc gcc-c++ make unixODBC-devel net-snmp-devel libssh2-devel OpenIPMI-devel libevent-devel pcre-devel libcurl-devel curl-* net-snmp* libxml2-* wget tar mysql-devel -y 
+yum install -y gcc gcc-c++ make unixODBC-devel net-snmp-devel libssh2-devel OpenIPMI-devel libevent-devel pcre-devel libcurl-devel curl-* net-snmp* libxml2-* wget tar 
 ```
 
 编译
