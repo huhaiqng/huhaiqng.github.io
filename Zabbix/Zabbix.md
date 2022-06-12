@@ -339,6 +339,12 @@ DBPassword=MySQL8.0
 
 修改 agent 配置文件 zabbix_agentd.conf
 
+> hosts 添加主机名解析: 192.168.1.202	node02
+>
+> Hostnane 与 Dashboard 的 Host name 一致
+>
+> Interfaces -> IP address 写真实 IP 192.168.1.202
+
 ```
 Server=192.168.1.202
 ServerActive=192.168.1.202
