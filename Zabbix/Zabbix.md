@@ -107,6 +107,7 @@ WantedBy=multi-user.target
 
 ```
 systemctl start nginx
+systemctl enable nginx
 ```
 
 ##### 安装 php
@@ -219,6 +220,7 @@ systemctl 启动
 
 ```
 systemctl start php-fpm
+systemctl enable php-fpm
 ```
 
 命令启动
@@ -257,6 +259,7 @@ rpm -ivh mysql-community-server-8.0.29-1.el7.x86_64.rpm
 
 ```
 systemctl start mysqld
+systemctl enable mysqld
 ```
 
 查看临时密码
@@ -362,6 +365,7 @@ systemctl 启动 zabbix_server
 
 ```
 systemctl start zabbix_server
+systemctl enable zabbix_server
 ```
 
 创建 /usr/lib/systemd/system/zabbix_agentd.service
@@ -392,6 +396,7 @@ systemctl 启动 zabbix_agentd
 
 ```
 systemctl start zabbix_agentd
+systemctl enable zabbix_agentd
 ```
 
 命令启动
