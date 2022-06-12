@@ -411,6 +411,7 @@ systemctl enable zabbix_agentd
 拷贝 ui
 
 ```
+mkdir /data/html
 cp -R /usr/local/src/zabbix-6.0.5/ui /data/html/zabbix
 chown -R www.www /data/html/zabbix
 ```
