@@ -51,7 +51,9 @@ mkdir /var/cache/nginx
 --with-stream \
 --with-stream_realip_module \
 --with-stream_ssl_module \
---with-stream_ssl_preread_module 
+--with-stream_ssl_preread_module
+
+make && make install
 ```
 
 修改配置 user 改为 www
