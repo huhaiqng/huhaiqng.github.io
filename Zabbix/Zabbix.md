@@ -244,6 +244,7 @@ tar xvf mysql-8.0.29-1.el7.x86_64.rpm-bundle.tar
 rpm -e --nodeps mariadb-libs
 
 # 安装
+rpm -ivh mysql-community-libs-compat-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-common-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-client-plugins-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-libs-8.0.29-1.el7.x86_64.rpm
@@ -303,7 +304,7 @@ useradd --system -g zabbix -d /usr/lib/zabbix -s /sbin/nologin -c "Zabbix Monito
 
 ```
 create user zabbix@'%' identified WITH mysql_native_password by 'MySQL8.0';
-create database zabbix CHARACTER SET utf8mb4_bin COLLATE utf8mb4_bin;
+create database zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 grant all on zabbix.* to zabbix@'%';
 flush privileges;
 ```
@@ -323,6 +324,14 @@ DBHost=192.168.1.200
 DBName=zabbix
 DBUser=zabbix
 DBPassword=MySQL8.0
+```
+
+修改 agent 配置文件 zabbix_agentd.conf
+
+```
+Server=192.168.1.202
+ServerActive=192.168.1.202
+Hostname=node02
 ```
 
 创建 /usr/lib/systemd/system/zabbix_server.service
