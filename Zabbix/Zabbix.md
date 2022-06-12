@@ -282,6 +282,7 @@ yum install gcc gcc-c++ make unixODBC-devel net-snmp-devel libssh2-devel OpenIPM
 
 ```
 cd /usr/local/src/
+wget https://cdn.zabbix.com/zabbix/sources/stable/6.0/zabbix-6.0.5.tar.gz
 tar zxvf zabbix-6.0.5.tar.gz 
 cd zabbix-6.0.5
 mkdir -p /usr/local/zabbix
