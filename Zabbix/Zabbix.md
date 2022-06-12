@@ -216,6 +216,14 @@ user = www
 group = www
 ```
 
+修改 /etc/php.ini
+
+```
+post_max_size = 16M
+max_execution_time = 300
+max_input_time = 300
+```
+
 systemctl 启动
 
 ```
