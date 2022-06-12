@@ -23,16 +23,10 @@ mkdir /var/cache/nginx
 #生成makefile文件
 ./configure \
 --prefix=/usr/local/nginx \
---sbin-path=/usr/sbin/nginx \
 --error-log-path=/data/log/nginx/error.log \
 --http-log-path=/data/log/nginx/access.log \
 --pid-path=/var/run/nginx.pid \
 --lock-path=/var/run/nginx.lock \
---http-client-body-temp-path=/var/cache/nginx/client_temp \
---http-proxy-temp-path=/var/cache/nginx/proxy_temp \
---http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
---http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
---http-scgi-temp-path=/var/cache/nginx/scgi_temp \
 --user=www \
 --group=www \
 --with-file-aio \
@@ -91,16 +85,28 @@ server {
 }
 ```
 
+创建 /usr/lib/systemd/system/nginx.service
+
+```
+[Unit]
+Description=nginx
+After=network.target
+  
+[Service]
+Type=forking
+ExecStart=/usr/local/nginx/sbin/nginx
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/nginx/sbin/nginx -s quit
+PrivateTmp=true
+  
+[Install]
+WantedBy=multi-user.target	
+```
+
 启动
 
 ```
-nginx
-```
-
-测试
-
-```
-nginx -v
+systemctl start nginx
 ```
 
 ##### 安装 php
@@ -192,8 +198,7 @@ make && make install
 cp php.ini-production /etc/php.ini
 cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
 cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/www.conf
-cp sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm
-chmod +x /etc/init.d/php-fpm
+cp sapi/fpm/php-fpm.service /usr/lib/systemd/system/php-fpm.service
 ```
 
 设置环境变量  .bash_profile
@@ -210,18 +215,16 @@ user = www
 group = www
 ```
 
+systemctl 启动
+
+```
+systemctl start php-fpm
+```
+
 命令启动
 
 ```
 /usr/local/php72/sbin/php-fpm
-```
-
-service 管理
-
-```
-service php-fpm start　　#启动
-service php-fpm stop　　 #停止
-service php-fpm restart #重启
 ```
 
 ##### 安装 MySQL
@@ -229,54 +232,42 @@ service php-fpm restart #重启
 解压安装包
 
 ```
-cd /usr/local/
-tar zxvf src/mysql-8.0.29-el7-x86_64.tar.gz 
-mv mysql-8.0.29-el7-x86_64/ mysql
+cd /usr/local/src
+wget https://cdn.mysql.com/Downloads/MySQL-8.0/mysql-8.0.29-1.el7.x86_64.rpm-bundle.tar
+tar xvf mysql-8.0.29-1.el7.x86_64.rpm-bundle.tar
 ```
 
-创建 配置文件 my.cnf
+安装
 
 ```
-[mysqld]
-datadir=/data/mysql
-socket=/tmp/mysql.sock
-symbolic-links=0
-[mysqld_safe]
-log-error=/var/log/mysqld.log
-pid-file=/data/mysql/mysqld.pid
-```
+# 删除 mariadb-libs
+rpm -e --nodeps mariadb-libs-5.5.68-1.el7.x86_64
 
-创建用户
-
-```
-groupadd mysql
-useradd -r -g mysql -s /bin/false mysql
-```
-
-初始化
-
-> 会输出临时密码
-
-```
-bin/mysqld --defaults-file=/usr/local/mysql/my.cnf --initialize --user=mysql
+# 安装
+rpm -ivh mysql-community-libs-8.0.29-1.el7.x86_64.rpm
+rpm -ivh mysql-community-common-8.0.29-1.el7.x86_64.rpm
+rpm -ivh mysql-community-client-plugins-8.0.29-1.el7.x86_64.rpm
+rpm -ivh mysql-community-client-8.0.29-1.el7.x86_64.rpm
+rpm -ivh mysql-community-icu-data-files-8.0.29-1.el7.x86_64.rpm
+rpm -ivh mysql-community-server-8.0.29-1.el7.x86_64.rpm
 ```
 
 启动
 
 ```
-bin/mysqld_safe --defaults-file=/usr/local/mysql/my.cnf --user=mysql &
+systemctl start mysqld
+```
+
+查看临时密码
+
+```
+grep pass /var/log/mysqld.log
 ```
 
 修改密码
 
 ```
 ALTER USER root@'localhost' IDENTIFIED BY 'MySQL8.0';
-```
-
-关闭
-
-```
-bin/mysqladmin -u root -p shutdown
 ```
 
 ##### 安装 zabbix
@@ -337,7 +328,67 @@ DBUser=zabbix
 DBPassword=MySQL8.0
 ```
 
-启动
+创建 /usr/lib/systemd/system/zabbix_server.service
+
+> 注意 PIDFile文件路径
+
+```
+[Unit]
+Description=Zabbix Server
+After=syslog.target
+After=network.target
+ 
+[Service]
+Environment="CONFFILE=/usr/local/zabbix/etc/zabbix_server.conf"
+Type=forking
+PIDFile=/tmp/zabbix_server.pid
+Restart=on-failure
+KillMode=control-group
+ExecStart=/usr/local/zabbix/sbin/zabbix_server -c $CONFFILE
+ExecStop=/bin/kill -SIGTERM $MAINPID
+RestartSec=10s
+ 
+[Install]
+WantedBy=multi-user.target                      
+```
+
+systemctl 启动 zabbix_server
+
+```
+systemctl start zabbix_server
+```
+
+创建 /usr/lib/systemd/system/zabbix_agentd.service
+
+> 注意 PIDFile文件路径
+
+```
+[Unit]
+Description=Zabbix Agent
+After=syslog.target
+After=network.target
+
+[Service]
+Environment="CONFFILE=/usr/local/zabbix/etc/zabbix_agentd.conf"
+Type=forking
+PIDFile=/tmp/zabbix_agentd.pid
+Restart=on-failure
+KillMode=control-group
+ExecStart=/usr/local/zabbix/sbin/zabbix_agentd -c $CONFFILE
+ExecStop=/bin/kill -SIGTERM $MAINPID
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+systemctl 启动 zabbix_agentd
+
+```
+systemctl start zabbix_agentd
+```
+
+命令启动
 
 ```
 # server
@@ -421,3 +472,35 @@ systemctl start zabbix-proxy
 ```
 
 ##### 安装 web
+
+#### 配置 QQ 邮箱报警
+
+开启发送邮箱 smtp，生成授权码
+
+> 授权码即密码
+
+![image-20220612084203012](C:\Users\haiqi\Desktop\devops-note\Zabbix\assets\image-20220612084203012.png)
+
+在 zabbix 添加 Media types
+
+> smtp server: smtp.qq.com
+>
+> smtp server port: 465
+>
+> smtp helo: qq.com
+>
+> smtp email: 913626299@qq.com
+>
+> Connection security: SSL/TLS
+>
+> Username: 913626299@qq.com
+>
+> Password: password
+
+![image-20220612084844893](C:\Users\haiqi\Desktop\devops-note\Zabbix\assets\image-20220612084844893.png)
+
+![image-20220612085357119](C:\Users\haiqi\Desktop\devops-note\Zabbix\assets\image-20220612085357119.png)
+
+启用 Actions
+
+![image-20220612085454380](C:\Users\haiqi\Desktop\devops-note\Zabbix\assets\image-20220612085454380.png)
