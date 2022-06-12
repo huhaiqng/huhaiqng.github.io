@@ -256,6 +256,7 @@ tar xvf mysql-8.0.29-1.el7.x86_64.rpm-bundle.tar
 rpm -e --nodeps mariadb-libs
 
 # 安装
+rpm -ivh mysql-community-devel-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-libs-compat-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-common-8.0.29-1.el7.x86_64.rpm
 rpm -ivh mysql-community-client-plugins-8.0.29-1.el7.x86_64.rpm
