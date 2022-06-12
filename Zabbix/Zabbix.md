@@ -5,7 +5,7 @@
 安装依赖包
 
 ```
-yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel wget net-tools lrzsz
+yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel wget net-tools lrzsz vim
 ```
 
 安装
