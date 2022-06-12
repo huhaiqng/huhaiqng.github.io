@@ -288,10 +288,6 @@ cd zabbix-6.0.5
 mkdir -p /usr/local/zabbix
 ./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2
 make && make install
-
-cp misc/init.d/fedora/core/zabbix_* /etc/init.d/
-ll -d /etc/init.d/zabbix_*
-chmod +x /etc/init.d/zabbix_*
 ```
 
 创建用户
