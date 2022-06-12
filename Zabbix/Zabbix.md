@@ -241,7 +241,7 @@ tar xvf mysql-8.0.29-1.el7.x86_64.rpm-bundle.tar
 
 ```
 # 删除 mariadb-libs
-rpm -e --nodeps mariadb-libs-5.5.68-1.el7.x86_64
+rpm -e --nodeps mariadb-libs
 
 # 安装
 rpm -ivh mysql-community-libs-8.0.29-1.el7.x86_64.rpm
