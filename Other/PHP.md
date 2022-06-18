@@ -119,7 +119,6 @@ cd php-7.4.30
 --with-xsl \
 --with-zip \
 --with-zlib \
---with-zlib-dir \
 --with-zlib-dir
 ```
 
