@@ -99,12 +99,13 @@ cd php-7.4.30
 --with-bz2 \
 --with-cdb \
 --with-curl \
+--with-fpm-group=www \
+--with-fpm-user=www \
 --with-freetype \
 --with-gettext \
 --with-gmp \
 --with-iconv \
 --with-jpeg \
---with-mhash \
 --with-mhash \
 --with-mysqli=mysqlnd \
 --with-openssl \
@@ -113,9 +114,7 @@ cd php-7.4.30
 --with-pear \
 --with-readline \
 --with-webp \
---with-webp \
 --with-xmlrpc \
---with-xpm \
 --with-xpm \
 --with-xsl \
 --with-zip \
