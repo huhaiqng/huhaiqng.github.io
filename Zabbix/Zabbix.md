@@ -236,7 +236,7 @@ systemctl enable php-fpm
 命令启动
 
 ```
-/usr/local/php72/sbin/php-fpm
+/usr/local/php/sbin/php-fpm
 ```
 
 ##### 安装 MySQL
