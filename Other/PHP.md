@@ -133,6 +133,12 @@ cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/ww
 cp sapi/fpm/php-fpm.service /usr/lib/systemd/system/php-fpm.service
 ```
 
+修改 /usr/lib/systemd/system/php-fpm.service
+
+```
+ProtectSystem=false
+```
+
 启动
 
 ```
