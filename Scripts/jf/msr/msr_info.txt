@@ -1,5 +1,0 @@
-# PROJECT_NAME		# BUILD_SERVER		# BUILD_PORT	# PUBLISH_SERVER	# PUBLISH_PORT		# PUBLISH_ENV
-goldtd			devops@192.168.40.202  	22		www@47.112.166.147   	22			test
-jew-dist                root@localhost          52113   	root@39.98.71.133       52113	        	test
-jew-dist                www@139.159.252.64      22006           pro@139.159.252.64      22219                   prod
-warehouse               www@139.159.252.64      22006           www@139.159.252.64      22006                   test

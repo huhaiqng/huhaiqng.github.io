@@ -1,7 +1,0 @@
-FROM harbor.lingfannao.net:4436/common/openjdk:8-alpine-cts
-WORKDIR /data
-RUN addgroup -S -g 1200 spring && adduser -S -u 1200 -G spring spring
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-RUN chown -R spring.spring /data
-USER spring:spring
