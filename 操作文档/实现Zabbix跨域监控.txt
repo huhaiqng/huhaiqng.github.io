@@ -1,0 +1,28 @@
+环境介绍：通过公司机房的zabbix服务器监控阿里云上购买的云服务器。
+
+1、通过路由器将公司机房的zabbix服务器端口10051映射到外网。
+2、选择一台有公网IP的阿里云服务器部署zabbix proxy。
+#zabbix proxy 配置文件如下
+ProxyMode=0
+Server=159.27.126.135
+Hostname=39.18.23.2
+LogFile=/tmp/zabbix_proxy.log
+DBHost=127.0.0.1
+DBName=zabbix
+DBUser=zabbix
+DBPassword=zabbix
+DBSocket=/var/lib/mysql/mysql.sock
+DBPort=3306
+ConfigFrequency=60
+DataSenderFrequency=60
+JavaGateway=127.0.0.1
+JavaGatewayPort=10052
+StartJavaPollers=5
+Timeout=4
+LogSlowQueries=3000
+注意：zabbix proxy的数据库只需导入schema.sql，否则可能zabbix proxy起不来
+3、开放zabbix proxy的端口，以便zabbix server可以访问
+4、在zabbix daskboard添加代理服务器，模式为主动
+5、添加主机，ip直接写阿里云内网ip地址
+
+参考博文：https://www.cnblogs.com/wangxiaoqiangs/p/5336630.html

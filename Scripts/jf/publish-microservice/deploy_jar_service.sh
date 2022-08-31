@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+SERVICE_NAME=$1
+PUBLISH_SERVER_IP=$2
+PUBLISH_SERVER_PORT=$3
+PUBLISH_USER=$4
+IMAGE_TAG=$5
+PUBLISH_SERVER="-i /root/.ssh/deploy -p ${PUBLISH_SERVER_PORT} ${PUBLISH_USER}@${PUBLISH_SERVER_IP}"
+
+if [ $# -ne 5 ]; then
+    echo "参数错误！正确格式: sh $0 SERVICE_NAME PUBLISH_SERVER_IP PUBLISH_SERVER_PORT PUBLISH_USER IMAGE_TAG"
+    exit 1
+fi
+
+echo "${PUBLISH_USER}@${PUBLISH_SERVER_IP}:${PUBLISH_SERVER_PORT} 开始部署服务 ${SERVICE_NAME}"
+ssh ${PUBLISH_SERVER} "sh /data/scripts/publish_microservice_agent.sh ${SERVICE_NAME} ${IMAGE_TAG}" || exit 1

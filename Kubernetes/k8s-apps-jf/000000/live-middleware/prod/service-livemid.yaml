@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: live-middleware
+  namespace: prod
+  labels:
+    app: live-middleware
+spec:
+  type: NodePort
+  ports:
+  - port: 8880
+    nodePort: 32007
+  selector:
+    app: live-middleware

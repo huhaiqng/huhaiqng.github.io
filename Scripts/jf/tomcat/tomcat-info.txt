@@ -1,0 +1,9 @@
+# TOMCAT_NAME		CHECK_PORT
+tomcat-admin-8880	8885
+tomcat-cache1-8780	8785
+tomcat-master1-8180	8185
+tomcat-master2-8280	8285
+tomcat-openapi1-8380	8385
+tomcat-query1-8480	8485
+tomcat-task1-8580	8585
+tomcat-weixin1-8680	8685

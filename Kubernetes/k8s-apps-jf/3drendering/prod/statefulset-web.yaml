@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: 3drendering-web
+  namespace: prod
+  labels:
+    app: 3drendering-web
+spec:
+  replicas: 1
+  serviceName: "3drendering-web"
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: 3drendering-web
+  template:
+    metadata:
+      labels:
+        app: 3drendering-web
+    spec:
+      containers:
+      - name: app
+        image: harbor.lingfannao.net:4436/prod/tdrendering-web:20220419102702
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+      nodeSelector:
+        kubernetes.io/hostname: hwy-prod-02
+      imagePullSecrets:
+      - name: hwy-harbor

@@ -1,0 +1,37 @@
+1、将数据库完全备份集和归档日志备份集传到执行恢复的 Oracle 服务器
+# 传到中转服务器
+scp -P 2222 database.20181030.5* 218.17.56.50:/tmp/backup
+scp -P 2222 archivelog.20181029.5ltgrqir_1_1.rman 218.17.56.50:/tmp/backup
+scp -P 2222 archivelog.20181030.* 218.17.56.50:/tmp/backup
+# 传到 Oracle 服务器
+scp -r backup/ oracle@188.188.1.120:~/
+2、注册备份集到控制文件
+catalog backuppiece '/home/oracle/backup/archivelog.20181029.5ltgrqir_1_1.rman';
+catalog backuppiece '/home/oracle/backup/archivelog.20181030.5stguer0_1_1.rman';
+catalog backuppiece '/home/oracle/backup/archivelog.20181030.5ttguer0_1_1.rman';
+catalog backuppiece '/home/oracle/backup/archivelog.20181030.5utguesp_1_1.rman';
+catalog backuppiece '/home/oracle/backup/archivelog.20181030.5vtguesr_1_1.rman';
+catalog backuppiece '/home/oracle/backup/archivelog.20181030.60tgueuk_1_1.rman';
+catalog backuppiece '/home/oracle/backup/database.20181030.5otgue2k_1_1.rman';
+catalog backuppiece '/home/oracle/backup/database.20181030.5ptgue2k_1_1.rman';
+catalog backuppiece '/home/oracle/backup/database.20181030.5qtgueid_1_1.rman';
+3、处理 incarnation (有需要则执行)
+shutdown immediate;
+startup mount;
+list incarnation;
+reset database to incarnation 1;
+4、执行不完全恢复
+# rman 脚本
+cat restore.rman 
+run {
+    shutdown immediate;
+    startup mount;
+    set until time = "to_date('30-10-18 12:00:00','dd-mm-yy hh24:mi:ss')";
+    restore database;
+    recover database;
+    alter database open resetlogs;
+}
+# 恢复
+rman target / @restore.rman
+
+注意：如果恢复报错，检查备份集 Status 是否为 AVAILABLE。如果备份集有效，仍然无法创建数据文件，则从装系统和数据库可解决此问题。

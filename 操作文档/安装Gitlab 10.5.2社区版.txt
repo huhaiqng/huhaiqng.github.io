@@ -1,0 +1,42 @@
+1、准备操作系统CentOS 7
+2、安装gitlab
+#安装
+yum install curl policycoreutils openssh-server openssh-clients postfix
+curl -s https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash (报错继续执行后面的步骤)
+EXTERNAL_URL="http://gitlab.domain.com" yum install gitlab-ce
+#更改数据目录
+vim /etc/gitlab/gitlab.rb 
+git_data_dir "/data/gitlab"
+#添加邮箱
+vim /etc/gitlab/gitlab.rb 
+----------------------------------------------------------
+gitlab_rails['smtp_enable'] = true
+gitlab_rails['smtp_address'] = "smtp.139.com"
+gitlab_rails['smtp_port'] = 25
+gitlab_rails['smtp_user_name'] = "509358851@139.com"
+gitlab_rails['smtp_password'] = "hu158168"
+gitlab_rails['smtp_domain'] = "139.com"
+gitlab_rails['smtp_authentication'] = :login
+gitlab_rails['smtp_enable_starttls_auto'] = true
+
+gitlab_rails['gitlab_email_from'] = "509358851@139.com"
+user["git_user_email"] = "509358851@139.com"
+----------------------------------------------------------
+3、汉化
+#下载汉化包
+git clone https://gitlab.com/xhang/gitlab.git
+cd gitlab 
+git tag
+# 对比不同，这里比较的是tag，v9.2.6为英文原版，v9.2.6-zh为汉化版本。diff结果是汉化补丁。
+git diff v11.4.5..v11.4.5-zh > /tmp/v11.4.5.diff
+# 应用汉化补丁
+cd /opt/gitlab/embedded/service/gitlab-rails
+git apply /tmp/v11.4.5.diff
+4、初始化
+gitlab-ctl reconfigure
+5、启动
+gitlab-ctl start
+
+参考博文：
+https://www.jianshu.com/p/e7b83dd85f9c
+https://www.jianshu.com/p/6606aed59a56

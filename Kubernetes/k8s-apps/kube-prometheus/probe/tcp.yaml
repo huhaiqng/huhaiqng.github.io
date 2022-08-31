@@ -1,0 +1,18 @@
+kind: Probe
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: probe-tcp
+  namespace: monitoring
+spec:
+  interval: 60s
+  module: tcp_connect
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:19115
+  targets:
+    staticConfig:
+      labels:
+        module: tcp_connect
+      static:
+      - 192.168.40.185:3306
+      - 192.168.40.200:3306
+      - 192.168.40.200:1234

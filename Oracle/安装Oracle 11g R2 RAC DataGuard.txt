@@ -1,0 +1,383 @@
+一、准备dataguard数据库服务器
+1、准备操作系统
+注：建议安装oracle数据库使用oracle linux操作系统，本实例以oracle linux 6.8做为操作系统。
+#关闭iptables
+chkconfig iptables off
+#关闭selinux
+vim /etc/sysconfig/selinux 
+SELINUX=disabled
+#将主机名添加到hosts文件
+vim /etc/hosts
+188.188.1.141	scan-cluster.localdomain	scan-cluster
+188.188.1.139	dataguard.localdomain		dataguard
+188.188.1.142	oraclerac01.localdomain		oraclerac01
+188.188.1.144	oraclerac01-vip.localdomain	oraclerac01-vip
+10.10.1.142	oraclerac01-priv.localdomain	oraclerac01-priv
+188.188.1.143	oraclerac02.localdomain		oraclerac02
+188.188.1.145	oraclerac02-vip.localdomain	oraclerac02-vip
+10.10.1.143	oraclerac02-priv.localdomain	oraclerac02-priv
+#重启服务器
+reboot
+2、初始化操作系统，执行以下脚本
+#用户初始化脚本preusers.sh
+注：grid用户的ORACLE_SID必须为+ASM，ORACLE_HOSTNAME、ORACLE_SID、ORACLE_UNQNAME做相应的更改
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Create 6 groups named 'oinstall','dba','asmadmin','asmdba','asmoper','oper', plus 2 users named 'oracle','grid'.
+#Also setting the Environment
+#variable for oracle user.
+#variable for grid user.
+#Usage:Log on as the superuser('root'),and then execute the command:#./1preusers.sh
+#Author:Asher Huang
+  
+echo "Now create 6 groups named 'oinstall','dba','asmadmin','asmdba','asmoper','oper'"
+echo "Plus 2 users named 'oracle','grid',Also setting the Environment"
+  
+  
+groupadd -g 1000 oinstall 
+groupadd -g 1200 asmadmin 
+groupadd -g 1201 asmdba 
+groupadd -g 1202 asmoper 
+useradd -u 502 -g oinstall -G asmadmin,asmdba,asmoper -d /home/grid -s /bin/bash -c "grid Infrastructure Owner" grid 
+echo "grid" | passwd --stdin grid
+  
+#echo 'export PS1="`/bin/hostname -s`-> "'>> /home/grid/.bash_profile 
+echo "export TMP=/tmp">> /home/grid/.bash_profile  
+echo 'export TMPDIR=$TMP'>>/home/grid/.bash_profile 
+echo "export ORACLE_SID=+ASM">> /home/grid/.bash_profile 
+echo "export ORACLE_BASE=/u01/app/grid">> /home/grid/.bash_profile
+echo "export ORACLE_HOME=/u01/app/11.2.0/grid">> /home/grid/.bash_profile
+echo "export ORACLE_TERM=xterm">> /home/grid/.bash_profile
+echo "export NLS_DATE_FORMAT='yyyy/mm/dd hh24:mi:ss'" >> /home/grid/.bash_profile
+echo 'export TNS_ADMIN=$ORACLE_HOME/network/admin'  >> /home/grid/.bash_profile
+echo 'export PATH=/usr/sbin:$PATH'>> /home/grid/.bash_profile
+echo 'export PATH=$ORACLE_HOME/bin:$PATH'>> /home/grid/.bash_profile
+echo 'export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib'>> /home/grid/.bash_profile
+echo 'export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib'>> /home/grid/.bash_profile
+echo "export EDITOR=vi" >> /home/grid/.bash_profile
+echo "export LANG=en_US" >> /home/grid/.bash_profile
+echo "export NLS_LANG=american_america.AL32UTF8" >> /home/grid/.bash_profile
+echo "umask 022">> /home/grid/.bash_profile
+  
+groupadd -g 1300 dba 
+groupadd -g 1301 oper 
+useradd -u 501 -g oinstall -G dba,oper,asmdba -d /home/oracle -s /bin/bash -c "Oracle Software Owner" oracle 
+echo "oracle" | passwd --stdin oracle
+  
+#echo 'export PS1="`/bin/hostname -s`-> "'>> /home/oracle/.bash_profile 
+echo "export TMP=/tmp">> /home/oracle/.bash_profile  
+echo 'export TMPDIR=$TMP'>>/home/oracle/.bash_profile 
+echo "export ORACLE_HOSTNAME=oracledb">> /home/oracle/.bash_profile 
+echo "export ORACLE_SID=bbdg">> /home/oracle/.bash_profile 
+echo "export ORACLE_BASE=/u01/app/oracle">> /home/oracle/.bash_profile
+echo 'export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1'>> /home/oracle/.bash_profile
+echo "export ORACLE_UNQNAME=bbdg">> /home/oracle/.bash_profile
+echo 'export TNS_ADMIN=$ORACLE_HOME/network/admin'  >> /home/oracle/.bash_profile
+echo "export ORACLE_TERM=xterm">> /home/oracle/.bash_profile
+echo 'export PATH=/usr/sbin:$PATH'>> /home/oracle/.bash_profile
+echo 'export PATH=$ORACLE_HOME/bin:$PATH'>> /home/oracle/.bash_profile
+echo 'export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib'>> /home/oracle/.bash_profile
+echo 'export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib'>> /home/oracle/.bash_profile
+echo "export EDITOR=vi" >> /home/oracle/.bash_profile
+echo "export LANG=en_US" >> /home/oracle/.bash_profile
+echo "export NLS_LANG=american_america.AL32UTF8" >> /home/oracle/.bash_profile
+echo "export NLS_DATE_FORMAT='yyyy/mm/dd hh24:mi:ss'" >> /home/oracle/.bash_profile
+echo "umask 022">> /home/oracle/.bash_profile
+  
+echo "The Groups and users has been created"
+echo "The Environment for grid,oracle also has been set successfully"
+----------------------------------------------------------------------------------------------------------------------------
+#创建目录脚本predir.sh
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Create the necessary directory for oracle,grid users and change the authention to oracle,grid users.
+#Usage:Log on as the superuser('root'),and then execute the command:#./2predir.sh
+#Author:Asher Huang
+  
+echo "Now create the necessary directory for oracle,grid users and change the authention to oracle,grid users..."
+mkdir -p /u01/app/grid
+mkdir -p /u01/app/11.2.0/grid
+mkdir -p /u01/app/oracle
+chown -R oracle:oinstall /u01
+chown -R grid:oinstall /u01/app/grid
+chown -R grid:oinstall /u01/app/11.2.0
+chmod -R 775 /u01
+echo "The necessary directory for oracle,grid users and change the authention to oracle,grid users has been finished"
+----------------------------------------------------------------------------------------------------------------------------
+#修改limits脚本prelimits.sh
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Change the /etc/security/limits.conf.
+#Usage:Log on as the superuser('root'),and then execute the command:#./3prelimits.sh
+#Author:Asher Huang
+  
+echo "Now modify the /etc/security/limits.conf,but backup it named /etc/security/limits.conf.bak before"
+cp /etc/security/limits.conf /etc/security/limits.conf.bak
+echo "oracle soft nproc 2047" >>/etc/security/limits.conf
+echo "oracle hard nproc 16384" >>/etc/security/limits.conf
+echo "oracle soft nofile 1024" >>/etc/security/limits.conf
+echo "oracle hard nofile 65536" >>/etc/security/limits.conf
+echo "grid soft nproc 2047" >>/etc/security/limits.conf
+echo "grid hard nproc 16384" >>/etc/security/limits.conf
+echo "grid soft nofile 1024" >>/etc/security/limits.conf
+echo "grid hard nofile 65536" >>/etc/security/limits.conf
+echo "Modifing the /etc/security/limits.conf has been succeed."
+----------------------------------------------------------------------------------------------------------------------------
+#修改login脚本prelogin.sh
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Modify the /etc/pam.d/login.
+#Usage:Log on as the superuser('root'),and then execute the command:#./4prelimits.sh
+#Author:Asher Huang
+  
+echo "Now modify the /etc/pam.d/login,but with a backup named /etc/pam.d/login.bak"
+cp /etc/pam.d/login /etc/pam.d/login.bak
+  
+echo "session required /lib64/security/pam_limits.so" >>/etc/pam.d/login
+echo "session required pam_limits.so" >>/etc/pam.d/login
+  
+echo "Modifing the /etc/pam.d/login has been succeed."
+----------------------------------------------------------------------------------------------------------------------------
+#修改profile脚本preprofile.sh
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Modify the /etc/profile.
+#Usage:Log on as the superuser('root'),and then execute the command:#./5preprofile.sh
+#Author:Asher Huang
+  
+echo "Now modify the  /etc/profile,but with a backup named  /etc/profile.bak"
+cp /etc/profile /etc/profile.bak
+echo 'if [ $USER = "oracle" ]||[ $USER = "grid" ]; then' >>  /etc/profile
+echo 'if [ $SHELL = "/bin/ksh" ]; then' >> /etc/profile
+echo 'ulimit -p 16384' >> /etc/profile
+echo 'ulimit -n 65536' >> /etc/profile
+echo 'else' >> /etc/profile
+echo 'ulimit -u 16384 -n 65536' >> /etc/profile
+echo 'fi' >> /etc/profile
+echo 'fi' >> /etc/profile
+echo "Modifing the /etc/profile has been succeed."
+----------------------------------------------------------------------------------------------------------------------------
+#修改内核参数脚本presysctl.sh
+----------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+#Purpose:Modify the /etc/sysctl.conf.
+#Usage:Log on as the superuser('root'),and then execute the command:#./6presysctl.sh
+#Author:Asher Huang
+  
+echo "Now modify the /etc/sysctl.conf,but with a backup named /etc/sysctl.bak"
+cp /etc/sysctl.conf /etc/sysctl.conf.bak
+  
+echo "fs.aio-max-nr = 1048576" >> /etc/sysctl.conf
+echo "fs.file-max = 6815744" >> /etc/sysctl.conf
+echo "kernel.shmall = 2097152" >> /etc/sysctl.conf
+echo "kernel.shmmax = 1054472192" >> /etc/sysctl.conf
+echo "kernel.shmmni = 4096" >> /etc/sysctl.conf
+echo "kernel.sem = 250 32000 100 128" >> /etc/sysctl.conf
+echo "net.ipv4.ip_local_port_range = 9000 65500" >> /etc/sysctl.conf
+echo "net.core.rmem_default = 262144" >> /etc/sysctl.conf
+echo "net.core.rmem_max = 4194304" >> /etc/sysctl.conf
+echo "net.core.wmem_default = 262144" >> /etc/sysctl.conf
+echo "net.core.wmem_max = 1048586" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_wmem = 262144 262144 262144" >> /etc/sysctl.conf
+echo "net.ipv4.tcp_rmem = 4194304 4194304 4194304" >> /etc/sysctl.conf
+  
+echo "Modifing the /etc/sysctl.conf has been succeed."
+echo "Now make the changes take effect....."
+sysctl -p
+----------------------------------------------------------------------------------------------------------------------------
+3、配置ASM磁盘组
+注：由于oracle rac使用了asm存储数据文件，单实例数据库也使用asm存储数据库文件，磁盘组需要与RAC磁盘组一致，方便还原
+#磁盘分区
+fdisk /dev/sd*
+n-p-1-w
+#安装asm
+yum install -y kmod-oracleasm-2.0.8-13.el6_8.x86_64.rpm oracleasmlib-2.0.4-1.el6.x86_64.rpm oracleasm-support-2.1.8-1.el6.x86_64.rpm
+#创建asm磁盘
+----------------------------------------------------------------------------------------------------------------------------
+# oracleasm status
+# oracleasm configure -i
+Configuring the Oracle ASM library driver.
+
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmadmin
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+
+# oracleasm init
+# oracleasm configure
+# oracleasm listdisks
+# oracleasm createdisk VOL1 /dev/sdb1 
+# oracleasm querydisk /dev/sd*
+----------------------------------------------------------------------------------------------------------------------------
+4、安装必备rpm
+yum install -y binutils elfutils-libelf glibc compat-libstdc++-33.x86_64 libgcc unixODBC  glibc.i686 elfutils-libelf-devel gcc-c++ libaio-devel libstdc++-devel unixODBC-devel pdksh compat-libcap1 ksh
+yum groupinstall -y desktop
+注：CentOS 需要安装 http://rpmfind.net/linux/Mandriva/official/2011/x86_64/media/main/release/pdksh-5.2.14-30-mdv2011.0.x86_64.rpm，不需要安装ksh
+5、安装grid
+注：新打开一个未登录xshell窗口，使用grid账户登录，如果直接从root切换到grid账户,则xshell无法打开安装grid图像化界面
+ssh grid@188.188.1.120
+cd grid/
+./runInstaller
+注：执行脚本/u01/app/11.2.0/grid/root.sh时，需要在另一个窗口打开 dd if=/var/tmp/.oracle/npohasd of=/dev/nullbs=1024 count=1
+#创建和rac数据库一样的磁盘组
+asmca
+#修改u01/app/oracle/product/11.2.0/db_1/bin/oracle
+注：如果不修改权限则无法向asm写入文件
+chown oracle.asmadmin /u01/app/oracle/product/11.2.0/db_1/bin/oracle
+chmod 6555 /u01/app/oracle/product/11.2.0/db_1/bin/oracle
+6、安装oracle，只需安装软件，不创建数据库
+注：新打开一个未登录xshell窗口，使用oracle账户登录，如果直接从root切换到oracle账户,则xshell无法打开安装oracle图像化界面
+ssh oracle@188.188.1.120
+cd database/
+./runInstaller
+
+二、准备数据库RMAN备份
+注：先备份数据库和归档日志，再备份控制文件，因为rman备份信息存储在控制文件中
+#执行RMAN备份
+su - oracle
+rman target /
+backup as compressed backupset database format '/tmp/backup/Full_%U.bak';
+backup as compressed backupset archivelog all format '/tmp/backup/ARC_%U.bak';
+backup device type disk format '/tmp/backup/standby_%U.ctl' current controlfile for standby;
+#生成初始化参数文件
+su - oracle
+sqlplus / as sysdba
+create pfile='/tmp/backup/initbbdg.ora' from spfile;
+#拷贝密码文件
+/u01/app/oracle/product/11.2.0/db_1/dbs/orapwbbdg1 /tmp/backup
+#将备份传到oracle单实例数据库
+注：备份文件传到的目录必须rman备份的目录一致，且目录/tmp/backup及里面的文件必须属于oracle.oinstall，否则无法还原
+scp -r /tmp/backup oracle@188.188.1.120:/tmp
+
+三、还原数据库
+1、创建密码文件
+su - oracle
+cp /tmp/backup/orapwbbdg1 /u01/app/oracle/product/11.2.0/db_1/dbs/orapwbbdg
+2、创建初始化参数文件
+cp /tmp/backup /u01/app/oracle/product/11.2.0/db_1/dbs/initbbdg.ora
+vim /u01/app/oracle/product/11.2.0/db_1/dbs/initbbdg.ora
+----------------------------------------------------------------------------------------------------------------------------
+bbdg.__db_cache_size=255852544
+bbdg.__java_pool_size=4194304
+bbdg.__large_pool_size=4194304
+bbdg.__oracle_base='/u01/app/oracle'#ORACLE_BASE set from environment
+bbdg.__pga_aggregate_target=419430400
+bbdg.__sga_target=423624704
+bbdg.__shared_io_pool_size=0
+bbdg.__shared_pool_size=146800640
+bbdg.__streams_pool_size=0
+*.audit_file_dest='/u01/app/oracle/admin/bbdg/adump'
+*.audit_trail='db'
+*.cluster_database=false
+*.compatible='11.2.0.4.0'
+*.control_files='+data_vg/bbdg/controlfile/cont.ctl'
+*.core_dump_dest='/u01/app/oracle/diag/rdbms/bbdg/cdump'
+*.db_block_size=8192
+*.db_create_file_dest='+data_vg'
+*.db_domain=''
+*.db_file_name_convert='+data_vg/bbsvr/','+data_vg/bbdg/'
+*.db_name='bbsvr'
+*.db_recovery_file_dest='+FRA_VG'
+*.db_recovery_file_dest_size=4070572032
+*.db_unique_name='bbdg'
+*.diagnostic_dest='/u01/app/oracle'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=bbdgXDB)'
+*.fal_client='bbdg'
+*.fal_server='bbsvri1'
+*.log_archive_config='dg_config=(bbsvr,bbdg)'
+*.log_archive_dest_1='location=USE_DB_RECOVERY_FILE_DEST valid_for=(all_logfiles,all_roles) db_unique_name=bbdg'
+*.log_archive_dest_2='service=bbsvr valid_for=(online_logfiles,primary_role) db_unique_name=bbsvri1'
+*.log_archive_format='ARC_%t_%S_%r.arc'
+*.log_file_name_convert='+data_vg/bbsvr/','+data_vg/bbdg/'
+*.memory_target=842006528
+*.open_cursors=300
+*.processes=150
+*.remote_login_passwordfile='exclusive'
+*.service_names='bbdg'
+*.standby_file_management='auto'
+*.thread=1
+*.undo_management='auto'
+*.undo_tablespace='UNDOTBS1'
+----------------------------------------------------------------------------------------------------------------------------
+3、配置tnsnames.ora
+#rac 服务器
+----------------------------------------------------------------------------------------------------------------------------
+BBSVR =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = bbsvr-scan)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = BBSVR)
+    )
+  )
+BBSVRI1 =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.1.11)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = BBSVR)
+      (INSTANCE_NAME = bbsvri1)
+    )
+  )
+BBSVRI2 =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 172.16.1.12)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = BBSVR)
+      (INSTANCE_NAME = bbsvri2)
+    )
+  )
+BBDG =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 47.106.113.106)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = BBDG)
+      (INSTANCE_NAME = bbdg)
+    )
+  )
+----------------------------------------------------------------------------------------------------------------------------
+#dataguard服务器
+----------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------
+4、还原控制文件和数据库
+su - oracle
+rman target /
+startup nomount;
+restore standby controlfile from '/tmp/backup/standby_%U.ctl';
+alter database mount;
+restore database;
+restore archivelog from logseq 82 until logseq 222; 
+alter database open;
+5、备库上创建standby logfile
+SQL> alter database add standby logfile thread 1 group 5 size 50m,group 6 size 50m,group 7 size 50m;
+SQL> alter database add standby logfile thread 2 group 8 size 50m,group 9 size 50m,group 10 size 50m;
+6、主库参数调整
+alter system set log_archive_dest_2='service=bbdg lgwr async valid_for=(online_logfiles,all_roles) db_unique_name=bbdg' sid='*';
+alter system set log_archive_config='dg_config=(bbsvr,bbdg)' sid='*';
+7、查看备库接收主库日志
+select sequence#,name, applied from v$archived_log;
+8、备库开始应用日志
+alter database recover managed standby database using current logfile disconnect from session;
+9、以只读模式打开
+alter database recover managed standby database concel;
+alter database open;
+alter database recover managed standby database using current logfile disconnect from session;
+
+四、故障切换，primary出现无法恢复故障，将standby切换为primary
+#在standby上执行以下命令
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE FINISH;
+ALTER DATABASE COMMIT TO SWITCHOVER TO PRIMARY WITH SESSION SHUTDOWN;
+ALTER DATABASE OPEN;
+alter system set log_archive_dest_2='' sid='*';
+alter system set log_archive_config='' sid='*';

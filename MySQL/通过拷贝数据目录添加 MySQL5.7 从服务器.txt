@@ -1,0 +1,62 @@
+数据库版本：MySQL 5.7
+原数据库：mysql01
+从数据库：mysql02
+
+原数据库配置文件
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+symbolic-links=0
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+server-id=1
+gtid_mode=on
+enforce_gtid_consistency=on
+log_bin=mysqld-bin
+binlog_format=row
+expire-logs-days=1
+slave_parallel_type=logical_clock
+slave_parallel_workers=4
+
+从数据库配置文件
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+symbolic-links=0
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+server-id=2
+gtid_mode=on
+enforce_gtid_consistency=on
+log_bin=mysqld-bin
+binlog_format=row
+expire-logs-days=1
+slave_parallel_type=logical_clock
+slave_parallel_workers=4
+
+停止原数据库和从数据库服务
+systemctl stop mysqld
+
+删除从服务器目录/var/lib/mysql下的内容
+rm -rf /var/lib/mysql/*
+
+将原服务器目录/var/lib/mysql的文件拷贝到从服务器
+scp -r /var/lib/mysql/* mysql02:/var/lib/mysql
+chown -R mysql.mysql /var/lib/mysql
+
+删除从服务器的auto.cnf，重启时会重新生成server-uuid
+rm -f /var/lib/mysql/auto.cnf
+
+启动原服务器和从服务器MySQL服务
+systemctl start mysqld
+
+创建复制账号
+set sql_log_bin=0;
+alter user root@'localhost' identified by 'MySQL5.7';
+create user root@'192.168.1.%' identified by 'MySQL5.7';
+grant all on *.* to root@'192.168.1.%';
+flush privileges; 
+set sql_log_bin=1;
+
+将从服务器指定到主服务器
+change master to master_host='192.168.1.224',master_user='root',master_password='MySQL5.7',master_auto_position=1;
+start slave;
+show slave status\G

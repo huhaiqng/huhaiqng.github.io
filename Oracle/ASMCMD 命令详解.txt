@@ -1,0 +1,71 @@
+实例管理命令：
+dsget     返回discovery diskstring
+dsset     设置discovery diskstring
+lsct      显示当前oracle ASM的客户端，一般指数据库实例和ASM实例,数据来源于V$ASM_CLIENT视图
+lsop      显示当前磁盘组或ASM实例的操作，数据来源于V$ASM_OPERATION视图
+lspwusr   显示ASM密码文件中的用户
+orapwusr  增加，删除，修改ASM密码文件用户
+shutdown  关闭ASM实例
+startup   启动ASM实例
+spbackup  备份ASM SPFILE，不影响GPnP profile;备份文件不能识别成SPFILE，不能用spcopy拷贝。为了识别备份文件为SPFILE必须用cp命令
+spcopy    拷贝ASM SPFILE，在同一个磁盘组不能拷贝多份。为了更新GPnP profile，则用-u选项或用spset命令
+spget     返回ASM SPFILE的位置从GPnP profile
+spmove    移动ASM SPFILE，自动更新GPnP profile.当SPFILE被ASM实例打开时不能被移动
+spset     设置ASM SPFILE的位置，
+
+文件管理命令：
+cd        切换目录，可使用通配符
+cp        在磁盘组之间，磁盘组与操作系统之间拷贝文件。不能在两个远程实例间拷贝。OCR和OCR备份类型的文件不能用cp，
+		  要用spbackup,spcopy,spmove
+          如果是远程拷贝，则连接串样式为：user@host[.port_number].SID。port_number默认为1521
+du        显示已经使用的磁盘空间在指定的目录(包括子目录)
+find      查找,注意要区分大小写
+ls        显示ASM目录下的内容
+lsof      显示本地客户端已打开的文件
+mkalias   创建一个系统产生的文件的别名。别名和对应的文件必须在同一磁盘组且每个ASM文件只能有一个别名
+mkdir     创建ASM目录
+pwd       显示当前目录的路径
+rm        删除指定的文件或目录，如果是别名，会删除别名和别名对应的文件
+rmalias   删除指定的别名
+
+磁盘组管理命令
+chdg      修改磁盘组(增加磁盘，删除磁盘，调整磁盘大小，重新平衡磁盘组，基于XML配置文件的)
+chkdg     检查或修复磁盘组
+dropdg    删除磁盘组
+iostat    显示磁盘IO统计，信息来源于V$ASM_DISK_IOSTAT视图
+lsattr    显示磁盘组属性，信息来源于V$ASM_ATTRIBUTE视图
+lsdg      显示已挂载的磁盘组和他们的信息，与ls -ls输出结果一样，信息来源于V$ASM_DISKGROUP_STAT视图，
+          如果指定了--discovery,则查询V$ASM_DISKGROUP
+lsdsk     显示ASM磁盘，信息来源于V$ASM_DISK_STAT视图;连接模式查询V$ASM_DISK_STAT and 
+          V$ASM_DISK返回信息;非连接模式通过扫描磁盘头来返回信息
+lsod      显示已打开的设备
+md_backup 创建已挂载的磁盘组元数据备份
+md_restore恢复磁盘组元数据备份
+mkdg      创建磁盘组，基于XML配置文件创建。注意：mkdg创建的磁盘组只挂载在本地节点
+mount     挂载磁盘组
+offline   使磁盘或失效磁盘组离线
+online    使磁盘或失效磁盘组上线
+rebal     重新平衡磁盘组
+remap     重定位数据在磁盘上的物理块的范围内
+setattr   设置磁盘组属性
+umount    卸载磁盘组
+
+模板管理命令：
+chtmpl     修改模板属性
+lstmpl     显示模板属性
+mktmpl     增加模板到磁盘组
+rmtmpl     从磁盘组删除模板
+
+文件访问管理命令：
+chgrp      修改文件或文件列表的用户组
+chmod      修改文件或文件列表的权限
+chown      修改文件或文件列表的拥有者
+groups     显示用户所属用户组
+grpmod     增加或删除操作系统用户到/从已存在的用户组
+lsgrp      显示用户组
+lsusr      显示磁盘组中的用户
+mkgrp      创建一个用户组
+mkusr      添加操作系统用户到磁盘组
+passwd     修改用户的密码
+rmgrp      删除一个用户组
+rmusr      删除一个用户

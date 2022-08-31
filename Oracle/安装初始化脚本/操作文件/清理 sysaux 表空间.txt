@@ -1,0 +1,82 @@
+1、查看sysaux空间使用率
+SELECT * FROM ( 
+SELECT D.TABLESPACE_NAME, 
+        SPACE || 'M' "SUM_SPACE(M)", 
+        BLOCKS "SUM_BLOCKS", 
+        SPACE - NVL (FREE_SPACE, 0) || 'M' "USED_SPACE(M)", 
+        ROUND ( (1 - NVL (FREE_SPACE, 0) / SPACE) * 100, 2) || '%' 
+           "USED_RATE(%)", 
+        FREE_SPACE || 'M' "FREE_SPACE(M)" 
+   FROM (  SELECT TABLESPACE_NAME, 
+                  ROUND (SUM (BYTES) / (1024 * 1024), 2) SPACE, 
+                  SUM (BLOCKS) BLOCKS 
+             FROM DBA_DATA_FILES 
+         GROUP BY TABLESPACE_NAME) D, 
+        (  SELECT TABLESPACE_NAME, 
+                  ROUND (SUM (BYTES) / (1024 * 1024), 2) FREE_SPACE 
+             FROM DBA_FREE_SPACE 
+         GROUP BY TABLESPACE_NAME) F 
+  WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME(+) 
+ UNION ALL                                                           
+ SELECT D.TABLESPACE_NAME, 
+        SPACE || 'M' "SUM_SPACE(M)", 
+        BLOCKS SUM_BLOCKS, 
+        USED_SPACE || 'M' "USED_SPACE(M)", 
+        ROUND (NVL (USED_SPACE, 0) / SPACE * 100, 2) || '%' "USED_RATE(%)", 
+        NVL (FREE_SPACE, 0) || 'M' "FREE_SPACE(M)" 
+   FROM (  SELECT TABLESPACE_NAME, 
+                  ROUND (SUM (BYTES) / (1024 * 1024), 2) SPACE, 
+                  SUM (BLOCKS) BLOCKS 
+             FROM DBA_TEMP_FILES 
+         GROUP BY TABLESPACE_NAME) D, 
+        (  SELECT TABLESPACE_NAME, 
+                  ROUND (SUM (BYTES_USED) / (1024 * 1024), 2) USED_SPACE, 
+                  ROUND (SUM (BYTES_FREE) / (1024 * 1024), 2) FREE_SPACE 
+             FROM V$TEMP_SPACE_HEADER 
+         GROUP BY TABLESPACE_NAME) F 
+  WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME(+) 
+ ORDER BY 1)  
+ WHERE TABLESPACE_NAME IN ('SYSAUX','SYSTEM','UNDOTBS1','TEMP'); 
+
+2、查看sysaux_occupants情况
+SELECT occupant_name "Item", 
+	space_usage_kbytes / 1048576 "Space Used (GB)", 
+	schema_name "Schema", 
+	move_procedure "Move Procedure" 
+	FROM v$sysaux_occupants 
+ORDER BY 1;
+
+3、查看表空间段使用情况
+select * from (
+  select segment_name,segment_type,bytes / 1024 / 1024
+    from dba_segments
+    where tablespace_name = 'SYSAUX'
+    and bytes / 1024 / 1024 >100
+    order by bytes desc);
+	
+4、生成删除段内容语句
+select distinct 'truncate  table  '||segment_name||';',s.bytes/1024/1024
+  from dba_segments s
+  where s.segment_name like 'WRH$%'
+  and segment_type in ('TABLE PARTITION', 'TABLE')
+  and s.bytes/1024/1024>100
+  order by s.bytes/1024/1024/1024 desc;
+  
+5、删除记录
+truncate  table  WRH$_ACTIVE_SESSION_HISTORY;
+truncate  table  WRH$_EVENT_HISTOGRAM;
+truncate  table  WRH$_LATCH;
+truncate  table  WRH$_SQLSTAT;
+truncate  table  WRH$_SYSSTAT;
+truncate  table  WRH$_PARAMETER;
+truncate  table  WRH$_SQL_PLAN;
+truncate  table  WRH$_LATCH_MISSES_SUMMARY;
+truncate  table  WRH$_SEG_STAT;
+truncate  table  WRH$_SYSTEM_EVENT;
+
+6、重新查看表空间使用率
+
+
+参考博文：
+http://blog.51cto.com/ylw6006/1135593
+https://blog.csdn.net/stevendbaguo/article/details/53745661

@@ -1,0 +1,2 @@
+添加了 kubernetes-dashboard 命名空间的日志会报以下错误
+pipeline/output.go:121 Failed to publish events: temporary bulk send failure

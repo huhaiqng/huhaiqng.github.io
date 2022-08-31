@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chandao
+  namespace: devops
+  labels:
+    app: chandao
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chandao
+  template:
+    metadata:
+      labels:
+        app: chandao
+    spec:
+      containers:
+      - name: chandao
+        # image: php-apache:7.4.28
+        image: harbor.lingfannao.net:4436/yunwei/php-apache:7.4.28
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: chandao-volume
+        - name: php-ini
+          mountPath: "/usr/local/etc/php/php.ini"
+          subPath: php.ini
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+      volumes:
+      - name: chandao-volume
+        hostPath:
+          path: /data/zentaopms
+          type: Directory
+      - name: php-ini
+        configMap:
+          name: chandao
+          items:
+          - key: php.ini
+            path: php.ini
+      nodeSelector:
+        kubernetes.io/hostname: yw-sys-02
+      imagePullSecrets:
+      - name: hwyharbor

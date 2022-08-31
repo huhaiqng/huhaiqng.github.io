@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tpdatasyn
+  namespace: prod
+  labels:
+    app: 3pdatasyn
+spec:
+  type: NodePort
+  ports:
+    - port: 19001
+      nodePort: 30023
+  selector:
+    app: 3pdatasyn

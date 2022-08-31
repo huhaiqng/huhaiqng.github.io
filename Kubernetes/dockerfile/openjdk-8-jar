@@ -1,0 +1,3 @@
+FROM harbor.shuibeitd.com:4436/common/openjdk:8-alpine-cts
+RUN chmod +x /data/entrypoint.sh
+COPY target/*.jar app.jar

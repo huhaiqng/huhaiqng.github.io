@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jew-cust-h5
+  namespace: prod
+  labels:
+    app: jew-cust-h5
+spec:
+  replicas: 1
+  serviceName: "jew-cust-h5"
+  podManagementPolicy: "Parallel"
+  selector:
+    matchLabels:
+      app: jew-cust-h5
+  template:
+    metadata:
+      labels:
+        app: jew-cust-h5
+    spec:
+      containers:
+      - name: app
+        image: harbor.lingfannao.net:4436/test/jew-cust-h5:20220418163002
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      nodeSelector:
+        kubernetes.io/hostname: hwy-prod-02
+      imagePullSecrets:
+      - name: hwy-harbor

@@ -1,0 +1,72 @@
+1、CRS资源状态检查
+su - grid
+crsctl status resource -t
+crs_stat -t
+
+2、查看tablespace block_size
+select TABLESPACE_NAME,block_size from dba_tablespaces;
+
+3、查看数据库状态
+select status from v$instance;
+
+4、查看控制文件
+show parameter control_file
+
+5、查看日志文件
+select GROUP#,member from v$logfile;
+
+6、查看归档模式
+archive log list;
+
+7、查看tablespace
+select tablespace_name,contents,extent_management,segment_space_management from dba_tablespaces;
+
+8、查看本地集群状态
+crsctl check crs
+
+9、查看集群状态
+crsctl check cluster
+
+9、查看节点信息
+olsnodes -n -i -s
+
+10、查看集群版本使用信息
+crsctl query crs activeversion
+
+11、查看集群版本发行信息
+crsctl query crs releaseversion
+
+12、查看安装版本信息
+crsctl query crs softwareversion
+
+13、查看磁盘表决信息
+crsctl query css votedisk
+
+14、查看scan ip
+srvctl config scan
+
+15、查看scan listener
+srvctl config scan_listener
+
+16、查看OCR文件学习（root）
+/u01/app/11.2.0/grid/bin/ocrcheck -local
+
+17、查看ocr备份信息
+ocrconfig -showbackup
+
+18、查看用户下的表
+select * from tab;
+
+19、查看用户连接情况
+select inst_id,username,sid,serial# from gV$session where username='HR';
+
+20、关闭数据库(grid)
+srvctl stop database -d 
+
+21、停止集群(root)
+cd /u01/app/11.2.0/grid/bin/
+./crsctl stop cluster -all
+
+22、备份ORC
+cd /u01/app/11.2.0/grid/bin/
+./ocrconfig -manualbackup

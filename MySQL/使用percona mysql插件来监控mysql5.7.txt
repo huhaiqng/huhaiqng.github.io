@@ -1,0 +1,36 @@
+1、安装 php
+yum install -y php php-mysql
+2、安装 percona-zabbix
+yum install -y https://www.percona.com/downloads/percona-monitoring-plugins/percona-monitoring-plugins-1.1.7/binary/redhat/7/x86_64/percona-zabbix-templates-1.1.7-2.noarch.rpm
+3、配置 zabbix agentd
+vim /usr/local/zabbix/etc/zabbix_agentd.conf
+  Include=/usr/local/zabbix/etc/zabbix_agentd.conf.d/*.conf
+cd /var/lib/zabbix/percona/templates
+cp userparameter_percona_mysql.conf /usr/local/zabbix/etc/zabbix_agentd.conf.d/
+killall -9 zabbix_agentd
+chown zabbix.zabbix /tmp/localhost-mysql_cacti_stats.txt
+4、配置 MySQL 默认登陆账号
+su - zabbix
+cat .my.cnf
+  [client]
+  password=MySQL2018
+  user=root
+5、修改 php 脚本
+cd /var/lib/zabbix/percona/scripts/
+vim ss_get_mysql_stats.php 
+  $mysql_user = 'root';
+  $mysql_pass = 'MySQL2018';
+  $mysql_port = 3306;
+  $mysql_socket = '/tmp/mysql.sock';
+6、测试获取 MySQL 数据
+cd /var/lib/zabbix/percona/scripts/
+/usr/bin/php ss_get_mysql_stats.php --host localhost --items gg
+cd /usr/local/zabbix/bin
+./zabbix_get -s 172.16.2.39 -k MySQL.file-reads
+7、下载模板导入到 zabbix
+https://www.ttlsa.com/wp-content/uploads/2016/07/Percona-MySQL-Server-Template.zip
+
+参考文档：
+Download Percona Monitoring Plugins：https://www.percona.com/downloads/percona-monitoring-plugins/percona-monitoring-plugins-1.1.7/
+zabbix3.0.2 使用percona mysql插件来监控mysql5.7的详细实现过程：https://blog.csdn.net/mchdba/article/details/51447750
+zabbix-3.0导入percona模板报错：http://www.ttlsa.com/mysql/zabbix-3-0-import-percona-template-failure/

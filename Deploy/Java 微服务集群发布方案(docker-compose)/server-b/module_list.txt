@@ -1,0 +1,4 @@
+piomin_list=config-service department-service discovery-service employee-service gateway-service organization-service proxy-service
+forezp16_list=admin-service blog-service common config-server eureka-server gateway-service monitor-service uaa-service user-service zipkin-service
+test-project_list=auth-server eureka-server springcloud-oauth2
+myclouds_list=myclouds-base myclouds-builder myclouds-common myclouds-config myclouds-gateway myclouds-system-service
