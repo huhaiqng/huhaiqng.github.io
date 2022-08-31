@@ -1,0 +1,37 @@
+1、停止实例
+SQL> shutdown;
+ORA-01109: database not open
+
+
+Database dismounted.
+ORACLE instance shut down.
+2、启动实例到mount
+SQL> startup mount;
+ORACLE instance started.
+
+Total System Global Area  784998400 bytes
+Fixed Size		    2217464 bytes
+Variable Size		  583010824 bytes
+Database Buffers	  197132288 bytes
+Redo Buffers		    2637824 bytes
+Database mounted.
+3、关闭flashback
+SQL> alter database flashback off ;
+
+Database altered.
+4、开启flashback，发现FLASH没有挂载
+SQL> alter database flashback on;
+alter database flashback on
+*
+ERROR at line 1:
+ORA-38701: Flashback database log 1 seq 1 thread 2: "+FLASH"
+ORA-17502: ksfdcre:4 Failed to create file +FLASH
+ORA-15001: diskgroup "FLASH" does not exist or is not mounted
+ORA-15001: diskgroup "FLASH" does not exist or is not mounted
+5、挂载FLASH
+su - grid
+asmcmd
+ASMCMD> mount FLASH
+ASMCMD> lsct
+6、启动数据库
+alter database open;

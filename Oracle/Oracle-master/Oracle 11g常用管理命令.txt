@@ -1,0 +1,129 @@
+sqlplus /nolog
+conn sys/sys as sysdba
+
+
+1、启动oracle数据库：
+
+从root切换到oracle用户进入：
+su - oracle
+
+进入sqlplus环境，nolog参数表示不登录：
+sqlplus /nolog
+
+以管理员模式登录：
+sqlplus / as sysdba
+
+启动数据库
+startup;
+停止数据库
+shutdown immediate
+远程连接数据库
+sqlplus /nolog
+conn sys/sys@ip:1521/orainstance as sysdba
+也可以直接运行：
+dbstart
+#启动数据库的脚本
+dbshut
+#停止数据库的脚本
+
+参考：
+startup [force][restrict][nomount][migrate][quiet]
+[pfile=]
+[mount [exclusive] x |
+open
+]
+
+shutdown
+
+注：要把Linux下的Oracle配置成服务自启动，请看：
+（原创）CentOS Linux下配置Oracle 11gR2为系统服务自动启动
+
+2、数据库监听：
+
+启动监听服务：
+lsnrctl start
+停止监听服务：
+lsnrctl stop
+查看监听状态：
+lsnrctl status
+3、用户权限管理：
+
+注：以下命令都需要DBA权限。
+创建用户：
+create user ittbank identified by 123456 ;
+赋予用户的表空间权限：
+alter user ittbank default tablespace ittbank;;
+或者两条命令合并为：
+create user ittbank identified by 123456 default tablespace ittbank;
+
+注：刚刚创建完的新用户是没有任何权限的，甚至连登录数据库的权限都没有。这时使用conn 用户名/密码 会提示没有权限。在新建一个用户之后还要对这个用户进行授权操作。当然是要使用有能力授权的用户，如sys、system。角色是指由系统权限集合。通常给某个用户授予权限时如果没有角色存在的话，那么需要一条一条的操作，角色的存在就是使得授权变得很方便。通常一个角色由多个系统权限组成。常用的角色有三个connect（7种权限）、dba、resource（在任何表空间建表）。
+
+授予用户管理权限：
+grant connect,resource,dba to ittbank ;
+
+删除用户
+drop user“name”cascade;
+注：cascade参数是级联删除该用户所有对象，经常遇到如用户有对象而未加此参数则用户删不了的问题，所以习惯性的加此参数。“name”的引号有无都是一样的。
+
+修改用户密码
+password ittbank( 在用户已经连接的情况下 )或者
+alter user ittbank identified by newpassword
+注意：在给其他用户修改密码时，需要具有DBA的权限或拥有alter user的系统权限。
+
+查看当前用户的角色
+select * from user_role_privs;
+select * from session_privs;
+查看当前用户的系统权限和表级权限
+select * from user_sys_privs;
+select * from user_tab_privs;
+查询用户表
+select name from dba_users;
+修改用户口令
+alter user "name" identified by "password";
+显示当前用户
+show user;
+解除用户锁定
+alter user hr account unlock;
+
+4、数据表及表空间：
+
+创建表空间：
+create tablespace ittbank datafile '/u01/app/oracle/oradata/ORCL/ittbank.dbf' size 300m autoextend on;
+说明：末尾带autoextend on参数表示当表空间大小不够用时会自动扩容，所有建议加上autoextend on参数。
+
+
+删除表空间：
+drop tablespace ittbank including contents and datafiles;
+修改表空间大小（注：修改=可以增大，可以减小。）
+alter database datafile '/u01/app/oracle/oradata/ORCL/ittbank.dbf' resize 200m;
+增加表空间大小（注：增加=只能增大，不能减少。）
+alter tablespace ittbank add datafile '/u01/app/oracle/oradata/ORCL/ittbank.dbf' size 2048m;
+查询数据库文件：
+select * from dba_data_files;
+查询当前存在的表空间：
+select * from v$tablespace;
+表空间情况：
+select tablespace_name,sum(bytes)/1024/1024 from dba_data_files group by tablespace_name;
+查询表空间剩余空间：
+select tablespace_name,sum(bytes)/1024/1024 from dba_free_space group by tablespace_name;
+查看表结构：
+desc table;
+查看用户当前连接数：
+select count(*) from sys.v_$session；
+pl/sql
+[declare
+/*申明部分，一般是变量及常量*/]
+[ begin
+/*执行部分，流程结构控制，sql部分*/]
+[exception
+/*异常处理部分*/]
+end
+
+set serveroutput on //打开输出开关
+begin
+dbms_output.put_line（'hello world!'）; //输出结果
+end;
+修改连接数：（注：要重启数据库）
+alter system set processes=1000 scope=spfile;
+shutdown immediate;
+startup;
