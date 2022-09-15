@@ -5,6 +5,8 @@
 > --source-data=2:   在导出的文件会新增一条注释语句`CHANGE MASTER TO MASTER_LOG_FILE='binlog.000005', MASTER_LOG_POS=23363959;`，在已存在的从库中导入时不会执行。
 >
 > 命令执行时会锁住全部表。
+>
+> 从 MySQL 8.0.26 开始，使用`--source-data`，在 MySQL 8.0.26 之前，使用 `--master-data`。
 
 ```
 mysqldump -u root -p'password' --all-databases --source-data=1 > all-database-master-`date +%Y%m%d%H%M%S`.dump
