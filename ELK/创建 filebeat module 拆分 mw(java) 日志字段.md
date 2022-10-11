@@ -83,3 +83,18 @@ mv access lfl
 2022-09-21 16:10:02.893 ERROR com.fom.push.PushFailOrder 84 handleData - java.lang.NullPointerException: Cannot invoke "com.alibaba.fastjson.JSONObject.getJSONObject(String)" because "result" is null
 ```
 
+
+
+**注意**
+
+kafka/log/config/log.yml 文件中的一下目录是进行多行匹配的
+
+> 多行匹配以 '[' 开头的行
+
+```
+multiline:
+  pattern: '^\['
+  negate: true
+  match: after
+```
+
