@@ -1,3 +1,5 @@
+#### yum 安装
+
 ##### 安装 epel 和 remi 源
 
 ```
@@ -34,6 +36,10 @@ yum install -y php php-fpm php-mcrypt php-cli php-gd php-curl php-mysql php-ldap
 ```
 
 参考博文：<https://www.tecmint.com/install-php-5-6-on-centos-7/>
+
+
+
+#### 编译安装
 
 ##### 编译安装 php-7.4.30
 
@@ -139,10 +145,40 @@ cp sapi/fpm/php-fpm.service /usr/lib/systemd/system/php-fpm.service
 ProtectSystem=false
 ```
 
-启动
+设置环境变量  .bash_profile
+
+```
+PATH=$PATH:/usr/local/php/bin
+export PATH
+```
+
+修改启动用户 /usr/local/php/etc/php-fpm.d/www.conf
+
+```
+user = www
+group = www
+pm.max_children = 10
+```
+
+修改 /etc/php.ini
+
+```
+post_max_size = 16M
+max_execution_time = 300
+max_input_time = 300
+```
+
+systemctl 启动
 
 ```
 systemctl start php-fpm
+systemctl enable php-fpm
+```
+
+命令启动
+
+```
+/usr/local/php/sbin/php-fpm
 ```
 
 ##### 添加 php-7.4.30  gd 模块
@@ -200,41 +236,75 @@ extension=/usr/local/php/lib/php/extensions/no-debug-non-zts-20190902/ldap.so
 systemctl restart php-fpm
 ```
 
-##### 配置
+##### 添加 amqp(rabbitmq) 模块
 
-> 配置文件: /etc/php-fpm.d/www.conf
+安装 rabbitmq-c
 
-修改 php-fpm 启动用户
-
-```
-user = apache
-group = apache
-```
-
-##### 常用命令
-
-> 查看 pid 文件: grep pid /etc/php-fpm.conf
-
-启动 php-fpm
+> 编译后只有 lib64 目录，而安装 amqp 搜索的目录是 lib，所有需要拷贝 lib64 到 lib。
+>
+> 否则报错: `/usr/bin/ld: cannot find -lrabbitmq`
 
 ```
-mkdir /run/php-fpm/
-php-fpm
+yum install -y cmake
+tar zxvf rabbitmq-c-0.11.0.tar.gz 
+cd rabbitmq-c-0.11.0
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local/rabbitmq-c ..
+cmake --build .  --target install
+cd /usr/local/rabbitmq-c
+cp -R lib64 lib
 ```
 
-关闭 php-fpm
+安装 amqp
 
 ```
-kill -INT `cat /run/php-fpm/php-fpm.pid`
+yum install -y autoconf
+tar zxvf amqp-1.11.0.tgz 
+cd amqp-1.11.0
+/usr/local/php/bin/phpize
+./configure \
+--with-php-config=/usr/local/php/bin/php-config \
+--with-amqp \
+--with-librabbitmq-dir=/usr/local/rabbitmq-c
+make && make install
+```
+
+修改 /etc/php.ini
+
+```
+extension=/usr/local/php/lib/php/extensions/no-debug-non-zts-20190902/amqp.so
+```
+
+检查
+
+```
+php -m
+[PHP Modules]
+amqp
+...
 ```
 
 重启 php-fpm
 
 ```
-kill -USR2 `cat /run/php-fpm/php-fpm.pid`
+systemctl restart php-fpm
 ```
 
-##### nginx 反向代理 php-fpm
+参考文档: https://www.cnblogs.com/yqh0128/articles/14434537.html
+
+
+
+#### 常用命令
+
+查看已加载的模块
+
+```
+php -m
+```
+
+
+
+#### nginx 反向代理 php-fpm
 
 ```
 server {
