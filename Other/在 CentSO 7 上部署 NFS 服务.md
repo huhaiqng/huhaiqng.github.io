@@ -26,3 +26,9 @@ systemctl start nfs
 mount -o vers=3 192.168.1.10:/nfsdisk /nfsdisk
 ```
 
+不重启加载
+
+```
+exportfs -arv
+```
+
