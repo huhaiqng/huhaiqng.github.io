@@ -10,6 +10,8 @@ yum install -y vsftpd
 
 修改配置文件
 
+> 被动模式(passive):  以端口21监听，有连接请求时，随机开放一个比较大的端口号来处理数据传输。ftp 客户端要能够连通该端口号。
+
 ```
 anonymous_enable=NO
 # 禁止匿名访问
@@ -29,19 +31,58 @@ pam_service_name=vsftpd
 userlist_enable=YES
 tcp_wrappers=YES
 allow_writeable_chroot=YES
-# 在 CentOS 7 上设置了 chroot_local_user=YES 后，需要配置此参数，否则无法登陆
+
+# 设置被动模式端口随机启动的端口范围
+pasv_min_port=6000
+pasv_max_port=7000
+```
+
+修改 /etc/pam.d/vsftpd，注释以下行
+
+```
+# auth       required	pam_shells.so
 ```
 
 创建用户
 
 ```
 useradd -d /ftproot -s /sbin/nologin ftpuser
+password ftpuser
 ```
 
 启动 vsftpd
 
 ```
 systemctl start vsftpd
+```
+
+### ftp 命令的使用
+
+连接 ftp 服务器
+
+```
+# 主动模式，ftp 服务器数据传输使用 21 端口号
+ftp -A 192.168.198.10
+# 被动模式，ftp 服务器数据传输使用随机端口号
+ftp -p 192.168.198.10
+```
+
+上传文件
+
+```
+ftp> put src_filename dest_filename
+```
+
+下载文件
+
+```
+ftp> get dest_filename
+```
+
+切换模式
+
+```
+ftp> passive
 ```
 
 
@@ -172,7 +213,7 @@ systemctl start vsftpd
 
 
 
-### 内外可以访问，外网可以访问
+### 内外网可以访问
 
 > 可能是ftp的保护设置 配置文件中增加 pasv_promiscuous 关闭PASV模式的安全检查
 
