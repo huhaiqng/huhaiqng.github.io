@@ -7,7 +7,7 @@
 rpm -ivh http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-1.el7.centos.noarch.rpm
 # 5.0
 rpm -ivh http://repo.zabbix.com/zabbix/5.0/rhel/7/x86_64/zabbix-release-5.0-1.el7.noarch.rpm
-# 6.0
+# 6.0, 只有部分 CentOS 7 的 rpm 包，有全部 CentOS 8 的 rpm 包。
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/7/x86_64/zabbix-release-6.0-2.el7.noarch.rpm
 ```
 
