@@ -299,7 +299,7 @@ wget https://cdn.zabbix.com/zabbix/sources/stable/6.0/zabbix-6.0.5.tar.gz
 tar zxvf zabbix-6.0.5.tar.gz 
 cd zabbix-6.0.5
 mkdir -p /usr/local/zabbix
-./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2
+./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --enable-agent2 --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2
 make && make install
 ```
 
@@ -402,6 +402,33 @@ KillMode=control-group
 ExecStart=/usr/local/zabbix/sbin/zabbix_agentd -c $CONFFILE
 ExecStop=/bin/kill -SIGTERM $MAINPID
 RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+创建 /usr/lib/systemd/system/zabbix-agent2.service
+
+> 注意 PIDFile文件路径
+
+```
+[Unit]
+Description=Zabbix Agent 2
+After=syslog.target
+After=network.target
+
+[Service]
+Environment="CONFFILE=/usr/local/zabbix/etc/zabbix_agent2.conf"
+EnvironmentFile=-/etc/sysconfig/zabbix-agent2
+Type=simple
+Restart=on-failure
+PIDFile=/run/zabbix/zabbix_agent2.pid
+KillMode=control-group
+ExecStart=/usr/local/zabbix/sbin/zabbix_agent2 -c $CONFFILE
+ExecStop=/bin/kill -SIGTERM $MAINPID
+RestartSec=10s
+User=zabbix
+Group=zabbix
 
 [Install]
 WantedBy=multi-user.target
