@@ -71,6 +71,8 @@ systemctl enable docker
 
 ##### 安装 cri-dockerd
 
+> 需要 docker 版本匹配，否则无法启动
+
 下载 rpm 包
 
 ```
