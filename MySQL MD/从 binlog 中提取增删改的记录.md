@@ -39,7 +39,7 @@ do
 done
 ```
 
-##### 提前修改的记录
+##### 提取修改的记录
 
 > -B 1:  过滤行前面的行数，显示执行的时间
 >
@@ -54,9 +54,19 @@ mysqlbinlog \
 --skip-gtids \
 -v /var/lib/mysql/binlog.000012 | \
 grep -B 1 -A 10 "UPDATE \`sbtest\`.\`sbtest1\`" > update.sql
+
+# 删除 #号
+sed -i 's/### //g' update.sql 
+# 设置字段名
+sed -i 's/@1=/ID=/g' update.sql
+sed -i 's/@2=/HIBERNATEVERSION=/g' update.sql
+# 删除没用的字段
+sed -i '/@/d' update.sql
+# 将--改为;
+sed -i 's/--/;/g' update.sql
 ```
 
-##### 提前新增的记录
+##### 提取新增的记录
 
 > -B 1:  过滤行前面的行数，显示执行的时间
 >
