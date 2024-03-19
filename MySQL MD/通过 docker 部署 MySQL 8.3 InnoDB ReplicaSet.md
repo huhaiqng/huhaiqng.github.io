@@ -52,7 +52,7 @@ yum install -y https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-8.3.0
 
 ```
 [root@rhel89 ~]# yum install -y https://dev.mysql.com/get/Downloads/MySQL-Router/mysql-router-community-8.3.0-1.el8.x86_64.rpm
-[root@rhel89 ~]# mysqlrouter --bootstrap trsa@mysql3310 --account=trsa --user=root
+[root@rhel89 ~]# mysqlrouter --bootstrap trsa@mysql3310 --account=trsr --user=root
 [root@rhel89 ~]# nohup mysqlrouter -c /etc/mysqlrouter/mysqlrouter.conf >/dev/null 2>&1 &
 ```
 
