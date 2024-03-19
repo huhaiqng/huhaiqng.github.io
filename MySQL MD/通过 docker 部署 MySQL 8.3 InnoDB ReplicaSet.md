@@ -42,6 +42,7 @@ yum install -y https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-8.3.0
 [root@rhel89 ~]# mysqlsh root@mysql3310
  MySQL  mysql3310:33060+ ssl  JS > var rs=dba.createReplicaSet('tRS')
  MySQL  mysql3310:33060+ ssl  JS > rs.addInstance('root@mysql3320')
+[root@rhel89 ~]# docker restart mysql3320
  MySQL  mysql3310:33060+ ssl  JS > rs.status()
  MySQL  mysql3310:33060+ ssl  JS > rs.setupAdminAccount('trsa')
  MySQL  mysql3310:33060+ ssl  JS > rs.setupRouterAccount('trsr')
