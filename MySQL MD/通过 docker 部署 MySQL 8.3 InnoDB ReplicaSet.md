@@ -34,25 +34,24 @@ yum install -y https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-8.3.0
 
 ```
 [root@rhel89 ~]# mysqlsh root@mysql3310
- MySQL  mysql3310:33060+ ssl  JS > dba.configureReplicaSetInstance()
- MySQL  mysql3310:33060+ ssl  JS > dba.configureReplicaSetInstance('root@mysql3320')
+ MySQL  mysql3310:33060+ ssl  JS > dba.configureReplicaSetInstance('root@mysql3310',{clusterAdmin: "'rsadmin'@'%'",clusterAdminPassword: 'MySQL8.3'})
+ MySQL  mysql3310:33060+ ssl  JS > dba.configureReplicaSetInstance('root@mysql3320',{clusterAdmin: "'rsadmin'@'%'",clusterAdminPassword: 'MySQL8.3'})
  MySQL  mysql3310:33060+ ssl  JS > \q
 [root@rhel89 ~]# docker restart mysql3310
 [root@rhel89 ~]# docker restart mysql3320
 [root@rhel89 ~]# mysqlsh root@mysql3310
  MySQL  mysql3310:33060+ ssl  JS > var rs=dba.createReplicaSet('tRS')
- MySQL  mysql3310:33060+ ssl  JS > rs.addInstance('root@mysql3320')
+ MySQL  mysql3310:33060+ ssl  JS > rs.addInstance('mysql3320')
 [root@rhel89 ~]# docker restart mysql3320
  MySQL  mysql3310:33060+ ssl  JS > rs.status()
- MySQL  mysql3310:33060+ ssl  JS > rs.setupAdminAccount('trsa')
- MySQL  mysql3310:33060+ ssl  JS > rs.setupRouterAccount('trsr')
+ MySQL  mysql3310:33060+ ssl  JS > rs.setupRouterAccount('rsrouter')
 ```
 
 安装 mysql-router
 
 ```
 [root@rhel89 ~]# yum install -y https://dev.mysql.com/get/Downloads/MySQL-Router/mysql-router-community-8.3.0-1.el8.x86_64.rpm
-[root@rhel89 ~]# mysqlrouter --bootstrap trsa@mysql3310 --account=trsr --user=root
+[root@rhel89 ~]# mysqlrouter --bootstrap rsadmin@mysql3310 --account=rsrouter --user=root
 [root@rhel89 ~]# nohup mysqlrouter -c /etc/mysqlrouter/mysqlrouter.conf >/dev/null 2>&1 &
 ```
 
