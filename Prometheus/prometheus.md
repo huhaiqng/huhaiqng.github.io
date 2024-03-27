@@ -8,3 +8,7 @@ mv prometheus-2.45.4.linux-amd64/ prometheus
 useradd -s /sbin/nologin prometheus
 chown -R prometheus.prometheus prometheus/
 ```
+启动
+```
+nohup /opt/prometheus/prometheus --config.file=prometheus.yml >/dev/null 2>&1 &
+```
