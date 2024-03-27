@@ -1,7 +1,6 @@
 部署
 ```
 docker run -id --pid="host" -p 9100:9100 --name node_exporter -v "/:/host:ro,rslave" quay.io/prometheus/node-exporter:latest --path.rootfs=/host
-
 ```
 在 promethues 配置文件中添加 job
 ```
