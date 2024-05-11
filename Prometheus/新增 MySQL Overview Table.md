@@ -19,7 +19,3 @@
 ![image](https://github.com/huhaiqng/DevOpsNote/assets/27908115/20efe115-72df-4b0a-b549-58e4b038908a)
 
 ![image](https://github.com/huhaiqng/DevOpsNote/assets/27908115/6ab23a0b-e400-429c-a80c-72ca9c216f68)
-
-添加其它字段
-
-![image](https://github.com/huhaiqng/DevOpsNote/assets/27908115/5df5f8ce-9d61-4080-91c6-49d7bd336621)
