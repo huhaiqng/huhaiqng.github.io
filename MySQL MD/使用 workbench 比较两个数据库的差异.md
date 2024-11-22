@@ -5,21 +5,16 @@
 单击菜单 `Database -> Synchronize With Any Source`
 
 设置`Source` `Target` `Result`类型
-
-<img src="C:\Users\HQH007\AppData\Roaming\Typora\typora-user-images\image-20241122141332647.png" alt="image-20241122141332647" style="zoom: 67%;" />
+![image-20241122141332647](https://github.com/user-attachments/assets/892da369-2255-4bae-8dd0-dcd5909e8957)
 
 配置`Source`
-
-<img src="C:\Users\HQH007\AppData\Roaming\Typora\typora-user-images\image-20241122141646455.png" alt="image-20241122141646455" style="zoom:67%;" />
+![image-20241122141646455](https://github.com/user-attachments/assets/41894e6e-f8ad-4de3-a1b2-3971125dbd8b)
 
 配置`Target`
-
-<img src="C:\Users\HQH007\AppData\Roaming\Typora\typora-user-images\image-20241122141801763.png" alt="image-20241122141801763" style="zoom:67%;" />
+![image-20241122141801763](https://github.com/user-attachments/assets/c3977572-e08f-43db-9102-464e3b70c6ec)
 
 选择数据库
-
-<img src="C:\Users\HQH007\AppData\Roaming\Typora\typora-user-images\image-20241122142211611.png" alt="image-20241122142211611" style="zoom:67%;" />
+![image-20241122142211611](https://github.com/user-attachments/assets/4b0e3cb2-67d6-4cc0-a943-12458a71b281)
 
 查看差异
-
-<img src="C:\Users\HQH007\AppData\Roaming\Typora\typora-user-images\image-20241122142358329.png" alt="image-20241122142358329" style="zoom:67%;" />
+![image-20241122142358329](https://github.com/user-attachments/assets/20c665db-3148-43b7-aacf-581a78ecf7e5)
