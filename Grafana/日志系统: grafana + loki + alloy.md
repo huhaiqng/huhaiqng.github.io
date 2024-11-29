@@ -41,7 +41,7 @@ pattern_ingester:
 ```
 // applogs
 local.file_match "applogs" {
-    path_targets = [{"__path__" = "/tmp/app-logs/*.log", color="applogs4"}]
+    path_targets = [{"__path__" = "/tmp/app-logs/*.log", node_name = sys.env("HOSTNAME")}]
 }
 
 loki.source.file "applogs" {
