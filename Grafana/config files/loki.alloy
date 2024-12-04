@@ -1,0 +1,68 @@
+// loki 日志
+logging {
+  level    = "debug"
+  format   = "json"
+  write_to = [loki.process.loki_log.receiver]
+}
+
+loki.process "loki_log" {
+        forward_to = [loki.write.default.receiver]
+
+        stage.json {
+            expressions = { "ts" = "ts" }
+        }
+
+        stage.labels {
+            values = { "ts" = "ts" }
+        }
+}
+
+// journal
+loki.source.journal "read"  {
+  forward_to    = [loki.write.default.receiver]
+  labels        = {component = "loki.source.journal", "service_name" = "journal"}
+}
+
+// applogs
+local.file_match "applogs" {
+    path_targets = [{"__path__" = "/tmp/app-logs/abc.log", "service_name" = "applogs"}]
+}
+
+loki.source.file "applogs" {
+    targets    = local.file_match.applogs.targets
+    forward_to = [loki.process.applogs.receiver]
+}
+
+loki.process "applogs" {
+        forward_to = [loki.write.default.receiver]
+
+
+        stage.multiline {
+          firstline     = "^\\[lfl"
+          max_wait_time = "5s"
+        }
+
+
+        stage.regex {
+          // expression = "(?P<time>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{3})"
+          expression = "\\[(?P<service_name>[^:]+):(?P<ip>[^:]+):(?P<port>[^\\]]+)\\] \\[(?P<id>\\d+)\\] (?P<time>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})"
+        }
+
+        stage.timestamp {
+          source = "time"
+          format = "2006-01-02 15:04:05"
+          location = "Asia/Shanghai"
+        }
+
+        stage.labels {
+          values = { "service_name"="service_name" }
+        }
+}
+
+
+loki.write "default" {
+  endpoint {
+    url = "http://localhost:3100/loki/api/v1/push"
+  }
+}
+
