@@ -1,31 +1,6 @@
-prometheus.remote_write "node" {
+prometheus.remote_write "default" {
     endpoint {
         url = "http://localhost:9090/api/v1/write"
     }
-}
-
-prometheus.exporter.unix "node" {}
-
-prometheus.scrape "node" {
-    targets         = prometheus.exporter.unix.node.targets
-    forward_to      = [prometheus.relabel.node.receiver]
-    scrape_interval = "10s"
-}
-
-prometheus.relabel "node" {
-  forward_to = [prometheus.remote_write.node.receiver]
-  
-  rule {
-    action        = "replace"
-    source_labels = ["job"]
-    target_label  = "job"
-    replacement   = "app node"
-  }
-
-  rule {
-    action        = "replace"
-    target_label  = "env"
-    replacement   = "prod"
-  }
 }
 

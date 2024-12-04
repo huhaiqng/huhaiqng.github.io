@@ -1,0 +1,27 @@
+prometheus.exporter.mysql "app" {
+  data_source_name  = "root:MySQL8.0@(192.168.42.130:3306)/"
+}
+
+prometheus.scrape "mysql" {
+    targets         = prometheus.exporter.mysql.app.targets
+    forward_to      = [prometheus.relabel.mysql.receiver]
+    scrape_interval = "10s"
+}
+
+prometheus.relabel "mysql" {
+  forward_to = [prometheus.remote_write.default.receiver]
+  
+  rule {
+    action        = "replace"
+    source_labels = ["job"]
+    target_label  = "job"
+    replacement   = "app mysql"
+  }
+
+  rule {
+    action        = "replace"
+    target_label  = "env"
+    replacement   = "prod"
+  }
+}
+
