@@ -1,0 +1,27 @@
+prometheus.exporter.blackbox "app" {
+  config = "{ modules: { http_2xx: { prober: http, timeout: 5s }, tcp: { prober: tcp, timeout: 5s } } }"
+
+  target {
+    name    = "prometheus"
+    address = "http://192.168.42.130:9090/"
+    module  = "http_2xx"
+  }
+
+  target {
+    name    = "grafana"
+    address = "http://192.168.42.130:3000/"
+    module  = "http_2xx"
+  }
+
+  target {
+    name    = "mysql"
+    address = "192.168.42.130:3306"
+    module  = "tcp"
+  }
+}
+
+prometheus.scrape "demo" {
+  targets    = prometheus.exporter.blackbox.app.targets
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+

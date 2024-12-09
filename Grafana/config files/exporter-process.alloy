@@ -1,27 +1,18 @@
-prometheus.exporter.blackbox "app" {
-  config = "{ modules: { http_2xx: { prober: http, timeout: 5s }, tcp: { prober: tcp, timeout: 5s } } }"
+prometheus.exporter.process "app" {
+  track_children = false
 
-  target {
-    name    = "prometheus"
-    address = "http://192.168.42.130:9090/"
-    module  = "http_2xx"
+  matcher {
+    name = "{{.Matches}}"
+    cmdline = ["/usr/bin/alloy"]
   }
 
-  target {
-    name    = "grafana"
-    address = "http://192.168.42.130:3000/"
-    module  = "http_2xx"
-  }
-
-  target {
-    name    = "mysql"
-    address = "192.168.42.130:3306"
-    module  = "tcp"
+  matcher {
+    name = "{{.Matches}}"
+    cmdline = ["/usr/local/prometheus/prometheus"]
   }
 }
 
-prometheus.scrape "demo" {
-  targets    = prometheus.exporter.blackbox.app.targets
+prometheus.scrape "app" {
+  targets    = prometheus.exporter.process.app.targets
   forward_to = [prometheus.remote_write.default.receiver]
 }
-
