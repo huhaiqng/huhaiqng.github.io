@@ -405,6 +405,8 @@ spec:
                   number: 3000
 ```
 
+导入 dashboard id 21298(pod)，22523(kubernetes cluster)
+
 ##### Node Exporter
 
 yaml 文件
