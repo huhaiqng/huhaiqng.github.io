@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  selector:
+    app: loki
+  ports:
+    - protocol: TCP
+      port: 3100
+      targetPort: 3100
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:latest
+          ports:
+            - containerPort: 3100
+              name: http
+          volumeMounts:
+            - name: loki-storage
+              mountPath: /loki
+      volumes:
+        - name: loki-storage
+          nfs:
+            server: 131d6149a1d-osm8.us-east-1.nas.aliyuncs.com
+            path: /loki

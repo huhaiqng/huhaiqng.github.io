@@ -625,7 +625,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSets
 metadata:
   name: prometheus
   namespace: monitoring
@@ -669,5 +669,152 @@ spec:
           nfs:
             server: 131d6149a1d-osm8.us-east-1.nas.aliyuncs.com
             path: /prometheus
+```
+
+#### 日志
+
+##### loki
+
+yaml 文件
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  selector:
+    app: loki
+  ports:
+    - protocol: TCP
+      port: 3100
+      targetPort: 3100
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      containers:
+        - name: loki
+          image: grafana/loki:latest
+          ports:
+            - containerPort: 3100
+              name: http
+          volumeMounts:
+            - name: loki-storage
+              mountPath: /loki
+      volumes:
+        - name: loki-storage
+          nfs:
+            server: 131d6149a1d-osm8.us-east-1.nas.aliyuncs.com
+            path: /loki
+```
+
+使用域名`http://loki.logging.svc.cluster.local:3100`接 grafana
+
+> 与 grafana 不同命名空间
+
+##### alloy
+
+> 使用 api 读取 pod 日志
+
+yaml 文件
+
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alloy
+  namespace: logging
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: alloy
+rules:
+- apiGroups: [""]
+  resources:
+  - pods
+  - pods/log
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alloy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+  - kind: ServiceAccount
+    name: alloy
+    namespace: logging
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-config
+  namespace: logging
+data:
+  config.alloy: |
+    discovery.kubernetes "pod" {
+      role = "pod"
+    }
+
+    loki.source.kubernetes "pod" {
+      targets    = discovery.kubernetes.pod.targets
+      forward_to = [loki.write.default.receiver]
+    }
+
+    loki.write "default" {
+      endpoint {
+        url = "http://loki.logging.svc.cluster.local:3100/loki/api/v1/push"
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: alloy
+  namespace: logging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alloy
+  template:
+    metadata:
+      labels:
+        app: alloy
+    spec:
+      serviceAccount: alloy
+      containers:
+        - name: alloy
+          image: grafana/alloy:latest
+          volumeMounts:
+            - name: config-pod
+              mountPath: /etc/alloy
+      volumes:
+        - name: config-pod
+          configMap:
+            name: pod-config
 ```
 
