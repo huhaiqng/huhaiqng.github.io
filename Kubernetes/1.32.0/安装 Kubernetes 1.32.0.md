@@ -677,7 +677,7 @@ spec:
 
 yaml 文件
 
-```
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -733,7 +733,7 @@ spec:
 
 yaml 文件
 
-```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -770,12 +770,16 @@ subjects:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pod-config
+  name: alloy-config
   namespace: logging
 data:
   config.alloy: |
     discovery.kubernetes "pod" {
       role = "pod"
+
+      namespaces {
+        names = ["logging"]
+      }
     }
 
     loki.source.kubernetes "pod" {
@@ -810,11 +814,11 @@ spec:
         - name: alloy
           image: grafana/alloy:latest
           volumeMounts:
-            - name: config-pod
+            - name: alloy-config
               mountPath: /etc/alloy
       volumes:
-        - name: config-pod
+        - name: alloy-config
           configMap:
-            name: pod-config
+            name: alloy-config
 ```
 
