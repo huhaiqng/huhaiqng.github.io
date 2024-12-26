@@ -627,7 +627,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: StatefulSets
+kind: StatefulSet
 metadata:
   name: prometheus
   namespace: monitoring
