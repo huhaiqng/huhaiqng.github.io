@@ -193,6 +193,8 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 ingress-nginx-controller deployment
 
+> 将80，443直接在node启动，通过node的 80 443 访问
+
 ```
       hostIPC: true
       hostNetwork: true
