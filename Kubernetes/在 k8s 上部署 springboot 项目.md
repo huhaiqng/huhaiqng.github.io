@@ -1,12 +1,12 @@
 Jenkins 上添加一下命令
 
 ```shell
-PROJECT_NAME=jew-cust
+PROJECT_NAME=springboot
 NAMESPACE=test
 IMAGE_TAG=`date +%Y%m%d%H%M%S`
 IMAGE_NAME=harbor.lingfannao.net:4436/${NAMESPACE}/${PROJECT_NAME}:${IMAGE_TAG}
 KUBE_CMD="kubectl set image deployment/${PROJECT_NAME} app=${IMAGE_NAME} -n ${NAMESPACE} --record"
-cd jew-dist-customized
+cd springboot
 docker build -t ${IMAGE_NAME} -f /data/dockerfile/springboot .
 docker push ${IMAGE_NAME} && docker rmi ${IMAGE_NAME}
 ssh -i /root/.ssh/deploy -p 6666 pro@192.168.1.100 "${KUBE_CMD}"
@@ -57,23 +57,23 @@ doployment yaml 文件
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jew-cust
+  name: springboot
   namespace: test
   labels:
-    app: jew-cust
+    app: springboot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: jew-cust
+      app: springboot
   template:
     metadata:
       labels:
-        app: jew-cust
+        app: springboot
     spec:
       containers:
       - name: app
-        image: harbor.lingfannao.net:4436/test/jew-cust:20220412152125 
+        image: harbor.lingfannao.net:4436/test/springboot:20220412152125 
         command: ['java', '-jar', '/data/app.jar', '--spring.profiles.active=test']
         ports:
         - containerPort: 9041
@@ -95,14 +95,14 @@ spec:
             memory: "512Mi"
             cpu: "250m"
         volumeMounts:
-        - mountPath: /data/logs/jew-customized
-          name: jew-cust
+        - mountPath: /data/logs/springboot
+          name: springboot
       nodeSelector:
         kubernetes.io/hostname: hwy-test-01
       volumes:
-      - name: jew-cust
+      - name: springboot
         hostPath:
-          path: /data/logs/jew-customized2
+          path: /data/logs/springboot
           type: Directory
       imagePullSecrets:
       - name: hwy-harbor
@@ -114,16 +114,16 @@ service yaml 文件
 piVersion: v1
 kind: Service
 metadata:
-  name: jew-cust
+  name: springboot
   namespace: test
   labels:
-    app: jew-cust
+    app: springboot
 spec:
   type: NodePort
   ports:
     - port: 9041
       nodePort: 30010
   selector:
-    app: jew-cust
+    app: springboot
 ```
 
