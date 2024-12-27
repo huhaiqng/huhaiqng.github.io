@@ -77,6 +77,16 @@ spec:
         command: ['java', '-jar', '/data/app.jar', '--spring.profiles.active=test']
         ports:
         - containerPort: 9041
+        readinessProbe:
+          tcpSocket:
+            port: 9041
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 9041
+          initialDelaySeconds: 15
+          periodSeconds: 10        
         resources:
           requests:
             memory: "256Mi"
