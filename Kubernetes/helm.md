@@ -1,3 +1,5 @@
+#### 仓库 repo
+
 添加仓库
 
 > `bitnami`: 仓库名称
@@ -29,6 +31,8 @@ helm search repo bitnami
 ```
 helm repo update
 ```
+
+#### chart
 
 查看 chart `bitnami/mysql` 的基本信息
 
@@ -118,7 +122,7 @@ helm list --all
 helm uninstall mysql-1612624192
 ```
 
-查看版本的状态
+查看发布 chart 的状态
 
 ```
 helm status mysql-1612624192
