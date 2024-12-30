@@ -12,6 +12,12 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo list
 ```
 
+删除仓库
+
+```
+helm repo remove bitnami
+```
+
 列出仓库 `bitnami` 的 chart
 
 ```
@@ -74,6 +80,12 @@ helm install foo https://example.com/charts/foo-1.2.3.tgz
 ```
 helm install -f values.yaml bitnami/mysql --generate-name
 helm install --set nodeSelector."kubernetes\.io/role"=master bitnami/mysql --generate-name
+```
+
+下载 chart
+
+```
+helm pull bitnami/wordpress
 ```
 
 更新 chart
