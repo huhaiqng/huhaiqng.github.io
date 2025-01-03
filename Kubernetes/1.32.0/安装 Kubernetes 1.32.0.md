@@ -159,18 +159,18 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
-节点加入集群
-
-```
-kubeadm join k8s-cluster:6443 --token yoxzkh.33hst7b0ymj57ivs --discovery-token-ca-cert-hash sha256:e44bfeb646ddbf30b30ee0192938d160cc8c62850387dafa495ac3b28d1d110d --cri-socket=unix:///var/run/cri-dockerd.sock
-```
-
 配置网络
 
 > 需要先配置网络，node 状态才会是 Ready
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+
+节点加入集群
+
+```
+kubeadm join k8s-cluster:6443 --token yoxzkh.33hst7b0ymj57ivs --discovery-token-ca-cert-hash sha256:e44bfeb646ddbf30b30ee0192938d160cc8c62850387dafa495ac3b28d1d110d --cri-socket=unix:///var/run/cri-dockerd.sock
 ```
 
 测试运行是否正常
