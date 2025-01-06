@@ -564,6 +564,9 @@ data:
       kubernetes_sd_configs:
       - role: endpoints
       relabel_configs:
+      # 新增集群 label
+      - target_label: cluster
+        replacement: k8s-cluster
       - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_endpoints_name, __meta_kubernetes_endpoint_port_name]
         action: keep
         regex: kube-system;kube-state-metrics;http-metrics
