@@ -379,7 +379,7 @@ spec:
                   number: 3000
 ```
 
-导入 dashboard id 21298(pod)，22523(kubernetes cluster)
+导入 dashboard 15757 15758 15759 15760
 
 ##### Node Exporter
 
