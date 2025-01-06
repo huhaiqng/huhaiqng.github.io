@@ -114,9 +114,7 @@ kubectl completion bash | tee /etc/bash_completion.d/kubectl
 kubeadm init \
 --pod-network-cidr=10.244.0.0/16 \
 --control-plane-endpoint=k8s-cluster \
---upload-certs \
---cri-socket=unix:///var/run/cri-dockerd.sock \
---kubernetes-version=v1.32.0
+--upload-certs 
 ```
 
 配置 config file
