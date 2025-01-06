@@ -37,56 +37,24 @@ net.ipv4.ip_forward                 = 1
 
 
 
-#### 安装 docker
+#### 安装 containerd
 
 ```
 # 配置yum
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # 安装
-yum install -y docker-ce docker-ce-cli containerd.io
+yum install -y containerd.io
 
-## Create /etc/docker directory.
-mkdir /etc/docker
+cd /etc/containerd/
+mv config.toml config.toml.orig
+containerd config default > config.toml
 
-# Setup daemon.
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"]
-}
-EOF
-
-systemctl enable docker --now
+systemctl enable containerd --now
 ```
 
-
-
-#### cri-dockerd
-
-> 需要 docker 版本匹配，否则无法启动
-
-安装
-
-```
-rpm -ivh https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.16/cri-dockerd-0.3.16-3.fc35.x86_64.rpm
-```
-
-修改文件 /usr/lib/systemd/system/cri-docker.service，在启动命令添加 `--pod-infra-container-image=registry.k8s.io/pause:3.10
-
-> --pod-infra-container-image 默认的是 registry.k8s.io/pause:3.9
-
-```
-ExecStart=/usr/bin/cri-dockerd --pod-infra-container-image=registry.aliyuncs.com/google_containers/pause:3.8 --container-runtime-endpoint fd://
-```
-
-启动
-
-```
-systemctl daemon-reload
-systemctl enable cri-docker --now
-```
-
-
+修改 `/etc/containerd/config.toml` 的 `SystemdCgroup = true`
+修改 `/etc/containerd/config.toml` 的 `sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"`
 
 #### 安装 kubeadm、kubelet 和 kubectl
 
