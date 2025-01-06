@@ -407,7 +407,7 @@ spec:
       hostNetwork: true
       containers:
       - name: node-exporter
-        image: prom/node-exporter:v0.16.0
+        image: prom/node-exporter:v1.8.2
         ports:
         - containerPort: 9100
         resources:
@@ -432,7 +432,7 @@ spec:
         - name: rootfs
           mountPath: /rootfs
       tolerations:  # 添加容忍的声明
-      - key: "node-role.kubernetes.io/master"
+      - key: "node-role.kubernetes.io/control-plane"
         operator: "Exists"
         effect: "NoSchedule"
       volumes:
