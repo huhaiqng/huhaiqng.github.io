@@ -38,6 +38,9 @@ net.ipv4.ip_forward                 = 1
 
 
 #### 安装 containerd
+> containerd 比 docker 更适合生产环境
+> 
+> 使用 docker 部分 Prometheus label 缺少 
 
 ```
 # 配置yum
@@ -53,8 +56,9 @@ containerd config default > config.toml
 systemctl enable containerd --now
 ```
 
-修改 `/etc/containerd/config.toml` 的 `SystemdCgroup = true`
-修改 `/etc/containerd/config.toml` 的 `sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"`
+修改 `/etc/containerd/config.toml`: `SystemdCgroup = true`
+
+修改 `/etc/containerd/config.toml`: `sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"`
 
 #### 安装 kubeadm、kubelet 和 kubectl
 
@@ -527,6 +531,9 @@ data:
       kubernetes_sd_configs:
       - role: node
       relabel_configs:
+      # 新增集群 label
+      - target_label: cluster
+        replacement: k8s-cluster
       - source_labels: [__address__]
         regex: '(.*):10250' 
         replacement: '${1}:9100' 
@@ -542,6 +549,9 @@ data:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       relabel_configs:
+      # 新增集群 label
+      - target_label: cluster
+        replacement: k8s-cluster
       - action: labelmap
         regex: __meta_kubernetes_node_label_(.+)
       - target_label: __address__
