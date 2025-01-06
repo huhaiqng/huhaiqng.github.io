@@ -140,7 +140,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 节点加入集群
 
 ```
-kubeadm join k8s-cluster:6443 --token yoxzkh.33hst7b0ymj57ivs --discovery-token-ca-cert-hash sha256:e44bfeb646ddbf30b30ee0192938d160cc8c62850387dafa495ac3b28d1d110d --cri-socket=unix:///var/run/cri-dockerd.sock
+kubeadm join k8s-cluster:6443 --token yoxzkh.33hst7b0ymj57ivs --discovery-token-ca-cert-hash sha256:e44bfeb646ddbf30b30ee0192938d160cc8c62850387dafa495ac3b28d1d110d
 ```
 
 测试运行是否正常
@@ -377,7 +377,7 @@ spec:
                   number: 3000
 ```
 
-导入 dashboard 15757 15758 15759 15760
+导入 dashboard 15757 15758 15759 15760 22523
 
 ##### Node Exporter
 
