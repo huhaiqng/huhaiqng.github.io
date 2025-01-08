@@ -654,6 +654,12 @@ spec:
 
 #### 日志
 
+##### 创建命名空间
+
+```
+kubectl create namespace logging
+```
+
 ##### loki
 
 yaml 文件
