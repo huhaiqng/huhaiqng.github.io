@@ -8,10 +8,15 @@ data:
     local.file_match "messages" {
         path_targets = [
             {
-              "__path__"     = "/log/messages",
-              "node_name"    = sys.env("NODE_NAME"),
-              "service_name" = "system",
-            }
+                "__path__"     = "/log/messages",
+                "node_name"    = sys.env("NODE_NAME"),
+                "service_name" = "system-messages",
+            },
+            {
+                "__path__"     = "/log/secure",
+                "node_name"    = sys.env("NODE_NAME"),
+                "service_name" = "system-secure",
+            },
         ]
     }
 
