@@ -114,7 +114,7 @@ kubectl completion bash | tee /etc/bash_completion.d/kubectl
 ```
 kubeadm init \
 --pod-network-cidr=10.244.0.0/16 \
---control-plane-endpoint=k8s-cluster \
+--control-plane-endpoint=control-plane.huhaiqing.com.cn \
 --upload-certs 
 ```
 
