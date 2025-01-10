@@ -52,13 +52,14 @@ yum install -y containerd.io
 cd /etc/containerd/
 mv config.toml config.toml.orig
 containerd config default > config.toml
-
-systemctl enable containerd --now
 ```
 
 修改 `/etc/containerd/config.toml`: `SystemdCgroup = true`
 
 修改 `/etc/containerd/config.toml`: `sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.10"`
+
+启动 `systemctl enable containerd --now`
+
 
 #### 安装 kubeadm、kubelet 和 kubectl
 
